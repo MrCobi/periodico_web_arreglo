@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import  db  from "@/lib/db";
 import bcrypt from "bcryptjs";
 
-export async function PUT(req: Request, context: { params: { id: string } }) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
     const { name, email, password, role } = await req.json();

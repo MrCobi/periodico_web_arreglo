@@ -1,10 +1,11 @@
 import SigninForm from "./_components/signin-form";
 
-export default function SignInPage({
-  searchParams,
-}:{
-  searchParams: {verified: string}
-}) {
+export default async function SignInPage(
+  props:{
+    searchParams: Promise<{verified: string}>
+  }
+) {
+  const searchParams = await props.searchParams;
   const isVerified = searchParams.verified === "true";
   return (
   <main className="mt-4">
