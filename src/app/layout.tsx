@@ -37,9 +37,6 @@ export default function RootLayout({
                 <Link className="mr-4 text-white" href="/api/auth/dashboard">
                   Dashboard
                 </Link>
-                <Link className="mr-4 text-white" href="/admin">
-                  Admin
-                </Link>
               </nav>
             </header>
             <Animate>
