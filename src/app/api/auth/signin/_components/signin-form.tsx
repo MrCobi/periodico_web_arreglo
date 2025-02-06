@@ -13,7 +13,11 @@ import { useState, useTransition } from "react";
 import { useRouter } from 'next/navigation';
 
 
-export default function SigninForm() {
+export default function SigninForm({
+  isVerified,
+}:{
+  isVerified?:boolean
+}) {
 
     const [error,setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
@@ -28,8 +32,6 @@ export default function SigninForm() {
       })
 
 
-
-
     async function onSubmit(values: z.infer<typeof loginSchema>) {
       setError(null);
       startTransition(async() => {
@@ -39,13 +41,13 @@ export default function SigninForm() {
         if (response.error) {
           setError(response.error);
         } else{
-           router.push("/api/auth/dashboard");
+           //router.push("/api/auth/dashboard");
         }
       })
       }
 
     return (
-        <Form {...form}>
+     <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6 max-w-[400px] w-full mx-auto p-8 bg-white shadow-lg rounded-lg border border-gray-200"
