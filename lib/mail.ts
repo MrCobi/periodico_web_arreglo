@@ -7,7 +7,7 @@ export const sendEmailVerification = async (email: string, token: string) => {
     console.log("Sending email to " + email);
     try{
         await resend.emails.send({
-            from: "NextAuth js <onboarding@resend.dev>",
+            from: "HemoPress <no-reply@hemopress.com>",
             to: email,
             subject: "Verify your email",
             html: `
