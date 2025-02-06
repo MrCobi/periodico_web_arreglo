@@ -30,7 +30,7 @@ export default function ViewUserPage() {
       <h1 className="text-2xl font-bold mb-4">Detalles del Usuario</h1>
       <p className="text-lg"><strong>Nombre:</strong> {user.name}</p>
       <p className="text-lg"><strong>Correo:</strong> {user.email}</p>
-      <p className="text-lg"><strong>Rol:</strong> {user.role.name}</p>
+      <p className="text-lg"><strong>Rol:</strong> {user.role}</p>
 
       <div className="mt-5 space-x-2">
         <Link href="/admin/users" className="bg-gray-500 text-white px-4 py-2 rounded">Volver</Link>

@@ -37,7 +37,7 @@ export default async function UsersPage() {
               <td className="border px-4 py-2">{user.id}</td>
               <td className="border px-4 py-2">{user.name}</td>
               <td className="border px-4 py-2">{user.email}</td>
-              <td className="border px-4 py-2">{user.roleId}</td>
+              <td className="border px-4 py-2">{user.role}</td>
               <td className="border px-4 py-2">
                 <Link href={`/admin/users/view/${user.id}`} className="text-blue-500 mr-2">Ver</Link>
                 <Link href={`/admin/users/edit/${user.id}`} className="text-yellow-500 mr-2">Editar</Link>

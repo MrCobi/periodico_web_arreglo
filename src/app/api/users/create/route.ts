@@ -1,7 +1,7 @@
 // src/app/api/users/create/route.ts
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     // Crear el usuario con rol de admin (roleId = 1)
     const newUser = await prisma.user.create({
-      data: { name, email, password: hashedPassword, roleId: 1 },
+      data: { name, email, password: hashedPassword, role: "admin" },
     });
 
     return NextResponse.json(newUser, { status: 201 });

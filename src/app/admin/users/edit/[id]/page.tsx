@@ -1,5 +1,3 @@
-// src/app/admin/users/update/[id]/page.tsx
-
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
@@ -7,8 +5,12 @@ import { useRouter, useParams } from "next/navigation";
 export default function EditUserPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", email: "", password: "", roleId: 2 });
-  const [roles, setRoles] = useState([]);
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "user" });
+  // Arreglo estático con los roles como string
+  const roles = [
+    { value: "user", label: "Usuario" },
+    { value: "admin", label: "Admin" },
+  ];
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -16,21 +18,11 @@ export default function EditUserPage() {
       const res = await fetch(`/api/users/${id}`);
       if (res.ok) {
         const data = await res.json();
-        setForm({ name: data.name, email: data.email, password: "", roleId: data.roleId });
+        // Asegúrate de que el campo role sea el string correspondiente ("user" o "admin")
+        setForm({ name: data.name, email: data.email, password: "", role: data.role });
       }
     }
-
-    async function fetchRoles() {
-      
-      const res = await fetch("/api/roles");
-      if (res.ok) {
-        const data = await res.json();
-        setRoles(data);
-      }
-    }
-
     fetchUser();
-    fetchRoles();
   }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -41,15 +33,10 @@ export default function EditUserPage() {
     e.preventDefault();
     setError("");
 
-    const dataToSend = {
-      ...form,
-      roleId: Number(form.roleId), // Asegúrate de que roleId sea un número
-    };
-
     const res = await fetch(`/api/users/edit/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dataToSend),
+      body: JSON.stringify(form),
     });
 
     if (res.ok) {
@@ -68,12 +55,16 @@ export default function EditUserPage() {
         <input name="name" placeholder="Nombre" value={form.name} onChange={handleChange} className="w-full p-2 border" required />
         <input name="email" type="email" placeholder="Correo" value={form.email} onChange={handleChange} className="w-full p-2 border" required />
         <input name="password" type="password" placeholder="Nueva Contraseña (Opcional)" value={form.password} onChange={handleChange} className="w-full p-2 border" />
-        <select name="roleId" value={form.roleId} onChange={handleChange} className="w-full p-2 border">
-          {roles.map((role: any) => (
-            <option key={role.id} value={role.id}>{role.name}</option>
+        <select name="role" value={form.role} onChange={handleChange} className="w-full p-2 border">
+          {roles.map((role) => (
+            <option key={role.value} value={role.value}>
+              {role.label}
+            </option>
           ))}
         </select>
-        <button type="submit" className="w-full bg-blue-500 text-white py-2">Actualizar</button>
+        <button type="submit" className="w-full bg-blue-500 text-white py-2">
+          Actualizar
+        </button>
       </form>
     </div>
   );

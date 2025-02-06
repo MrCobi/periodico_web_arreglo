@@ -12,7 +12,6 @@ export async function GET(req: Request, context: { params: { id?: string } }) {
 
     const user = await prisma.user.findUnique({
       where: { id },
-      include: { role: true }, // ✅ Incluimos el rol del usuario
     });
 
     if (!user) {
