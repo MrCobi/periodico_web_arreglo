@@ -11,6 +11,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { loginAction } from '@/actions/auth-action';
 import { useState, useTransition } from "react";
 import { useRouter } from 'next/navigation';
+import { useSession } from "next-auth/react";
+import { getSession } from "next-auth/react"; 
 
 
 export default function SigninForm({
@@ -32,18 +34,20 @@ export default function SigninForm({
       })
 
 
-    async function onSubmit(values: z.infer<typeof loginSchema>) {
-      setError(null);
-      startTransition(async() => {
-        const response = await loginAction(values);
-
-
-        if (response.error) {
-          setError(response.error);
-        } else{
-           //router.push("/api/auth/dashboard");
-        }
-      })
+      async function onSubmit(values: z.infer<typeof loginSchema>) {
+        setError(null);
+        startTransition(async () => {
+          const response = await loginAction(values);
+      
+          if (response.error) {
+            setError(response.error);
+          } else {
+            // Obtén la sesión actualizada
+            const session = await getSession();
+            console.log("Sesión actualizada:", session); // Depuración
+            router.push("/"); // Redirige a la página principal
+          }
+        });
       }
 
     return (

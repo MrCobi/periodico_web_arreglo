@@ -36,7 +36,7 @@ export default function SignupForm() {
         if (response.error) {
           setError(response.error);
         } else{
-         // router.push("../../../../dashboard");
+          router.push("../../../../page.tsx");
         }
       })
       }
