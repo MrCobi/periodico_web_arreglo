@@ -27,9 +27,6 @@ export default function SignupForm() {
         },
       })
 
-
-
-
     async function onSubmit(values: z.infer<typeof SignUpSchema>) {
       setError(null);
       startTransition(async() => {

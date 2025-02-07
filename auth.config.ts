@@ -39,7 +39,7 @@ export default {
           throw new Error("Invalid credentials");
         }
       
-
+        /*
         //verificacion email
         if (!user.emailVerified) {
           const verifyTokenExists = await prisma.verificationToken.findFirst({
@@ -48,7 +48,7 @@ export default {
             },
           })
 
-          //si existe un token l oeliminamos
+          //si existe un token lo eliminamos
           if (verifyTokenExists?.identifier) {
             await prisma.verificationToken.delete({
               where: {
@@ -73,7 +73,7 @@ export default {
           throw new Error("Correo de verificacion pendiente")
 
         }
-
+          */
 
         // Return the user object if everything is valid
         console.log("User authenticated:", user);
