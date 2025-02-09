@@ -30,6 +30,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
     fetchSources(searchParams.language, setLoadingSources, setAvailableSources);
   }, [searchParams.language]);
 
+  
+
   return (
     <form
     onSubmit={handleSearch}

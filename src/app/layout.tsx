@@ -10,6 +10,7 @@ import AuthButton from "@/src/app/api/auth/AuthButton/AuthButton";
 import Image from "next/image";
 import { useState } from "react";
 
+
 export default function RootLayout({
   children,
 }: Readonly<{

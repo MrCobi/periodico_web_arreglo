@@ -48,10 +48,16 @@ const Page = () => {
       setFirstVisit(!savedArticles);
       
     }
-
-    
-
   }, []);
+
+  useEffect(() => {
+    if (urlQuery) {
+      // Actualiza los parámetros de búsqueda con el valor de la URL
+      setSearchParams((prev) => ({ ...prev, q: urlQuery }));
+      // Ejecuta la búsqueda automáticamente
+      handleSearch();
+    }
+  }, [urlQuery]); 
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

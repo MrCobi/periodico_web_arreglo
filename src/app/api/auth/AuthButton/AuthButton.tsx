@@ -5,6 +5,7 @@ import Link from "@/src/app/components/Animation/Link";
 import React from "react";
 import styled from "styled-components";
 import Image from "next/image";
+import router from "next/router";
 
 const AuthButton = () => {
   const { data: session } = useSession();
@@ -19,7 +20,11 @@ const AuthButton = () => {
   };
 
   const handleSignOut = () => {
-    signOut();
+    signOut({ redirect: false }).then(() => {
+      if (typeof window !== "undefined") {
+        router.push("/signin");
+      }
+    });
     handleClose();
   };
 
@@ -158,7 +163,7 @@ const AuthButton = () => {
                 </svg>
                 Notifications
               </button>
-              <button className="value">
+              <button className="value" onClick={handleSignOut}>
                 <svg
                   fill="none"
                   viewBox="0 0 24 25"
@@ -173,7 +178,6 @@ const AuthButton = () => {
                 </svg>
                 Cerrar Sesión
               </button>
-
             </div>
           </StyledWrapper>
         </Menu>
@@ -183,12 +187,26 @@ const AuthButton = () => {
 
   return (
     <>
-      <Link className="mr-4 text-white" href="/api/auth/signin">
-        Login
-      </Link>
-      <Link className="mr-4 text-white" href="/api/auth/signup">
-        Sign Up
-      </Link>
+      <div className="contenedor-botones">
+        <StyledWrapper>
+          <Link
+            href="/api/auth/signin"
+            animated={false}
+            passHref
+            legacyBehavior
+          >
+            <button className="boton-elegante">Login</button>
+          </Link>
+          <Link
+            href="/api/auth/signup"
+            animated={false}
+            passHref
+            legacyBehavior
+          >
+          <button className="boton-elegante">Signup</button>
+          </Link>
+        </StyledWrapper>
+      </div>
     </>
   );
 };
@@ -255,6 +273,54 @@ const StyledWrapper = styled.div`
     transition: 300ms;
     filter: blur(1px);
     transform: scale(0.95, 0.95);
+  }
+
+  .contenedor-botones {
+    display: flex;
+    text-align: center; /* Centra los botones */
+    white-space: nowrap; /* Evita que se vayan a otra línea */
+  }
+
+  .boton-elegante {
+    display: inline-block; /* Permite que los botones estén en línea */
+    padding: 10px 20px; /* Tamaño más pequeño */
+    border: 2px solid #2c2c2c;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-size: 1rem; /* Reducimos el tamaño de la fuente */
+    cursor: pointer;
+    border-radius: 20px; /* Bordes más pequeños */
+    transition: all 0.4s ease;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+    font-weight: bold;
+    margin: 5px; /* Espacio entre botones */
+  }
+
+  .boton-elegante::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0) 70%
+    );
+    transform: scale(0);
+    transition: transform 0.5s ease;
+  }
+
+  .boton-elegante:hover::after {
+    transform: scale(4);
+  }
+
+  .boton-elegante:hover {
+    border-color: #666666;
+    background: #292929;
   }
 `;
 
