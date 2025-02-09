@@ -20,11 +20,7 @@ const AuthButton = () => {
   };
 
   const handleSignOut = () => {
-    signOut({ redirect: false }).then(() => {
-      if (typeof window !== 'undefined') {
-        router.push("/signin");
-      }
-    });
+    signOut();
     handleClose();
   };
 
