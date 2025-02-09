@@ -10,6 +10,7 @@ import NoArticlesError from "../components/NoArticlesError";
 import ArticleForm from "../components/ArticleForm";
 import Pagination from "../components/Pagination";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { useSearchParams } from "next/navigation";
 
 const defaultSearchParams = {
   sources: "",
@@ -28,6 +29,8 @@ const Page = () => {
   const [searchParams, setSearchParams] = useState(defaultSearchParams);
   const [currentPage, setCurrentPage] = useState(1); // Página actual
   const [totalPages, setTotalPages] = useState(1); // Total de páginas
+  const router = useSearchParams();
+  const urlQuery = router.get("q");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -35,15 +38,20 @@ const Page = () => {
       const savedArticles = sessionStorage.getItem("articles");
       const savedCurrentPage = sessionStorage.getItem("currentPage");
       const savedTotalPages = sessionStorage.getItem("totalPages");
-  
-      setSearchParams(savedParams ? JSON.parse(savedParams) : defaultSearchParams);
+
+      setSearchParams(
+        savedParams ? JSON.parse(savedParams) : defaultSearchParams
+      );
       setArticles(savedArticles ? JSON.parse(savedArticles) : []);
       setCurrentPage(savedCurrentPage ? parseInt(savedCurrentPage, 10) : 1);
       setTotalPages(savedTotalPages ? parseInt(savedTotalPages, 10) : 1);
       setFirstVisit(!savedArticles);
+      
     }
+
+    
+
   }, []);
-  
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -54,7 +62,7 @@ const Page = () => {
 
   const handleSearch = async (e?: React.FormEvent | null) => {
     if (e) e.preventDefault();
-  
+
     if (!searchParams.q.trim() && !searchParams.sources) {
       setError(
         "No se han encontrado artículos. Busque por palabra clave o seleccione una fuente."
@@ -62,17 +70,17 @@ const Page = () => {
       setImagePath(getRandomImage());
       return;
     }
-  
+
     setLoading(true);
     setError(null);
-  
+
     try {
       const data = await fetchTopHeadlines({
         ...searchParams,
         pageSize: 100,
         page: 1,
       });
-  
+
       if (!data.articles || data.articles.length === 0) {
         setError(
           "No se han encontrado artículos. Intente una búsqueda diferente."
@@ -81,14 +89,16 @@ const Page = () => {
       } else {
         setArticles(data.articles);
         const totalArticles = data.articles.length;
-        const calculatedTotalPages = Math.ceil(totalArticles / searchParams.pageSize);
+        const calculatedTotalPages = Math.ceil(
+          totalArticles / searchParams.pageSize
+        );
         setTotalPages(calculatedTotalPages);
         sessionStorage.setItem("articles", JSON.stringify(data.articles));
         sessionStorage.setItem("searchParams", JSON.stringify(searchParams));
         sessionStorage.setItem("totalPages", calculatedTotalPages.toString());
         setCurrentPage(1);
         sessionStorage.setItem("currentPage", "1");
-  
+
         // Actualizamos `firstVisit` porque ya se realizó una búsqueda
         setFirstVisit(false);
       }
@@ -99,7 +109,6 @@ const Page = () => {
       setLoading(false);
     }
   };
-  
 
   const getPaginatedArticles = () => {
     const storedArticles = JSON.parse(
@@ -130,15 +139,15 @@ const Page = () => {
     setLoading(true);
     setCurrentPage(page);
     sessionStorage.setItem("currentPage", page.toString());
-  
+
     // Animación personalizada de desplazamiento
     smoothScrollToTop();
-  
+
     setTimeout(() => {
       setLoading(false);
     }, 500);
   };
-  
+
   const getRandomImage = () =>
     `/images/ArticuloError/ArticuloError${
       Math.floor(Math.random() * 3) + 1

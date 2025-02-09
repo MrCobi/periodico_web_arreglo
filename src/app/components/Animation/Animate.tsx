@@ -1,5 +1,3 @@
-// Navitate.tsx
-
 "use client";
 
 import { PropsWithChildren } from "react";
@@ -8,8 +6,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 
 export default function Animate({ children }: PropsWithChildren) {
-  const { pending } = useNavigationTransition();
+  const { pending, isAnimated } = useNavigationTransition(); // Obtener estado de animación
   const pathname = usePathname();
+
+  if (!isAnimated) {
+    return <div className="flex-1">{children}</div>;
+  }
+
   return (
     <AnimatePresence mode="popLayout">
       {!pending && (
