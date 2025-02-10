@@ -78,7 +78,7 @@ export default function DashboardPage() {
                   Información General
                 </Link>
                 <Link
-                  href={`/api/users/edit/${user.username}`}
+                  href={`/users/edit/${user.username}`}
                   className="flex items-center px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-[#30363D] rounded-md"
                 >
                   <svg
@@ -110,7 +110,7 @@ export default function DashboardPage() {
                     />
                     <button
                       className="mt-4 w-full px-4 py-2 text-sm font-medium text-white bg-[#21262D] border border-gray-700 rounded-md hover:bg-[#30363D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      onClick={() => router.push(`/api/users/edit/${user.username}`)}
+                      onClick={() => router.push(`/users/edit/${user.username}`)}
                     >
                       Editar foto de perfil
                     </button>
