@@ -80,7 +80,7 @@ export default function EditUserPage() {
   
       if (!response.ok) throw new Error('Error actualizando usuario');
   
-      router.push('/dashboard');
+      router.push('/api/auth/dashboard');
     } catch (err) {
       setError('Error al guardar cambios');
     }
@@ -95,7 +95,7 @@ export default function EditUserPage() {
     <div className="min-h-screen bg-[#0D1117] p-8">
       <div className="max-w-2xl mx-auto">
         <Link
-          href="/dashboard"
+          href="/api/auth/dashboard"
           className="text-gray-400 hover:text-white mb-4 inline-block"
         >
           ← Volver al dashboard
