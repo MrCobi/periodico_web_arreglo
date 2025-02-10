@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { registerAction } from '@/actions/auth-action';
 import { useState, useTransition } from "react";
 import { useRouter } from 'next/navigation';
+import { getSession } from "next-auth/react";
 
 
 export default function SignupForm() {
@@ -35,8 +36,10 @@ export default function SignupForm() {
 
         if (response.error) {
           setError(response.error);
-        } else{
-          router.push("../../../../page.tsx");
+        } else{ 
+          const session = await getSession();
+            console.log("Sesión actualizada:", session); // Depuración
+            router.push("/");
         }
       })
       }
