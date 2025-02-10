@@ -24,6 +24,8 @@ export default function EditUserPage() {
   useEffect(() => {
     if (status === "loading") return;
 
+    console.log(session)
+
     if (!session || !session.user) {
       setError("Usuario no autenticado");
       setLoading(false);

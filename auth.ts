@@ -17,12 +17,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) { // User is available during sign-in
         token.role = user.role;
         token.username = user.username;
+        token.id = user.id;
       }
       return token
     },
     session({ session, token }) {
-      session.user.role = token.role;
-      session.user.username = token.username ?? undefined;
+      session.user.role = token.role as string;
+      session.user.username = token.username as string;
+      session.user.id = token.id as string;
       return session
     },
   },
