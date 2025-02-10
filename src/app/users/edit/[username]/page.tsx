@@ -24,7 +24,6 @@ export default function EditUserPage() {
   useEffect(() => {
     if (status === "loading") return;
 
-    console.log(session)
 
     if (!session || !session.user) {
       setError("Usuario no autenticado");
@@ -34,12 +33,6 @@ export default function EditUserPage() {
 
     if (session.user.username !== username) {
       setError("No tienes permisos para editar este usuario");
-      console.log(
-        "Session username:",
-        session.user.username,
-        "| URL username:",
-        username
-      );
       setLoading(false);
       return;
     }
@@ -66,7 +59,6 @@ export default function EditUserPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    console.log(user?.id)
   
     try {
       const response = await fetch(`/api/users/edit/${session?.user.id}`, { // ✅ Ruta corregida
