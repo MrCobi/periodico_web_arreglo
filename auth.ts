@@ -16,11 +16,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     jwt({ token, user }) {
       if (user) { // User is available during sign-in
         token.role = user.role;
+        token.username = user.username;
       }
       return token
     },
     session({ session, token }) {
-      session.user.role = token.role
+      session.user.role = token.role;
+      session.user.username = token.username ?? undefined;
       return session
     },
   },
