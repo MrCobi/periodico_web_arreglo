@@ -8,7 +8,7 @@ import { User } from "@/src/interface/user";
 
 export default function EditUserPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, update } = useSession();
   const params = useParams();
   const username = params.username as string; // Obtiene el username de la URL
   const [user, setUser] = useState<User | null>(null);
@@ -58,28 +58,40 @@ export default function EditUserPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
   
     try {
-      const response = await fetch(`/api/users/edit/${session?.user.id}`, { // ✅ Ruta corregida
-        method: 'PUT',
+      // Realiza la solicitud PUT para actualizar el usuario
+      const response = await fetch(`/api/users/edit/${session?.user.id}`, {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...formData,
-          password: formData.password || undefined
+          password: formData.password || undefined,
         }),
       });
   
-      if (!response.ok) throw new Error('Error actualizando usuario');
+      if (!response.ok) throw new Error("Error actualizando usuario");
   
-      router.push('/api/auth/dashboard');
+      // Actualiza la sesión con los nuevos datos
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+        },
+      });
+  
+      // Redirige al dashboard
+      router.push("/api/auth/dashboard");
     } catch (err) {
-      setError('Error al guardar cambios');
+      setError("Error al guardar cambios");
     }
   };
-  
 
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>{error}</div>;
