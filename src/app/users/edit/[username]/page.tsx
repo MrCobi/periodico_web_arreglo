@@ -136,12 +136,10 @@ export default function EditUserPage() {
               Email
             </label>
             <input
-              type="email"
-              name="email"
+              type="text"
               value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 bg-[#0D1117] border border-gray-700 rounded-md text-white focus:ring-2 focus:ring-blue-500"
-              required
+              readOnly
+              className="w-full px-4 py-2 bg-[#0D1117] border border-gray-700 rounded-md text-white focus:ring-2 focus:ring-blue-500 cursor-not-allowed"
             />
           </div>
 
