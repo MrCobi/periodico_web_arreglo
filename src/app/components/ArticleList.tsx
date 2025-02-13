@@ -1,8 +1,7 @@
-// components/ArticleList.tsx
 import React, { useEffect, useState } from "react";
 import { Article } from "../../interface/article";
 import Image from "next/image";
-
+import Link from "next/link";
 
 interface Props {
   articles: Article[];
@@ -14,7 +13,7 @@ export default function ArticleList({ articles }: Props) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowArticles(true);
-    }, 100); // Puedes ajustar el tiempo de retraso
+    }, 100);
 
     return () => clearTimeout(timer);
   }, [articles]);
@@ -33,13 +32,24 @@ export default function ArticleList({ articles }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles && articles.length > 0 ? (
           articles.map((article, index) => (
-            <div
+            <article
               key={index}
-              className={`border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 ${
+              className={`group relative bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:z-10 ${
                 showArticles ? "opacity-100 animate-fadeIn" : "opacity-0"
               }`}
             >
-              <div className="relative">
+              {/* Capa de imagen de fondo en hover */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <Image
+                  src={article.urlToImage || "/images/default_periodico.jpg"}
+                  alt=""
+                  fill
+                  className="object-cover blur-sm brightness-[0.2]"
+                />
+              </div>
+
+              {/* Contenido normal */}
+              <div className="relative h-48">
                 <Image
                   src={article.urlToImage || "/images/default_periodico.jpg"}
                   alt={article.title}
@@ -48,37 +58,91 @@ export default function ArticleList({ articles }: Props) {
                   loading="lazy"
                   placeholder="blur"
                   blurDataURL="/images/default_periodico.jpg"
-                  className="w-full h-48 object-cover"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <h2 className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-lg font-bold p-2">
+                <h2 className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-lg font-bold p-2 line-clamp-2">
                   {article.title}
                 </h2>
               </div>
-              <div className="p-4 bg-white">
-                <p className="text-sm text-gray-700 mb-4">
+
+              {/* Contenido principal */}
+              <div className="relative p-6 transition-colors duration-500 group-hover:bg-transparent">
+                <p className="text-gray-600 mb-4 line-clamp-3 group-hover:text-white group-hover:line-clamp-none transition-all duration-500">
                   {article.description}
                 </p>
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline"
-                >
-                  Leer Mas
-                </a>
-              </div>
-              <div className="p-4 bg-gray-100 flex flex-col justify-between h-full">
-                <div>
-                  <p className="text-sm text-gray-700 mb-4">{article.author}</p>
-                  <p className="text-sm text-gray-700 mb-4">
+                
+                {/* Metadatos */}
+                <div className="flex items-center justify-between text-sm text-gray-500 mb-4 group-hover:text-gray-300">
+                  <span className="flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                    {article.author || 'Anónimo'}
+                  </span>
+                  <span className="flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
                     {formatDate(article.publishedAt)}
-                  </p>
+                  </span>
+                </div>
+
+                {/* Enlaces */}
+                <div className="flex items-center justify-between relative z-10">
+                  <Link 
+                    href={`/sources/${article.source.id}`}
+                    className="text-sm text-gray-500 hover:text-white transition-colors cursor-pointer group-hover:text-gray-300"
+                    aria-label={`Ver más noticias de ${article.source.name}`}
+                  >
+                    {article.source.name || 'Fuente desconocida'}
+                  </Link>
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-blue-600 hover:text-blue-400 transition-colors group-hover:text-blue-400"
+                  >
+                    Leer más
+                    <svg
+                      className="ml-2 w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                      />
+                    </svg>
+                  </a>
                 </div>
               </div>
-            </div>
+            </article>
           ))
         ) : (
-          <p>No hay articulos disponibles.</p>
+          <p>No hay artículos disponibles.</p>
         )}
       </div>
     </div>
