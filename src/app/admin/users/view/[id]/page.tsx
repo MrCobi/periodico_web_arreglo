@@ -8,11 +8,9 @@ import Link from "next/link";
 import { useState } from "react";
 import styled from "styled-components";
 
-
 export default function DashboardPage() {
   const { id } = useParams();
   const [userInfo, setUserInfo] = useState<any>(null);
-  const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(true);
   const router = useRouter();
 
@@ -22,7 +20,6 @@ export default function DashboardPage() {
         const res = await fetch(`/api/users/${id}`);
         if (res.ok) {
           const data = await res.json();
-          console.log("Fetched user:", data);
           setUserInfo(data);
         } else {
           console.error("Error fetching user:", res.status, res.statusText);
@@ -33,7 +30,10 @@ export default function DashboardPage() {
     }
     fetchUser();
   }, [id]);
-  
+
+  useEffect(() => {
+  }, [userInfo]);
+
   if (!userInfo) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -41,7 +41,7 @@ export default function DashboardPage() {
       </div>
     );
   }
-  
+
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -49,25 +49,19 @@ export default function DashboardPage() {
       </div>
     );
   }
-  
-  if (!session) {
-    return null;
-  }
-  
-  // Verifica que userInfo tenga la propiedad user antes de desestructurar
-  if (!userInfo.user) {
+
+ 
+  if (!userInfo.id) {
+    console.log("user not found", userInfo);
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-red-500">Datos del usuario no disponibles</p>
       </div>
     );
   }
+
   
-  const { user } = userInfo;
-  console.log("user:", user);
-
-
-
+  const user = userInfo;
 
   return (
     <div className="min-h-screen bg-[#0D1117]">
@@ -79,7 +73,7 @@ export default function DashboardPage() {
               <input
                 defaultChecked={true}
                 type="checkbox"
-                onClick={() =>  router.push("/admin/users")}
+                onClick={() => router.push("/admin/users")}
                 onChange={() => setIsOpen(!isOpen)}
               />
               <svg
