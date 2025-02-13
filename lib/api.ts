@@ -1,5 +1,6 @@
 import { Article } from "@/src/interface/article";
 import { Source } from "@/src/interface/source";
+import { PrismaClient } from '@prisma/client';
 import prisma from "./db";
 
 
@@ -13,7 +14,7 @@ export async function fetchArticlesBySource(sourceId: string): Promise<Article[]
         apiUrl.searchParams.set('sources', sourceId);
         apiUrl.searchParams.set('pageSize', '6');
         apiUrl.searchParams.set('sortBy', 'popularity');
-        apiUrl.searchParams.set('apiKey', 'da3db1fa448a49d9a84fbdd13e4d6098');
+        apiUrl.searchParams.set('apiKey', 'b8aceaf4472c40d786284bcf90cf6b75');
 
         // console.log('API URL:', apiUrl.toString());
 
@@ -50,7 +51,7 @@ export async function fetchArticlesBySource(sourceId: string): Promise<Article[]
 
 export async function fetchSourceById(id: string): Promise<Source | null> {
     try {
-        const source = await prisma.source.findUnique({
+        const source = await (prisma as any).source.findUnique({
             where: { id },
         });
         console.log("Fetched source:", source);
