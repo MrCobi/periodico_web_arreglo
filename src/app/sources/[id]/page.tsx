@@ -9,14 +9,18 @@ interface Props {
 }
 
 export default async function SourcePage({ params }: Props) {
-  console.log("ID de la fuente:", params);
   const { id: sourceId } = params;
- 
 
   if (!sourceId) {
     notFound();
-  }else{
+  }
+
   const source: Source | null = await fetchSourceById(sourceId);
+
+  if (!source) {
+    notFound();
+  }
+
   const articles: Article[] = await fetchArticlesBySource(sourceId);
 
   return (
@@ -25,10 +29,10 @@ export default async function SourcePage({ params }: Props) {
       <div className="relative bg-gradient-to-r from-blue-900 to-blue-700 py-16">
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{source?.name}</h1>
-          <p className="text-xl text-gray-100 mb-6 max-w-2xl">{source?.description}</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{source.name}</h1>
+          <p className="text-xl text-gray-100 mb-6 max-w-2xl">{source.description}</p>
           <a
-            href={source?.url}
+            href={source.url}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
@@ -96,7 +100,7 @@ export default async function SourcePage({ params }: Props) {
                 <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600">
                   {article.title}
                 </h3>
-                
+
                 {article.description && (
                   <p className="text-gray-600 mb-4 line-clamp-3">
                     {article.description}
@@ -136,10 +140,10 @@ export default async function SourcePage({ params }: Props) {
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                    {new Date(article.publishedAt).toLocaleDateString('es-ES', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric'
+                    {new Date(article.publishedAt).toLocaleDateString("es-ES", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
                     })}
                   </span>
                 </div>
@@ -172,4 +176,4 @@ export default async function SourcePage({ params }: Props) {
       </div>
     </div>
   );
-}}
+}
