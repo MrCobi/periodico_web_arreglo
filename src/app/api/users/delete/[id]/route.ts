@@ -9,7 +9,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
     await prisma.user.delete({ where: { id } });
 
     return NextResponse.json({ message: "Usuario eliminado" }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Error al eliminar usuario" }, { status: 500 });
   }
 }

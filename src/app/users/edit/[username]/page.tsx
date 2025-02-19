@@ -45,7 +45,7 @@ export default function EditUserPage() {
       password: "",
     });
     setLoading(false);
-  }, [session, status, username]);
+  }, [session, username]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -88,7 +88,7 @@ export default function EditUserPage() {
   
       // Redirige al dashboard
       router.push("/api/auth/dashboard");
-    } catch (err) {
+    } catch {
       setError("Error al guardar cambios");
     }
   };

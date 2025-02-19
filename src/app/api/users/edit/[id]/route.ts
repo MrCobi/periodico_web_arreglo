@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import  db  from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { User } from "@/src/interface/user";
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -10,7 +11,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     if (!name || !email || !role) {
       return NextResponse.json({ error: "Todos los campos son obligatorios" }, { status: 400 });
     }
-    let updatedData: any = { name, email, role };
+    const updatedData: Partial<User> = { name, email, role,  };
    
     // Si se proporciona una nueva contraseña, la encriptamos
     if (password) {
@@ -21,7 +22,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       data: updatedData,
     });
     return NextResponse.json(updatedUser, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Error al actualizar el usuario" }, { status: 500 });
   }
 }

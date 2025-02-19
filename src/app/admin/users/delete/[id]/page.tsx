@@ -2,11 +2,13 @@
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { User} from "@/src/interface/user";
+
 
 export default function DeleteUserPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function DeleteUserPage() {
                   <div className="absolute inset-0 bg-red-500/20 rounded-full animate-pulse"></div>
                   <Image
                     src={user.image || "/images/default_periodico.jpg"}
-                    alt={user.name}
+                    alt={user.name || "Usuario"}
                     fill
                     className="rounded-full object-cover border-4 border-red-500/50"
                   />

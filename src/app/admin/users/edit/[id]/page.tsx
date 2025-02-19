@@ -2,12 +2,13 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
+import { User } from "@/src/interface/user";
 
 export default function EditUserPage() {
   const { id } = useParams();
   const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "user" });
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<User | null>(null);
   const [preview, setPreview] = useState("/images/default_periodico.jpg");
   const roles = [
     { value: "user", label: "Usuario" },

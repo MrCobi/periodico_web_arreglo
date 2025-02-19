@@ -3,7 +3,7 @@ export interface Source {
   name: string;        // Nombre de la fuente (ej: "BBC News")
   description: string; // Descripción de la fuente
   url: string;         // URL de la fuente
-  imageUrl?: string;   // URL de la imagen de la fuente
+  imageUrl?: string | null;   // URL de la imagen de la fuente
   category: string;    // Categoría de la fuente (ej: "general", "business", "sports")
   language: string;    // Idioma de la fuente (ej: "en", "es", "de")
   country: string;     // País de origen de la fuente (ej: "us", "gb", "es")

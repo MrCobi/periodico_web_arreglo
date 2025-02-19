@@ -1,16 +1,15 @@
 import { Article } from "@/src/interface/article";
 import { Source } from "@/src/interface/source";
-import { PrismaClient } from '@prisma/client';
 import prisma from "./db";
 
 
 
 export async function fetchArticlesBySource(sourceId: string): Promise<Article[]> {
     try {
+        
         const apiUrl = new URL('https://newsapi.org/v2/everything');
         
         // Configurar parámetros dinámicos
-        const today = new Date().toISOString().split('T')[0];
         apiUrl.searchParams.set('sources', sourceId);
         apiUrl.searchParams.set('pageSize', '6');
         apiUrl.searchParams.set('sortBy', 'popularity');
@@ -32,7 +31,7 @@ export async function fetchArticlesBySource(sourceId: string): Promise<Article[]
             return [];
         }
 
-        return data.articles.map((article: any) => ({
+        return data.articles.map((article: Article) => ({
             sourceId: article.source?.id || sourceId,
             author: article.author || null,
             title: article.title,
@@ -51,7 +50,7 @@ export async function fetchArticlesBySource(sourceId: string): Promise<Article[]
 
 export async function fetchSourceById(id: string): Promise<Source | null> {
     try {
-        const source = await (prisma as any).source.findUnique({
+        const source = await prisma.source.findUnique({
             where: { id },
         });
         console.log("Fetched source:", source);

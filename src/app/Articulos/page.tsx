@@ -11,6 +11,7 @@ import ArticleForm from "../components/ArticleForm";
 import Pagination from "../components/Pagination";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useSearchParams } from "next/navigation";
+import { useCallback } from "react";
 
 const defaultSearchParams = {
   sources: "",
@@ -50,14 +51,7 @@ const Page = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (urlQuery) {
-      // Actualiza los parámetros de búsqueda con el valor de la URL
-      setSearchParams((prev) => ({ ...prev, q: urlQuery }));
-      // Ejecuta la búsqueda automáticamente
-      handleSearch();
-    }
-  }, [urlQuery]); 
+
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -66,9 +60,9 @@ const Page = () => {
     setSearchParams((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSearch = async (e?: React.FormEvent | null) => {
+  const handleSearch = useCallback(async (e?: React.FormEvent | null) => {
     if (e) e.preventDefault();
-
+  
     if (!searchParams.q.trim() && !searchParams.sources) {
       setError(
         "No se han encontrado artículos. Busque por palabra clave o seleccione una fuente."
@@ -76,17 +70,17 @@ const Page = () => {
       setImagePath(getRandomImage());
       return;
     }
-
+  
     setLoading(true);
     setError(null);
-
+  
     try {
       const data = await fetchTopHeadlines({
         ...searchParams,
         pageSize: 100,
         page: 1,
       });
-
+  
       if (!data.articles || data.articles.length === 0) {
         setError(
           "No se han encontrado artículos. Intente una búsqueda diferente."
@@ -104,17 +98,37 @@ const Page = () => {
         sessionStorage.setItem("totalPages", calculatedTotalPages.toString());
         setCurrentPage(1);
         sessionStorage.setItem("currentPage", "1");
-
+  
         // Actualizamos `firstVisit` porque ya se realizó una búsqueda
         setFirstVisit(false);
       }
-    } catch (err) {
+    } catch {
       setError("Error fetching news");
       setImagePath(getRandomImage());
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchParams]); // Add dependencies here
+
+  useEffect(() => {
+    if (urlQuery) {
+      // Actualiza los parámetros de búsqueda con el valor de la URL
+      setSearchParams((prev) => ({ ...prev, q: urlQuery }));
+      // Ejecuta la búsqueda automáticamente
+      handleSearch();
+    }
+  }, [urlQuery, handleSearch]); 
+  
+  // ... other code ...
+  
+  useEffect(() => {
+    if (urlQuery) {
+      // Actualiza los parámetros de búsqueda con el valor de la URL
+      setSearchParams((prev) => ({ ...prev, q: urlQuery }));
+      // Ejecuta la búsqueda automáticamente
+      handleSearch();
+    }
+  }, [urlQuery, handleSearch]); // Add handleSearch to the dependency array
 
   const getPaginatedArticles = () => {
     const storedArticles = JSON.parse(

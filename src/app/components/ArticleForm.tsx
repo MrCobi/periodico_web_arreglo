@@ -88,7 +88,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           }
           onChange={(_, newValue) => {
             handleInputChange({
-              target: { name: "sources", value: newValue?.id || "" } as any,
+              target: { name: "sources", value: newValue?.id || "" },
             } as React.ChangeEvent<HTMLInputElement>);
           }}
           loading={loadingSources}

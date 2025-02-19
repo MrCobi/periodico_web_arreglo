@@ -5,7 +5,6 @@ import Link from "@/src/app/components/Animation/Link";
 import React from "react";
 import styled from "styled-components";
 import Image from "next/image";
-import router from "next/router";
 
 const AuthButton = () => {
   const { data: session } = useSession();

@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { fetchSourceById, fetchArticlesBySource } from "@/lib/api";
 import { Source } from "@/src/interface/source";
 import { Article } from "@/src/interface/article";
@@ -8,7 +7,13 @@ interface Props {
   params: { id: string };
 }
 
-const SourceImage = ({ imageUrl, name }: { imageUrl?: string; name: string }) => {
+const SourceImage = ({
+  imageUrl,
+  name,
+}: {
+  imageUrl?: string;
+  name: string;
+}) => {
   return (
     <div className="relative w-48 h-48 shrink-0">
       <div className="rounded-full overflow-hidden border-4 border-white shadow-xl">
@@ -20,7 +25,8 @@ const SourceImage = ({ imageUrl, name }: { imageUrl?: string; name: string }) =>
             height={200}
             className="w-full h-full object-cover"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/images/default_periodico.jpg';
+              (e.target as HTMLImageElement).src =
+                "/images/default_periodico.jpg";
             }}
           />
         ) : (
@@ -58,10 +64,9 @@ export default async function SourcePage({ params }: Props) {
     );
   }
 
-
   const source: Source | null = await fetchSourceById(sourceId);
 
- if (!source) {
+  if (!source) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <h1 className="text-3xl font-bold text-gray-900">
@@ -111,7 +116,9 @@ export default async function SourcePage({ params }: Props) {
           </div>
 
           {/* Componente SourceImage */}
-          <SourceImage imageUrl={source.imageUrl} name={source.name} />
+          {source.imageUrl !== null && (
+            <SourceImage imageUrl={source.imageUrl} name={source.name} />
+          )}
           <h1>{source.imageUrl}</h1>
         </div>
       </div>
@@ -119,7 +126,9 @@ export default async function SourcePage({ params }: Props) {
       {/* Articles Section */}
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Artículos Destacados</h2>
+          <h2 className="text-3xl font-bold text-gray-900">
+            Artículos Destacados
+          </h2>
           <div className="mt-2 h-1 w-20 bg-blue-600" />
         </div>
 

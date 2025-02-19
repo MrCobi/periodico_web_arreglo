@@ -1,16 +1,15 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
 import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import styled from "styled-components";
+import { User } from "@/src/interface/user";
 
 export default function DashboardPage() {
   const { id } = useParams();
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<User | null>(null);
   const [isOpen, setIsOpen] = useState(true);
   const router = useRouter();
 

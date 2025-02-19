@@ -9,13 +9,14 @@ interface Props {
 }
 
 export default async function SourcePage({ params }: Props) {
-  const { id: sourceId } = await params;
-  const source: Source | null = await fetchSourceById(sourceId);
+  console.log("ID de la fuente:", params);
+  const { id: sourceId } = params;
+ 
 
-  if (!source) {
+  if (!sourceId) {
     notFound();
-  }
-
+  }else{
+  const source: Source | null = await fetchSourceById(sourceId);
   const articles: Article[] = await fetchArticlesBySource(sourceId);
 
   return (
@@ -24,10 +25,10 @@ export default async function SourcePage({ params }: Props) {
       <div className="relative bg-gradient-to-r from-blue-900 to-blue-700 py-16">
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{source.name}</h1>
-          <p className="text-xl text-gray-100 mb-6 max-w-2xl">{source.description}</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{source?.name}</h1>
+          <p className="text-xl text-gray-100 mb-6 max-w-2xl">{source?.description}</p>
           <a
-            href={source.url}
+            href={source?.url}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
@@ -171,4 +172,4 @@ export default async function SourcePage({ params }: Props) {
       </div>
     </div>
   );
-}
+}}

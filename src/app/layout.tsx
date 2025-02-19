@@ -1,5 +1,4 @@
 "use client";
-import type { Metadata } from "next";
 import "./globals.css";
 import { useRouter } from "next/navigation";
 import Transitions from "./components/Animation/context";
