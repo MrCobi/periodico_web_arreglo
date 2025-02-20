@@ -3,9 +3,8 @@ import { Source } from "@/src/interface/source";
 import { Article } from "@/src/interface/article";
 import Image from "next/image";
 
-interface Props {
-  params: { id: string };
-}
+export type Props = Promise<{ id: string }>;
+
 
 const SourceImage = ({
   imageUrl,
@@ -51,8 +50,9 @@ const SourceImage = ({
   );
 };
 
-export default async function SourcePage({ params }: Props) {
-  const { id: sourceId } = params;
+export default async function SourcePage(props: { params: Props}) {
+  console.log("params", props.params);
+  const { id: sourceId } = await props.params;
 
   if (!sourceId || sourceId.trim() === "") {
     return (
