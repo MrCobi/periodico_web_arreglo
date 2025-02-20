@@ -4,12 +4,14 @@ import { Source } from "@/src/interface/source";
 import { Article } from "@/src/interface/article";
 import Image from "next/image";
 
-interface Props {
-  params: { id: string };
+interface PageProps {
+  params: { id: string }; // Definimos el tipo correctamente
 }
 
-export default async function SourcePage({ params }: Props) {
-  const { id: sourceId } = params;
+export default async function SourcePage({ params }: PageProps) {
+  const { id: sourceId } =  params;
+
+  console.log("Source ID:", sourceId);
 
   if (!sourceId) {
     notFound();
