@@ -1,67 +1,90 @@
-import { notFound } from "next/navigation";
 import { fetchSourceById, fetchArticlesBySource } from "@/lib/api";
 import { Source } from "@/src/interface/source";
 import { Article } from "@/src/interface/article";
-import Image from "next/image";
+import { SourceImage } from "./SourceImage.client";
+import Image from 'next/image';
 
-interface PageProps {
-  params: { id: string }; // Definimos el tipo correctamente
-}
+export type Props = { params: { id: string } };
 
-export default async function SourcePage({ params }: PageProps) {
-  const { id: sourceId } =  params;
+export default async function SourcePage({ params }: Props) {
+  // Accede directamente a params.id sin desestructuración
+  const { id: sourceId } = await Promise.resolve(params);
 
-  console.log("Source ID:", sourceId);
-
-  
-  if (!sourceId) {
-    notFound();
+  if (!sourceId || sourceId.trim() === "") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <h1 className="text-3xl font-bold text-gray-900">
+          ID de fuente no proporcionado.
+        </h1>
+      </div>
+    );
   }
 
   const source: Source | null = await fetchSourceById(sourceId);
 
   if (!source) {
-    notFound();
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <h1 className="text-3xl font-bold text-gray-900">
+          No se encontró la fuente solicitada.
+        </h1>
+      </div>
+    );
   }
 
   const articles: Article[] = await fetchArticlesBySource(sourceId);
+
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-blue-900 to-blue-700 py-16">
         <div className="absolute inset-0 bg-black/30" />
-        <div className="relative container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{source.name}</h1>
-          <p className="text-xl text-gray-100 mb-6 max-w-2xl">{source.description}</p>
-          <a
-            href={source.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-          >
-            Visitar sitio web
-            <svg
-              className="ml-2 w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <div className="relative container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
+          {/* Texto a la izquierda */}
+          <div className="flex-1">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              {source.name}
+            </h1>
+            <p className="text-xl text-gray-100 mb-6 max-w-2xl">
+              {source.description}
+            </p>
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-          </a>
+              Visitar sitio web
+              <svg
+                className="ml-2 w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
+          </div>
+
+          {/* Componente SourceImage */}
+          {source.imageUrl !== null && (
+            <SourceImage imageUrl={source.imageUrl} name={source.name} />
+          )}
         </div>
       </div>
 
       {/* Articles Section */}
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Artículos Destacados</h2>
+          <h2 className="text-3xl font-bold text-gray-900">
+            Artículos Destacados
+          </h2>
           <div className="mt-2 h-1 w-20 bg-blue-600" />
         </div>
 
