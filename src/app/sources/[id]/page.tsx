@@ -2,7 +2,8 @@ import { fetchSourceById, fetchArticlesBySource } from "@/lib/api";
 import { Source } from "@/src/interface/source";
 import { Article } from "@/src/interface/article";
 import { SourceImage } from "./SourceImage.client";
-import Image from 'next/image';
+import { StarRating } from "@/src/app/components/StarRating.client";
+import Image from "next/image";
 
 export type Props = { params: { id: string } };
 
@@ -48,11 +49,15 @@ export default async function SourcePage({ params }: Props) {
             <p className="text-xl text-gray-100 mb-6 max-w-2xl">
               {source.description}
             </p>
+
+            {/* Añade el componente StarRating */}
+            <StarRating sourceId={sourceId} />
+
             <a
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              className="inline-flex items-center bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors mt-4"
             >
               Visitar sitio web
               <svg
@@ -170,11 +175,14 @@ export default async function SourcePage({ params }: Props) {
                           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      {new Date(article.publishedAt).toLocaleDateString("es-ES", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })}
+                      {new Date(article.publishedAt).toLocaleDateString(
+                        "es-ES",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        }
+                      )}
                     </span>
                   </div>
 
