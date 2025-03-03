@@ -7,18 +7,47 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import styled from "styled-components";
+import { Source } from "@/src/interface/source";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(true);
   const router = useRouter();
 
+  const [favoriteSources, setFavoriteSources] = useState<Source[]>([]);
+
   useEffect(() => {
-    if (status !== "loading" && !session) {
-      console.log("No autenticado");
-      router.push("/api/auth/signin");
-    }
-  }, [session, status, router]);
+    const loadFavorites = async () => {
+      if (session?.user?.id) {
+        try {
+          // Obtener los IDs de los periódicos favoritos
+          const favoritesResponse = await fetch("/api/favorites/list");
+          const favoritesData = await favoritesResponse.json();
+          const favoriteIds = favoritesData.favoriteIds;
+    
+          // Obtener los detalles de los periódicos favoritos
+          const detailsResponse = await fetch("/api/sources/details", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ sourceIds: favoriteIds }), // Asegúrate de que el cuerpo sea un JSON válido
+          });
+    
+          if (!detailsResponse.ok) {
+            throw new Error("Error al obtener detalles de los periódicos");
+          }
+    
+          const detailsData = await detailsResponse.json();
+          setFavoriteSources(detailsData.sources || []);
+        } catch (error) {
+          console.error("Error al cargar favoritos:", error);
+        }
+      }
+    };
+
+    loadFavorites();
+  }, [session]);
 
   if (status === "loading") {
     return (
@@ -110,7 +139,9 @@ export default function DashboardPage() {
                     />
                     <button
                       className="mt-4 w-full px-4 py-2 text-sm font-medium text-white bg-[#21262D] border border-gray-700 rounded-md hover:bg-[#30363D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      onClick={() => router.push(`/users/edit/${user.username}`)}
+                      onClick={() =>
+                        router.push(`/users/edit/${user.username}`)
+                      }
                     >
                       Editar foto de perfil
                     </button>
@@ -123,7 +154,7 @@ export default function DashboardPage() {
                     {user?.name || "Nombre del usuario"}
                   </h1>
                   <div className="text-gray-400 mb-6">
-                    @{user?.username || "username"} 
+                    @{user?.username || "username"}
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-center text-gray-300">
@@ -150,22 +181,19 @@ export default function DashboardPage() {
 
                   <div className="mt-8">
                     <h2 className="text-xl font-semibold text-white mb-4">
-                      Periodicos suscritos
+                      Periódicos favoritos
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {["Repo 1", "Repo 2", "Repo 3", "Repo 4"].map(
-                        (repo, index) => (
-                          <div
-                            key={index}
-                            className="p-4 bg-[#21262D] rounded-lg border border-gray-700"
-                          >
-                            <h3 className="text-blue-400 font-medium mb-2">
-                              {repo}
-                            </h3>
-                            <p className="text-gray-400 text-sm">Público</p>
-                          </div>
-                        )
-                      )}
+                      {favoriteSources.map((source) => (
+                        <div
+                          key={source.id}
+                          className="p-4 bg-[#21262D] rounded-lg border border-gray-700"
+                        >
+                          <h3 className="text-blue-400 font-medium mb-2">
+                            {source.name}
+                          </h3>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
