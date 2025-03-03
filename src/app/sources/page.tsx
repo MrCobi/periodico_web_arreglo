@@ -17,7 +17,7 @@ async function fetchAllSources(): Promise<Source[]> {
 export default async function SourcesPage() {
   // Obtener todas las fuentes
   const sources = await fetchAllSources();
-
+  
   // Pasa los datos al Client Component
   return <SourcesList sources={sources} />;
 }
