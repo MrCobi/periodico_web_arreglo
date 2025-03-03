@@ -37,53 +37,60 @@ export default async function SourcePage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
+      {/* Hero Section - Modificado para mejor distribución */}
       <div className="relative bg-gradient-to-r from-blue-900 to-blue-700 py-16">
         <div className="absolute inset-0 bg-black/30" />
-        <div className="relative container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
-          {/* Texto a la izquierda */}
-          <div className="flex-1">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              {source.name}
-            </h1>
-            <p className="text-xl text-gray-100 mb-6 max-w-2xl">
-              {source.description}
-            </p>
+        <div className="relative container mx-auto px-4">
+          {/* Layout modificado: contenedor principal con mejor distribución */}
+          <div className="flex flex-col md:flex-row items-center gap-8 max-w-5xl mx-auto">
+            {/* Texto a la izquierda */}
+            <div className="flex-1">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                {source.name}
+              </h1>
+              <p className="text-xl text-gray-100 mb-6 max-w-2xl">
+                {source.description}
+              </p>
 
-            {/* Añade el componente StarRating */}
-            <StarRating sourceId={sourceId} />
+              {/* Componente StarRating con ancho limitado */}
+              <div className="max-w-xs">
+                <StarRating sourceId={sourceId} />
+              </div>
 
-            <a
-              href={source.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors mt-4"
-            >
-              Visitar sitio web
-              <svg
-                className="ml-2 w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors mt-4"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                />
-              </svg>
-            </a>
-          </div>
+                Visitar sitio web
+                <svg
+                  className="ml-2 w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </a>
+            </div>
 
-          {/* Componente SourceImage */}
-          {source.imageUrl !== null && (
-            <SourceImage imageUrl={source.imageUrl} name={source.name} />
-          )}
+            {/* Componente SourceImage - Ahora más centrado */}
+            {source.imageUrl !== null && (
+              <div className="md:ml-4">
+                <SourceImage imageUrl={source.imageUrl} name={source.name} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Articles Section */}
+      {/* Articles Section - Sin cambios */}
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900">
