@@ -23,6 +23,7 @@ model User {
   role          String          @default("user")
   accounts      Account[]
   favoriteSources FavoriteSource[]
+  ratings       Rating[]        // Relación con Rating
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -68,6 +69,7 @@ model Source {
   language    String
   country     String
   favoriteSources FavoriteSource[]
+  ratings     Rating[]        // Relación con Rating
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -79,4 +81,18 @@ model FavoriteSource {
   sourceId  String
 
   @@id([userId, sourceId])
+}
+
+model Rating {
+  id        String  @id @default(cuid())
+  userId    String  // ID del usuario que hizo la valoración
+  sourceId  String  // ID de la fuente (periódico) valorada
+  value     Int     // Valoración (1-5)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User    @relation(fields: [userId], references: [id])
+  source    Source  @relation(fields: [sourceId], references: [id])
+
+  @@unique([userId, sourceId]) // Un usuario solo puede valorar una fuente una vez
 }
