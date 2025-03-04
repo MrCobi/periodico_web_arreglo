@@ -1,26 +1,21 @@
+// src/app/api/auth/signin/page.tsx
+"use client"; // Añade esta línea
+
 import SigninForm from "./_components/signin-form";
+import { useSearchParams } from "next/navigation";
 
-export default async function SignInPage(
-  props:{
-    searchParams: Promise<{verified: string}>
-  }
-) {
-  const searchParams = await props.searchParams;
-  const isVerified = searchParams.verified === "true";
+export default function SignInPage() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+
   return (
-  <main className="mt-4">
-    <div className="container">
-      <h1 className="text-3xl font-bold tracking-tight">Sign In</h1>
-      <div className="h-1 bg-muted my-4"/>
-      {
-        isVerified && (
-        <p className="text-success">Email verified</p>
+    <div>
+      <SigninForm isVerified={false} />
+      {error === "auth_error" && (
+        <p style={{ color: "red" }}>
+          Credenciales inválidas. Verifique su email y contraseña.
+        </p>
       )}
-    {/* SignInForm */}
-      <SigninForm isVerified={isVerified}/>
-     
-
     </div>
-    </main>
   );
 }

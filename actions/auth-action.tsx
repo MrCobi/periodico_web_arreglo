@@ -11,25 +11,32 @@ import { Prisma } from "@prisma/client";
 
 export const loginAction = async (values: z.infer<typeof loginSchema>) => {
   try {
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       email: values.email,
       password: values.password,
       redirect: false,
     });
-    return { success: true };
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return { error: "Invalid credentials" };
-        default:
-          return { error: "Something went wrong" };
-      }
+
+    // Manejar resultado manualmente
+    if (result?.error) {
+      return { 
+        error: "Credenciales inválidas. Verifique su email y contraseña." 
+      };
     }
-    return { error: "Internal Server Error" };
+
+    return { success: true };
+
+  } catch (error) {
+    // Captura específicamente el error de NextAuth
+    if (error instanceof AuthError && error.type === "CredentialsSignin") {
+      return { error: "Credenciales inválidas. Verifique su email y contraseña." };
+    }
+
+    // Otros errores
+    console.error("Error interno:", error);
+    return { error: "Error interno del servidor" };
   }
 };
-
 export const registerAction = async (values: z.infer<typeof SignUpSchema>) => {
   try {
     const { data, success } = SignUpSchema.safeParse(values);
