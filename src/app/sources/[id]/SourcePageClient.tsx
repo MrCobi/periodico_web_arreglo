@@ -24,24 +24,36 @@ export default function SourcePageClient({
   articles: initialArticles,
 }: SourcePageClientProps) {
   const [articles, setArticles] = useState<Article[]>(initialArticles);
-  const [sortBy, setSortBy] = useState<
-    "popularity" | "publishedAt" | "relevancy"
-  >("popularity");
+  const [sortBy, setSortBy] = useState<"popularity" | "publishedAt" | "relevancy">("popularity");
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // Guarda inicialmente los artículos en cache para "popularidad" si no existen
+  useEffect(() => {
+    const cacheKey = `articles_${source.id}_popularity`;
+    if (!sessionStorage.getItem(cacheKey)) {
+      sessionStorage.setItem(cacheKey, JSON.stringify(initialArticles));
+    }
+  }, [source.id, initialArticles]);
+
   const loadArticles = async (order: typeof sortBy) => {
-    const articles = await fetchArticlesBySource(source.id, order);
-    setArticles(articles);
+    const cacheKey = `articles_${source.id}_${order}`;
+    const cachedArticles = sessionStorage.getItem(cacheKey);
+
+    if (cachedArticles) {
+      // Si ya están en cache, los usamos sin hacer petición
+      setArticles(JSON.parse(cachedArticles));
+    } else {
+      // Si no, se hace la petición y se almacena en cache
+      const fetchedArticles = await fetchArticlesBySource(source.id, order);
+      setArticles(fetchedArticles);
+      sessionStorage.setItem(cacheKey, JSON.stringify(fetchedArticles));
+    }
   };
 
   const rotateSort = () => {
     setIsAnimating(true);
 
-    const sortOrder: (typeof sortBy)[] = [
-      "relevancy",
-      "popularity",
-      "publishedAt",
-    ];
+    const sortOrder: (typeof sortBy)[] = ["relevancy", "popularity", "publishedAt"];
     const currentIndex = sortOrder.indexOf(sortBy);
     const nextIndex = (currentIndex + 1) % sortOrder.length;
     const nextSort = sortOrder[nextIndex];
@@ -92,15 +104,13 @@ export default function SourcePageClient({
               </a>
             </div>
 
-            {/* Componente SourceImage - Tamaño aumentado */}
             {source.imageUrl !== null && (
               <div className="md:ml-4">
-                <div className="w-64 h-64 rounded-full md:w-80 md:h-80 rounded-full">
-                  {/* Pasar el prop size al componente */}
+                <div className="w-64 h-64 md:w-80 md:h-80 rounded-full">
                   <SourceImage
                     imageUrl={source.imageUrl}
                     name={source.name}
-                    size="xlarge" // Asegúrate de pasar el prop size
+                    size="xlarge"
                   />
                 </div>
               </div>
@@ -267,14 +277,11 @@ export default function SourcePageClient({
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                           />
                         </svg>
-                        {new Date(article.publishedAt).toLocaleDateString(
-                          "es-ES",
-                          {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          }
-                        )}
+                        {new Date(article.publishedAt).toLocaleDateString("es-ES", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })}
                       </time>
                     </div>
 

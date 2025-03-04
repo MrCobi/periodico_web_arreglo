@@ -12,22 +12,48 @@ interface SourcesListProps {
 
 export default function SourcesList({ sources }: SourcesListProps) {
   const { data: session } = useSession();
-  const [selectedLanguage, setSelectedLanguage] = useState("es");
+
+  // Estados con valores por defecto
+  const [selectedLanguage, setSelectedLanguage] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [isLoaded, setIsLoaded] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set()); // Estado para favoritos
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [isLoaded, setIsLoaded] = useState(false);
   const sourcesPerPage = 9;
 
+  // Cargar los valores guardados del sessionStorage solo al montar el componente
   useEffect(() => {
+    const savedLanguage = sessionStorage.getItem("sources_selectedLanguage");
+    const savedSearchTerm = sessionStorage.getItem("sources_searchTerm");
+    const savedCurrentPage = sessionStorage.getItem("sources_currentPage");
+
+    if (savedLanguage !== null) setSelectedLanguage(savedLanguage);
+    if (savedSearchTerm !== null) setSearchTerm(savedSearchTerm);
+    if (savedCurrentPage !== null) setCurrentPage(Number(savedCurrentPage));
+
     setIsLoaded(true);
   }, []);
 
+  // Guardar en sessionStorage cada vez que se actualicen los estados relevantes
   useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedLanguage, searchTerm]);
+    sessionStorage.setItem("sources_selectedLanguage", selectedLanguage);
+    sessionStorage.setItem("sources_searchTerm", searchTerm);
+    sessionStorage.setItem("sources_currentPage", currentPage.toString());
+  }, [selectedLanguage, searchTerm, currentPage]);
 
-  // Cargar el estado inicial de favoritos
+  // Manejar el cambio de idioma y reiniciar currentPage solo cuando el usuario interactúa
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedLanguage(e.target.value);
+    setCurrentPage(1); // Reiniciamos la página al cambiar el filtro
+  };
+
+  // Manejar el cambio en el input de búsqueda y reiniciar currentPage
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reiniciamos la página al cambiar el término de búsqueda
+  };
+
+  // Cargar favoritos desde la API
   useEffect(() => {
     const loadFavorites = async () => {
       if (session?.user?.id) {
@@ -38,10 +64,9 @@ export default function SourcesList({ sources }: SourcesListProps) {
               "Content-Type": "application/json",
             },
           });
-
           if (response.ok) {
             const data = await response.json();
-            setFavorites(new Set(data.favoriteIds)); // Actualiza el estado con los IDs de los favoritos
+            setFavorites(new Set(data.favoriteIds));
           } else {
             console.error("Error al cargar favoritos");
           }
@@ -52,46 +77,9 @@ export default function SourcesList({ sources }: SourcesListProps) {
     };
 
     loadFavorites();
-  }, [session]); // Ejecuta este efecto cuando la sesión cambie
+  }, [session]);
 
-  // Manejar el clic en la estrella
-  const handleFavoriteClick = async (sourceId: string) => {
-    if (!session?.user?.id) {
-      alert("Debes iniciar sesión para agregar a favoritos");
-      return;
-    }
-
-    try {
-      if (favorites.has(sourceId)) {
-        // Eliminar de favoritos
-        await fetch("/api/favorites/remove", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ sourceId }),
-        });
-        setFavorites((prev) => {
-          const newFavorites = new Set(prev);
-          newFavorites.delete(sourceId);
-          return newFavorites;
-        });
-      } else {
-        // Agregar a favoritos
-        await fetch("/api/favorites/add", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ sourceId }),
-        });
-        setFavorites((prev) => new Set(prev).add(sourceId));
-      }
-    } catch (error) {
-      console.error("Error al actualizar favoritos:", error);
-    }
-  };
-
+  // Filtrado de fuentes según idioma y término de búsqueda
   const filteredSources = sources.filter((source) => {
     const matchesLanguage =
       selectedLanguage === "all" || source.language === selectedLanguage;
@@ -102,7 +90,6 @@ export default function SourcesList({ sources }: SourcesListProps) {
   });
 
   const totalPages = Math.ceil(filteredSources.length / sourcesPerPage);
-
   const currentSources = filteredSources.slice(
     (currentPage - 1) * sourcesPerPage,
     currentPage * sourcesPerPage
@@ -138,6 +125,37 @@ export default function SourcesList({ sources }: SourcesListProps) {
     return flags[code] || "🌐";
   };
 
+  // Manejador para favoritos (sin cambios)
+  const handleFavoriteClick = async (sourceId: string) => {
+    if (!session?.user?.id) {
+      alert("Debes iniciar sesión para agregar a favoritos");
+      return;
+    }
+    try {
+      if (favorites.has(sourceId)) {
+        await fetch("/api/favorites/remove", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sourceId }),
+        });
+        setFavorites((prev) => {
+          const newFav = new Set(prev);
+          newFav.delete(sourceId);
+          return newFav;
+        });
+      } else {
+        await fetch("/api/favorites/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sourceId }),
+        });
+        setFavorites((prev) => new Set(prev).add(sourceId));
+      }
+    } catch (error) {
+      console.error("Error al actualizar favoritos:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50 py-16">
       <div className="container mx-auto px-4">
@@ -170,7 +188,7 @@ export default function SourcesList({ sources }: SourcesListProps) {
                   id="language"
                   name="language"
                   value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  onChange={handleLanguageChange}
                   className="w-full p-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white"
                 >
                   <option value="all">Todos los idiomas</option>
@@ -197,7 +215,7 @@ export default function SourcesList({ sources }: SourcesListProps) {
                     id="search"
                     type="text"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchChange}
                     className="w-full p-4 pl-12 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     placeholder="Nombre del periódico..."
                   />
@@ -221,7 +239,6 @@ export default function SourcesList({ sources }: SourcesListProps) {
             </div>
           </div>
         </div>
-
         <div className="mt-8">
           <p className="text-gray-600 mb-6 text-center">
             Mostrando{" "}
@@ -274,7 +291,6 @@ export default function SourcesList({ sources }: SourcesListProps) {
                     {getLanguageName(source.language)}
                   </div>
 
-                  {/* Botón de estrella para favoritos */}
                   <button
                     onClick={() => handleFavoriteClick(source.id)}
                     className="absolute top-4 left-4 bg-white/90 p-2 rounded-full text-xl hover:bg-white transition-all"
