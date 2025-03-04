@@ -31,7 +31,12 @@ export default async function SourcePage({ params }: Props) {
     );
   }
 
-  const articles: Article[] = await fetchArticlesBySource(sourceId);
+  // Modificación clave: añadir parámetros de orden e idioma
+  const articles: Article[] = await fetchArticlesBySource(
+    sourceId,
+    "popularity", // Orden predeterminado
+    source.language // Idioma de la fuente
+  );
 
   return <SourcePageClient source={source} articles={articles} />;
 }
