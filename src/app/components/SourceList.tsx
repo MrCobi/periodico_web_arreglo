@@ -13,35 +13,51 @@ interface SourcesListProps {
 export default function SourcesList({ sources }: SourcesListProps) {
   const { data: session } = useSession();
 
-  // Estados con valores por defecto
-  const [selectedLanguage, setSelectedLanguage] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  // Estados inicializados desde sessionStorage
+  const [selectedLanguage, setSelectedLanguage] = useState(() => {
+    return sessionStorage.getItem("sources_selectedLanguage") || "all";
+  });
+  
+  const [searchTerm, setSearchTerm] = useState(() => {
+    return sessionStorage.getItem("sources_searchTerm") || "";
+  });
+  
+  const [currentPage, setCurrentPage] = useState(() => {
+    return Number(sessionStorage.getItem("sources_currentPage")) || 1;
+  });
+
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoaded, setIsLoaded] = useState(false);
   const sourcesPerPage = 9;
 
-  // Cargar los valores guardados del sessionStorage solo al montar el componente
-  useEffect(() => {
-    const savedLanguage = sessionStorage.getItem("sources_selectedLanguage");
-    const savedSearchTerm = sessionStorage.getItem("sources_searchTerm");
-    const savedCurrentPage = sessionStorage.getItem("sources_currentPage");
-
-    if (savedLanguage !== null) setSelectedLanguage(savedLanguage);
-    if (savedSearchTerm !== null) setSearchTerm(savedSearchTerm);
-    if (savedCurrentPage !== null) setCurrentPage(Number(savedCurrentPage));
-
-    setIsLoaded(true);
-  }, []);
-
-  // Guardar en sessionStorage cada vez que se actualicen los estados relevantes
+  // Sincronizar estados con sessionStorage
   useEffect(() => {
     sessionStorage.setItem("sources_selectedLanguage", selectedLanguage);
     sessionStorage.setItem("sources_searchTerm", searchTerm);
     sessionStorage.setItem("sources_currentPage", currentPage.toString());
   }, [selectedLanguage, searchTerm, currentPage]);
 
-  // Manejar el cambio de idioma y reiniciar currentPage solo cuando el usuario interactúa
+  // Cargar favoritos
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch("/api/favorites/list");
+          if (response.ok) {
+            const data = await response.json();
+            setFavorites(new Set(data.favoriteIds));
+            setIsLoaded(true);
+          }
+        } catch (error) {
+          console.error("Error cargando favoritos:", error);
+          setIsLoaded(true);
+        }
+      }
+    };
+    loadFavorites();
+  }, [session]);
+
+  // Manejar el cambio de idioma y reiniciar currentPage
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedLanguage(e.target.value);
     setCurrentPage(1); // Reiniciamos la página al cambiar el filtro
@@ -239,6 +255,7 @@ export default function SourcesList({ sources }: SourcesListProps) {
             </div>
           </div>
         </div>
+
         <div className="mt-8">
           <p className="text-gray-600 mb-6 text-center">
             Mostrando{" "}
