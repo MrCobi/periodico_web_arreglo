@@ -3,17 +3,19 @@ import { Source } from "@/src/interface/source";
 import prisma from "./db";
 
 export async function fetchArticlesBySource(
-  sourceId: string,
-  sortBy: string = "popularity" // Parámetro opcional con valor por defecto
-): Promise<Article[]> {
-  try {
-    const apiUrl = new URL("https://newsapi.org/v2/everything");
-
-    // Configurar parámetros dinámicos
-    apiUrl.searchParams.set("sources", sourceId);
-    apiUrl.searchParams.set("pageSize", "6");
-    apiUrl.searchParams.set("sortBy", sortBy); // Usar el parámetro sortBy
-    apiUrl.searchParams.set("apiKey", "b8aceaf4472c40d786284bcf90cf6b75");
+    sourceId: string,
+    sortBy: string = "popularity",
+    language: string = "es" // Nuevo parámetro para el idioma
+  ): Promise<Article[]> {
+    try {
+      const apiUrl = new URL("https://newsapi.org/v2/everything");
+  
+      // Configurar parámetros dinámicos
+      apiUrl.searchParams.set("sources", sourceId);
+      apiUrl.searchParams.set("pageSize", "6");
+      apiUrl.searchParams.set("sortBy", sortBy);
+      apiUrl.searchParams.set("language", language); // Añadir parámetro de idioma
+      apiUrl.searchParams.set("apiKey", "b8aceaf4472c40d786284bcf90cf6b75");
 
     const response = await fetch(apiUrl.toString());
 
