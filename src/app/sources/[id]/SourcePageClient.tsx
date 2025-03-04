@@ -95,12 +95,12 @@ export default function SourcePageClient({
             {/* Componente SourceImage - Tamaño aumentado */}
             {source.imageUrl !== null && (
               <div className="md:ml-4">
-                <div className="w-64 h-64 md:w-80 md:h-80 rounded-full">
+                <div className="w-64 h-64 rounded-full md:w-80 md:h-80 rounded-full">
                   {/* Pasar el prop size al componente */}
                   <SourceImage
                     imageUrl={source.imageUrl}
                     name={source.name}
-                    size="xlarge" // Usar uno de: "default" | "large" | "xlarge"
+                    size="xlarge" // Asegúrate de pasar el prop size
                   />
                 </div>
               </div>

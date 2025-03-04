@@ -6,23 +6,26 @@ import Image from "next/image";
 export const SourceImage = ({
   imageUrl,
   name,
-  size = "default",
+  size = "default", // Añadimos un prop para controlar el tamaño
 }: {
   imageUrl?: string;
   name: string;
   size?: "default" | "large" | "xlarge";
 }) => {
+  // Trim any trailing spaces or control characters from the image URL
   const trimmedImageUrl = imageUrl?.trimEnd();
   
-  // Tamaños cuadrados para garantizar forma circular
+  // Determinar las clases de tamaño basadas en el prop size
   const sizeClasses = {
-    default: "w-40 h-40",       // 160x160px
-    large: "w-56 h-56",         // 224x224px
-    xlarge: "w-64 h-64",        // 256x256px
+    default: "w-full h-full",
+    large: "w-56 h-56", // 224px x 224px
+    xlarge: "w-64 h-64", // 256px x 256px
   };
+  
+  const containerClass = sizeClasses[size] || sizeClasses.default;
 
   return (
-    <div className={`relative ${sizeClasses[size]}`}>
+    <div className={`relative shrink-0 ${containerClass}`}>
       <div className="rounded-full overflow-hidden border-4 border-white shadow-xl w-full h-full">
         {trimmedImageUrl ? (
           <Image
@@ -30,9 +33,10 @@ export const SourceImage = ({
             alt={`Logo de ${name}`}
             fill
             className="object-cover"
-            sizes={`(max-width: 768px) ${sizeClasses[size].split(" ")[0]}, ${sizeClasses[size].split(" ")[1]}`}
+            sizes={size === "xlarge" ? "256px" : size === "large" ? "224px" : "(max-width: 768px) 200px, 256px"}
             onError={(e) => {
-              (e.target as HTMLImageElement).src = "/images/default_periodico.jpg";
+              (e.target as HTMLImageElement).src =
+                "/images/default_periodico.jpg";
             }}
           />
         ) : (
