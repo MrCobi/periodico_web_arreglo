@@ -1,8 +1,8 @@
 "use server";
 
-import { SignUpSchema } from "@/lib/zod"
-import { loginSchema } from "@/lib/zod"
-import { z } from "zod"
+import { SignUpSchema } from "@/lib/zod";
+import { loginSchema } from "@/lib/zod";
+import { z } from "zod";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import prisma from "@/lib/db";
@@ -36,11 +36,11 @@ export const registerAction = async (values: z.infer<typeof SignUpSchema>) => {
       return { error: "Datos de registro no válidos" };
     }
 
-    const existingUserByEmail = await prisma.user.findUnique({
-      where: { email: data.email },
+    const existingUserByUsername = await prisma.user.findUnique({
+      where: { username: data.username },
     });
-    if (existingUserByEmail) {
-      return { error: "El email ya está en uso" };
+    if (existingUserByUsername) {
+      return { error: "El nombre de usuario ya está en uso" };
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -48,8 +48,10 @@ export const registerAction = async (values: z.infer<typeof SignUpSchema>) => {
     const newUser = await prisma.user.create({
       data: {
         name: data.name,
+        username: data.username,
         email: data.email,
         password: hashedPassword,
+        image: values.image || null,
       },
     });
 
