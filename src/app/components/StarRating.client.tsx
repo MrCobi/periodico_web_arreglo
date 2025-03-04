@@ -78,6 +78,40 @@ export function StarRating({ sourceId }: { sourceId: string }) {
     }
   };
 
+  const handleRemoveRating = async () => {
+    if (!session?.user?.id || loading) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `/api/sources/ratings?sourceId=${sourceId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error al eliminar la valoración");
+      }
+
+      setUserRating(0); // Restablecer el estado de la calificación
+
+      // Actualizar la media después de eliminar la calificación
+      const avgRes = await fetch(
+        `/api/sources/ratings/average?sourceId=${sourceId}`
+      );
+      if (!avgRes.ok) {
+        throw new Error("Error al obtener la media actualizada");
+      }
+      const avgData = await avgRes.json();
+      setAverageRating(avgData.average);
+    } catch (error) {
+      console.error("Error al eliminar la valoración:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Función para renderizar las estrellas con medias estrellas (solo para visualización)
   const renderAverageRating = () => {
     const fullStars = Math.floor(averageRating);
@@ -89,7 +123,9 @@ export function StarRating({ sourceId }: { sourceId: string }) {
           if (index < fullStars) {
             // Estrella completa
             return (
-              <span key={index} className="text-2xl text-yellow-400">★</span>
+              <span key={index} className="text-2xl text-yellow-400">
+                ★
+              </span>
             );
           } else if (index === fullStars && partialStar > 0) {
             // Media estrella
@@ -107,7 +143,9 @@ export function StarRating({ sourceId }: { sourceId: string }) {
           } else {
             // Estrella vacía
             return (
-              <span key={index} className="text-2xl text-gray-300">★</span>
+              <span key={index} className="text-2xl text-gray-300">
+                ★
+              </span>
             );
           }
         })}
@@ -122,7 +160,7 @@ export function StarRating({ sourceId }: { sourceId: string }) {
         {[...Array(5)].map((_, index) => {
           const ratingValue = index + 1;
           const filled = ratingValue <= (hoverRating || userRating);
-          
+
           return (
             <button
               key={index}
@@ -131,11 +169,13 @@ export function StarRating({ sourceId }: { sourceId: string }) {
               onMouseLeave={() => setHoverRating(0)}
               disabled={!session || loading}
               className={`text-2xl transition-all duration-200 ${
-                filled 
-                  ? "text-yellow-400 scale-110" 
+                filled
+                  ? "text-yellow-400 scale-110"
                   : "text-gray-300 hover:text-yellow-300"
               }`}
-              aria-label={`Valorar con ${ratingValue} ${ratingValue === 1 ? 'estrella' : 'estrellas'}`}
+              aria-label={`Valorar con ${ratingValue} ${
+                ratingValue === 1 ? "estrella" : "estrellas"
+              }`}
             >
               ★
             </button>
@@ -171,6 +211,15 @@ export function StarRating({ sourceId }: { sourceId: string }) {
               )}
             </div>
             {renderUserRatingStars()}
+            {userRating > 0 && (
+              <button
+                onClick={handleRemoveRating}
+                disabled={!session || loading}
+                className="mt-2 text-sm text-red-500 hover:text-red-700 transition"
+              >
+                Quitar calificación
+              </button>
+            )}
           </>
         ) : (
           <div className="flex items-center justify-center py-1">
