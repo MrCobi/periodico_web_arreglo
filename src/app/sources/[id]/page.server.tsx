@@ -6,7 +6,8 @@ import SourcePageClient from "./SourcePageClient";
 export type Props = { params: { id: string } };
 
 export default async function SourcePage({ params }: Props) {
-  const { id: sourceId } = params;
+  const resolvedParams = await Promise.resolve(params);
+  const sourceId = resolvedParams.id;
 
   if (!sourceId || sourceId.trim() === "") {
     return (
