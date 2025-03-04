@@ -6,26 +6,33 @@ import Image from "next/image";
 export const SourceImage = ({
   imageUrl,
   name,
+  size = "default",
 }: {
   imageUrl?: string;
   name: string;
+  size?: "default" | "large" | "xlarge";
 }) => {
-  // Trim any trailing spaces or control characters from the image URL
   const trimmedImageUrl = imageUrl?.trimEnd();
+  
+  // Tamaños cuadrados para garantizar forma circular
+  const sizeClasses = {
+    default: "w-40 h-40",       // 160x160px
+    large: "w-56 h-56",         // 224x224px
+    xlarge: "w-64 h-64",        // 256x256px
+  };
 
   return (
-    <div className="relative w-48 h-48 shrink-0">
-      <div className="rounded-full overflow-hidden border-4 border-white shadow-xl">
+    <div className={`relative ${sizeClasses[size]}`}>
+      <div className="rounded-full overflow-hidden border-4 border-white shadow-xl w-full h-full">
         {trimmedImageUrl ? (
           <Image
             src={trimmedImageUrl}
             alt={`Logo de ${name}`}
-            width={200}
-            height={200}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes={`(max-width: 768px) ${sizeClasses[size].split(" ")[0]}, ${sizeClasses[size].split(" ")[1]}`}
             onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                "/images/default_periodico.jpg";
+              (e.target as HTMLImageElement).src = "/images/default_periodico.jpg";
             }}
           />
         ) : (
