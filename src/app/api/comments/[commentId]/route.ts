@@ -36,7 +36,10 @@ export async function DELETE(
             );
         }
 
-        await prisma.comment.delete({ where: { id: commentId } });
+        await prisma.comment.delete({
+            where: { id: commentId },
+            include: { replies: true } // Elimina todas las respuestas
+          });
         return NextResponse.json({ message: "Comentario eliminado" });
 
     } catch (error) {

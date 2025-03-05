@@ -125,7 +125,7 @@ model Comment {
   // Relaciones
   user      User     @relation(fields: [userId], references: [id])
   source    Source   @relation(fields: [sourceId], references: [id])
-  parent    Comment? @relation("CommentHierarchy", fields: [parentId], references: [id])
+  parent    Comment? @relation("CommentHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   replies   Comment[] @relation("CommentHierarchy")
 
   @@index([userId])

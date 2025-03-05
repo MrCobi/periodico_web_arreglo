@@ -7,16 +7,20 @@ export async function GET(
   context: { params: { sourceId: string } }
 ) {
   try {
-    // Esperamos a que se resuelvan los parámetros dinámicos
     const { sourceId } = await context.params;
+
+    // Contar todos los comentarios (principales y respuestas) asociados a la fuente
     const count = await prisma.comment.count({
-      where: { sourceId }
+      where: {
+        sourceId,
+      },
     });
-    
+
     return NextResponse.json({ count });
   } catch (error) {
+    console.error("Error obteniendo conteo de comentarios:", error);
     return NextResponse.json(
-      { message: "Error obteniendo conteo de comentarios" },
+      { message: "Error interno del servidor" },
       { status: 500 }
     );
   }

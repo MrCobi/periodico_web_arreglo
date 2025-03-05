@@ -141,6 +141,12 @@ export default function SourcePageClient({
     fetchCommentsCount();
   }, [refreshKey]);
 
+  useEffect(() => {
+    if (showComments) {
+      fetchCommentsCount();
+    }
+  }, [showComments]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="relative bg-gradient-to-r from-blue-900 to-blue-700 py-16">
@@ -209,16 +215,20 @@ export default function SourcePageClient({
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="border rounded-lg overflow-hidden">
-          <button 
+          <button
             onClick={() => setShowComments(!showComments)}
             className="w-full p-4 bg-gray-100 flex justify-between items-center"
           >
-            <h2 className="text-xl font-semibold">Comentarios ({commentsCount})</h2>
-            <ChevronDownIcon className={`w-6 h-6 transform transition-transform ${
-              showComments ? "rotate-180" : ""
-            }`}/>
+            <h2 className="text-xl font-semibold">
+              Comentarios ({commentsCount})
+            </h2>
+            <ChevronDownIcon
+              className={`w-6 h-6 transform transition-transform ${
+                showComments ? "rotate-180" : ""
+              }`}
+            />
           </button>
-          
+
           {showComments && (
             <div className="p-6 bg-white">
               <CommentForm
@@ -231,6 +241,7 @@ export default function SourcePageClient({
               <CommentList
                 sourceId={source.id}
                 refreshKey={refreshKey}
+                // Añadir esta prop
                 onCommentsLoaded={(count) => setCommentsCount(count)}
               />
             </div>

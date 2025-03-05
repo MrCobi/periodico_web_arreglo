@@ -190,3 +190,10 @@ nav a:hover {
 .resize-none {
   resize: none;
 }
+
+/* Agregar en tu archivo CSS global */
+.comment-reply {
+  border-left: 2px solid #e5e7eb;
+  margin-left: 1rem;
+  padding-left: 1rem;
+}
