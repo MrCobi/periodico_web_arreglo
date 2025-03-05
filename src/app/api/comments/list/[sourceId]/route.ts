@@ -7,46 +7,40 @@ export async function GET(
   { params }: { params: { sourceId: string } }
 ) {
   try {
-    const { sourceId } = await params; // <-- Simplificado (sin await)
+    const { sourceId } = await params;
+    const { searchParams } = new URL(request.url);
+    
+    // 1. Validar y parsear parámetros
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "5")));
 
-    // Validación 1: Parámetro sourceId vacío
-    if (!sourceId?.trim()) {
+    // 2. Validar sourceId
+    if (!sourceId.trim()) {
       return NextResponse.json(
-        { message: "El ID de la fuente es requerido" },
+        { message: "ID de fuente requerido" },
         { status: 400 }
       );
     }
 
-    // Validación 2: Existencia de la fuente
-    const sourceExists = await prisma.source.findUnique({
-      where: { id: sourceId },
+    // 3. Contar SOLO comentarios principales
+    const totalComments = await prisma.comment.count({
+      where: {
+        sourceId,
+        parentId: null
+      }
     });
 
-    if (!sourceExists) {
-      return NextResponse.json(
-        { message: "La fuente especificada no existe" },
-        { status: 404 }
-      );
-    }
+    // 4. Calcular total de páginas
+    const totalPages = Math.ceil(totalComments / limit) || 1;
 
-    // Validación 3: Límite de resultados
-    const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get("limit") || "100");
-    const maxDepth = parseInt(searchParams.get("maxDepth") || "3");
-
-    if (limit > 500) {
-      return NextResponse.json(
-        { message: "El límite máximo permitido es 500" },
-        { status: 400 }
-      );
-    }
-
-    // Obtener comentarios principales con sus respuestas anidadas (hasta 3 niveles)
+    // 5. Obtener comentarios paginados
     const comments = await prisma.comment.findMany({
       where: {
         sourceId,
-        parentId: null, // Solo comentarios principales
+        parentId: null,
       },
+      skip: (page - 1) * limit,
+      take: limit,
       include: {
         user: { select: { id: true, name: true, image: true } },
         replies: {
@@ -63,38 +57,24 @@ export async function GET(
               },
             },
           },
-          orderBy: { createdAt: "asc" }, // Ordenar respuestas por fecha ascendente
+          orderBy: { createdAt: "asc" },
         },
       },
-      orderBy: { createdAt: "desc" }, // Ordenar comentarios principales por fecha descendente
-      take: limit, // Limitar el número de comentarios principales
+      orderBy: { createdAt: "desc" },
     });
-
-    // Validación 4: Resultados vacíos
-    if (comments.length === 0) {
-      return NextResponse.json({
-        message: "No se encontraron comentarios",
-        comments: [],
-      });
-    }
 
     return NextResponse.json({
       success: true,
-      count: comments.length,
       comments,
+      total: totalComments,
+      totalPages,
+      currentPage: page // ← Enviar página actual para debug
     });
+
   } catch (error) {
-    console.error("Error en GET /api/comments/list:", error);
-
-    if (error instanceof Error && error.message.includes("PrismaClient")) {
-      return NextResponse.json(
-        { message: "Error de conexión con la base de datos" },
-        { status: 503 }
-      );
-    }
-
+    console.error("Error en API:", error);
     return NextResponse.json(
-      { message: "Error interno del servidor" },
+      { message: "Error interno" },
       { status: 500 }
     );
   }

@@ -1,3 +1,4 @@
+// CommentList.tsx
 "use client";
 
 import { useEffect, useState, useRef, useCallback, memo } from "react";
@@ -31,7 +32,6 @@ interface CommentListProps {
   onCommentsLoaded?: (count: number) => void;
 }
 
-// Memoizar el componente CommentItem para evitar rerenderizados innecesarios
 const CommentItem = memo(
   ({
     comment,
@@ -66,7 +66,11 @@ const CommentItem = memo(
     const isVisible = isNewComment || visibleReplies.has(comment.id);
 
     return (
-      <div className={`${depth > 0 ? "ml-8" : ""} mt-4 border-l-2 border-gray-100 pl-4 relative`}>
+      <div
+        className={`${
+          depth > 0 ? "ml-8" : ""
+        } mt-4 border-l-2 border-gray-100 pl-4 relative`}
+      >
         <div className="bg-white p-4 rounded-lg shadow relative">
           <div className="flex justify-between items-start">
             <div className="flex items-start gap-4 flex-1">
@@ -97,14 +101,25 @@ const CommentItem = memo(
                 </p>
                 {depth < 3 && (
                   <button
-                    onClick={() => setReplyingTo({
-                      id: comment.id,
-                      userName: comment.user.name,
-                    })}
+                    onClick={() =>
+                      setReplyingTo({
+                        id: comment.id,
+                        userName: comment.user.name,
+                      })
+                    }
                     className="text-blue-600 text-sm mt-2 hover:text-blue-800 flex items-center gap-1"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     Responder
                   </button>
@@ -127,8 +142,17 @@ const CommentItem = memo(
           {replyingTo?.id === comment.id && (
             <div className="mt-4 ml-8">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium text-blue-600">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 Respondiendo a {replyingTo.userName}
               </div>
@@ -143,7 +167,10 @@ const CommentItem = memo(
               <div className="flex gap-2">
                 <button
                   onClick={() => handleReply(comment.id)}
-                  disabled={replyContent.trim().length < 3 || replyContent.trim().length > 500}
+                  disabled={
+                    replyContent.trim().length < 3 ||
+                    replyContent.trim().length > 500
+                  }
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all"
                 >
                   Publicar respuesta
@@ -209,32 +236,48 @@ export default function CommentList({
   const [visibleReplies, setVisibleReplies] = useState<Set<string>>(new Set());
   const [newComments, setNewComments] = useState<Set<string>>(new Set());
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const commentsPerPage = 5;
 
   const fetchComments = async () => {
     try {
-      const response = await fetch(`/api/comments/list/${sourceId}?maxDepth=3`);
-      if (!response.ok) throw new Error("Error al cargar comentarios");
-      const { comments } = await response.json();
+      const response = await fetch(
+        `/api/comments/list/${sourceId}?page=${currentPage}&limit=${commentsPerPage}`
+      );
 
-      setComments(comments || []);
-      if (typeof onCommentsLoaded === 'function') {
-        const countResponse = await fetch(`/api/comments/count/${sourceId}`);
-        const { count } = await countResponse.json();
-        onCommentsLoaded(count);
+      if (!response.ok) throw new Error("Error en la solicitud");
+
+      const data = await response.json();
+      console.log("Respuesta API:", data); // ← Debug
+
+      // Validar datos recibidos
+      if (!data || typeof data.totalPages !== "number") {
+        throw new Error("Datos de paginación inválidos");
       }
-      setError(null);
+
+      setComments(data.comments || []);
+      setTotalPages(data.totalPages);
+
+      // Resetear a página 1 si se excede el total
+      if (currentPage > data.totalPages) {
+        setCurrentPage(1);
+      }
     } catch (error) {
       console.error("Error:", error);
-      setError("No se pudieron cargar los comentarios");
-      setComments([]);
+      setError("Error al cargar comentarios");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Efecto para resetear página cuando cambia sourceId
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sourceId]);
   useEffect(() => {
     fetchComments();
-  }, [sourceId, refreshKey]);
+  }, [sourceId, refreshKey, currentPage]);
 
   useEffect(() => {
     if (replyingTo && textareaRef.current) {
@@ -275,13 +318,7 @@ export default function CommentList({
 
       setReplyContent("");
       setReplyingTo(null);
-      
       await fetchComments();
-      if (typeof onCommentsLoaded === 'function') {
-        const response = await fetch(`/api/comments/count/${sourceId}`);
-        const { count } = await response.json();
-        onCommentsLoaded(count);
-      }
     } catch (error) {
       console.error("Error:", error);
       alert(error instanceof Error ? error.message : "Error desconocido");
@@ -311,23 +348,45 @@ export default function CommentList({
           Sé el primero en comentar
         </div>
       ) : (
-        comments.map((comment) => (
-          <CommentItem
-            key={comment.id}
-            comment={comment}
-            session={session}
-            replyingTo={replyingTo}
-            setReplyingTo={setReplyingTo}
-            handleDelete={handleDelete}
-            handleReply={handleReply}
-            replyContent={replyContent}
-            setReplyContent={setReplyContent}
-            textareaRef={textareaRef}
-            visibleReplies={visibleReplies}
-            toggleReplyVisibility={toggleReplyVisibility}
-            isNewComment={newComments.has(comment.id)}
-          />
-        ))
+        <>
+          {comments.map((comment) => (
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              session={session}
+              replyingTo={replyingTo}
+              setReplyingTo={setReplyingTo}
+              handleDelete={handleDelete}
+              handleReply={handleReply}
+              replyContent={replyContent}
+              setReplyContent={setReplyContent}
+              textareaRef={textareaRef}
+              visibleReplies={visibleReplies}
+              toggleReplyVisibility={toggleReplyVisibility}
+              isNewComment={newComments.has(comment.id)}
+            />
+          ))}
+
+          <div className="flex justify-center gap-4 mt-8">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-100 rounded-lg disabled:opacity-50 hover:bg-gray-200 transition-colors"
+            >
+              Anterior
+            </button>
+            <span className="px-4 py-2 text-gray-600">
+              Página {currentPage} de {totalPages || 1}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={currentPage >= totalPages}
+              className="px-4 py-2 bg-gray-100 rounded-lg disabled:opacity-50 hover:bg-gray-200 transition-colors"
+            >
+              Siguiente
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
