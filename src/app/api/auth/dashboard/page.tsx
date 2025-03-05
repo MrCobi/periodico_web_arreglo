@@ -62,6 +62,8 @@ export default function DashboardPage() {
   }
 
   const { user } = session;
+  console.log("sesion",session);
+  console.log("user",user);
 
   return (
     <div className="min-h-screen bg-[#0D1117]">

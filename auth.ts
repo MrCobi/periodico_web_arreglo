@@ -53,6 +53,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: user.name ?? undefined,
             role: user.role,
             username: user.username ?? undefined,
+            image: user.image ?? "/images/AvatarPredeterminado.webp",
           };
         } catch (error) {
           console.error("Error en autorización:", error);
