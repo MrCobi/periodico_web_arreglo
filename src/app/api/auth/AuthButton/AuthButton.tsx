@@ -26,6 +26,7 @@ const AuthButton = () => {
     handleClose();
   };
 
+
   if (session) {
     return (
       <div style={{ position: "relative" }}>
@@ -38,9 +39,11 @@ const AuthButton = () => {
               <Image
                 src={session.user?.image || "/images/AvatarPredeterminado.webp"}
                 alt={session.user?.name || "Usuario"}
-                width={32}
-                height={32}
+                width={48}
+                height={48}
                 className="w-full h-full object-cover"
+                unoptimized={true} // Ajusta la calidad de la imagen
+                quality={100} // Ajusta la calidad de la imagen
               />
             </div>
             <div className="flex flex-col items-start">
