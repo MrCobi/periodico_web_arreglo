@@ -5,6 +5,7 @@ import Link from "@/src/app/components/Animation/Link";
 import React from "react";
 import styled from "styled-components";
 import Image from "next/image";
+import Router from "next/router";
 
 const AuthButton = () => {
   const { data: session } = useSession();
@@ -19,7 +20,9 @@ const AuthButton = () => {
   };
 
   const handleSignOut = () => {
-    signOut();
+    signOut({
+      callbackUrl: "/",
+    });
     handleClose();
   };
 
@@ -69,6 +72,14 @@ const AuthButton = () => {
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleClose}
+          PaperProps={{
+            style: {
+              backgroundColor: "rgb(18, 35, 82)", // Color de fondo del menú
+              padding: "0", // Elimina el padding predeterminado
+              borderRadius: "5px", // Ajusta el borde redondeado
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)", // Sombra personalizada
+            },
+          }}
         >
           <StyledWrapper>
             <div className="input">
@@ -95,16 +106,28 @@ const AuthButton = () => {
 
               <button className="value" onClick={handleSignOut}>
                 <svg
-                  fill="none"
-                  viewBox="0 0 24 25"
+                  fill="#ffffff"
+                  version="1.1"
+                  id="Capa_1"
                   xmlns="http://www.w3.org/2000/svg"
+                  xmlnsXlink="http://www.w3.org/1999/xlink"
+                  viewBox="0 0 492.5 492.5"
+                  xmlSpace="preserve"
+                  stroke="#ffffff"
                 >
-                  <path
-                    clipRule="evenodd"
-                    d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"
-                    fill="#7D8590"
-                    fillRule="evenodd"
-                  />
+                  <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                  <g
+                    id="SVGRepo_tracerCarrier"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  ></g>
+                  <g id="SVGRepo_iconCarrier">
+                    {" "}
+                    <g>
+                      {" "}
+                      <path d="M184.646,0v21.72H99.704v433.358h31.403V53.123h53.539V492.5l208.15-37.422v-61.235V37.5L184.646,0z M222.938,263.129 c-6.997,0-12.67-7.381-12.67-16.486c0-9.104,5.673-16.485,12.67-16.485s12.67,7.381,12.67,16.485 C235.608,255.748,229.935,263.129,222.938,263.129z"></path>{" "}
+                    </g>{" "}
+                  </g>
                 </svg>
                 Cerrar Sesión
               </button>
@@ -118,20 +141,10 @@ const AuthButton = () => {
   return (
     <div className="contenedor-botones">
       <StyledWrapper>
-        <Link
-          href="/api/auth/signin"
-          animated={false}
-          passHref
-          legacyBehavior
-        >
+        <Link href="/api/auth/signin" animated={false} passHref legacyBehavior>
           <button className="boton-elegante">Iniciar Sesión</button>
         </Link>
-        <Link
-          href="/api/auth/signup"
-          animated={false}
-          passHref
-          legacyBehavior
-        >
+        <Link href="/api/auth/signup" animated={false} passHref legacyBehavior>
           <button className="boton-elegante">Registrarse</button>
         </Link>
       </StyledWrapper>
@@ -141,14 +154,14 @@ const AuthButton = () => {
 
 const StyledWrapper = styled.div`
   .menu-appbar {
-    background-color: #0d1117;
+    background-color: #3b82f6;
   }
 
   .input {
     display: flex;
     flex-direction: column;
     width: 200px;
-    background-color: #0d1117;
+    background-color: rgb(18, 35, 82);
     justify-content: center;
     border-radius: 5px;
   }
@@ -167,7 +180,7 @@ const StyledWrapper = styled.div`
 
   .value:not(:active):hover,
   .value:focus {
-    background-color: #1e3a8a;
+    background-color: rgb(22, 48, 89);
   }
 
   .value:focus,
