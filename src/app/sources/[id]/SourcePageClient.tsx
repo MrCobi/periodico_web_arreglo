@@ -11,6 +11,7 @@ import { useSession } from "next-auth/react";
 import CommentForm from "@/src/app/components/CommentForm";
 import CommentList from "@/src/app/components/CommentList";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { useCallback } from "react";
 
 interface SourcePageClientProps {
   source: Source;
@@ -124,9 +125,9 @@ export default function SourcePageClient({
     setRefreshKey((prev) => prev + 1);
   };
 
-  const fetchCommentsCount = async () => {
+  const fetchCommentsCount = useCallback(async () => {
     try {
-      const response = await fetch(`/api/comments/${source.id}/count`);
+      const response = await fetch(`/api/comments/count/${source.id}`);
       if (response.ok) {
         const { count } = await response.json();
         setCommentsCount(count);
@@ -134,7 +135,7 @@ export default function SourcePageClient({
     } catch (error) {
       console.error("Error obteniendo conteo de comentarios:", error);
     }
-  };
+  }, [source.id]);
 
   useEffect(() => {
     fetchCommentsCount();

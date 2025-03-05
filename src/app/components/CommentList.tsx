@@ -27,7 +27,7 @@ interface CommentListProps {
 export default function CommentList({
   sourceId,
   refreshKey,
-  onCommentsLoaded
+  onCommentsLoaded,
 }: CommentListProps) {
   const { data: session } = useSession();
   const [comments, setComments] = useState<Comment[]>([]);
@@ -36,10 +36,10 @@ export default function CommentList({
 
   const fetchComments = async () => {
     try {
-      const response = await fetch(`/api/comments/${sourceId}`);
+      const response = await fetch(`/api/comments/list/${sourceId}`);
       if (!response.ok) throw new Error("Error al cargar comentarios");
       const { comments } = await response.json();
-      
+
       setComments(comments || []);
       onCommentsLoaded?.(comments?.length || 0); // Actualizar contador
       setError(null);
@@ -58,17 +58,19 @@ export default function CommentList({
 
   const handleDelete = async (commentId: string) => {
     if (!confirm("¿Eliminar comentario permanentemente?")) return;
-    
+
     try {
       const response = await fetch(`/api/comments/${commentId}`, {
         method: "DELETE",
       });
-      
+
       if (!response.ok) throw new Error("Error al eliminar");
       await fetchComments(); // Esto actualizará automáticamente el contador
     } catch (error) {
       console.error("Error eliminando comentario:", error);
-      alert(error instanceof Error ? error.message : "Error desconocido");
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
+      setError(`Error al eliminar: ${errorMessage}`);
     }
   };
 
@@ -79,7 +81,9 @@ export default function CommentList({
       ) : error ? (
         <div className="text-center text-red-500">{error}</div>
       ) : comments.length === 0 ? (
-        <div className="text-gray-500 text-center">Sé el primero en comentar</div>
+        <div className="text-gray-500 text-center">
+          Sé el primero en comentar
+        </div>
       ) : (
         comments.map((comment) => (
           <div key={comment.id} className="bg-white p-4 rounded-lg shadow">
@@ -107,12 +111,13 @@ export default function CommentList({
                   </p>
                 </div>
               </div>
-              
-              {(comment.userId === session?.user?.id || session?.user?.role === "admin") && (
+
+              {(comment.userId === session?.user?.id ||
+                session?.user?.role === "admin") && (
                 <button
+                  aria-label="Eliminar comentario"
                   onClick={() => handleDelete(comment.id)}
                   className="text-red-500 hover:text-red-700 ml-4"
-                  title="Eliminar comentario"
                 >
                   ✕
                 </button>

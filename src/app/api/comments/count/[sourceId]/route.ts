@@ -1,13 +1,16 @@
+// src/app/api/comments/count/[sourceId]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
 export async function GET(
   _: Request,
-  { params }: { params: { sourceId: string } }
+  context: { params: { sourceId: string } }
 ) {
   try {
+    // Esperamos a que se resuelvan los parámetros dinámicos
+    const { sourceId } = await context.params;
     const count = await prisma.comment.count({
-      where: { sourceId: params.sourceId }
+      where: { sourceId }
     });
     
     return NextResponse.json({ count });
