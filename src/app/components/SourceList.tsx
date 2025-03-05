@@ -13,28 +13,32 @@ interface SourcesListProps {
 export default function SourcesList({ sources }: SourcesListProps) {
   const { data: session } = useSession();
 
-  // Estados inicializados desde sessionStorage
-  const [selectedLanguage, setSelectedLanguage] = useState(() => {
-    return sessionStorage.getItem("sources_selectedLanguage") || "all";
-  });
-  
-  const [searchTerm, setSearchTerm] = useState(() => {
-    return sessionStorage.getItem("sources_searchTerm") || "";
-  });
-  
-  const [currentPage, setCurrentPage] = useState(() => {
-    return Number(sessionStorage.getItem("sources_currentPage")) || 1;
-  });
-
+  // Estados inicializados con valores por defecto
+  const [selectedLanguage, setSelectedLanguage] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoaded, setIsLoaded] = useState(false);
   const sourcesPerPage = 9;
 
+  // Cargar estados desde sessionStorage solo en el cliente
+  useEffect(() => {
+    setSelectedLanguage(
+      sessionStorage.getItem("sources_selectedLanguage") || "all"
+    );
+    setSearchTerm(sessionStorage.getItem("sources_searchTerm") || "");
+    setCurrentPage(
+      Number(sessionStorage.getItem("sources_currentPage")) || 1
+    );
+  }, []);
+
   // Sincronizar estados con sessionStorage
   useEffect(() => {
-    sessionStorage.setItem("sources_selectedLanguage", selectedLanguage);
-    sessionStorage.setItem("sources_searchTerm", searchTerm);
-    sessionStorage.setItem("sources_currentPage", currentPage.toString());
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("sources_selectedLanguage", selectedLanguage);
+      sessionStorage.setItem("sources_searchTerm", searchTerm);
+      sessionStorage.setItem("sources_currentPage", currentPage.toString());
+    }
   }, [selectedLanguage, searchTerm, currentPage]);
 
   // Cargar favoritos

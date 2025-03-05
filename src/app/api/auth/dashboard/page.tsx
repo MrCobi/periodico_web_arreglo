@@ -131,7 +131,7 @@ export default function DashboardPage() {
                 <div className="md:w-1/4">
                   <div className="relative">
                     <Image
-                      src={user?.image || "/images/default_periodico.jpg"}
+                      src={user?.image || "/images/AvatarPredeterminado.webp"}
                       alt={user?.name || "Avatar"}
                       width={260}
                       height={260}

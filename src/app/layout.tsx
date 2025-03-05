@@ -9,7 +9,6 @@ import AuthButton from "@/src/app/api/auth/AuthButton/AuthButton";
 import Image from "next/image";
 import { useState } from "react";
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -17,14 +16,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-dvh overflow-x-hidden flex flex-col">
+      <body className="min-h-screen bg-gray-50 flex flex-col">
         <SessionProvider>
           <Transitions>
             <Navbar />
             <Animate>
-              <main className="mt-16">{children}</main>
+              <main className="flex-1 mt-16">{children}</main>
             </Animate>
-            <footer></footer>
+            <footer className="bg-gray-900 text-white py-4">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <p className="text-sm">© 2025 Hemeroteca Digital. Todos los derechos reservados.</p>
+              </div>
+            </footer>
           </Transitions>
         </SessionProvider>
       </body>
@@ -47,7 +50,7 @@ function Navbar() {
   };
 
   return (
-    <header className="bg-[#161B22] border-b border-[#30363D] fixed top-0 left-0 w-full z-50">
+    <header className="bg-gradient-to-r from-blue-700 to-indigo-700 border-b border-gray-300 fixed top-0 left-0 w-full z-50 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo y navegación principal */}
@@ -73,26 +76,26 @@ function Navbar() {
               <nav className="hidden sm:ml-6 sm:flex sm:space-x-4">
                 <Link
                   href="/"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-[#21262C]"
+                  className="text-gray-200 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-blue-800"
                 >
                   Home
                 </Link>
                 <Link
                   href="/Articulos"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-[#21262C]"
+                  className="text-gray-200 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-blue-800"
                 >
                   Artículos
                 </Link>
                 <Link
                   href="/sources"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-[#21262C]"
+                  className="text-gray-200 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-blue-800"
                 >
                   Fuentes
                 </Link>
                 {isAdmin && (
                   <Link
                     href="/admin/users"
-                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-[#21262C]"
+                    className="text-gray-200 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-blue-800"
                   >
                     Users
                   </Link>
@@ -110,7 +113,7 @@ function Navbar() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleNavbarSearch}
-                  className="w-full bg-[#0D1117] text-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm border border-[#30363D] focus:outline-none focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                  className="w-full bg-gray-100 text-gray-800 rounded-lg pl-10 pr-4 py-2 text-sm border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   placeholder="Buscar artículos..."
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -136,7 +139,7 @@ function Navbar() {
             {session && (
               <button
                 type="button"
-                className="sm:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-[#21262C] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                className="sm:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
               >
                 <span className="sr-only">Abrir menú principal</span>
                 <svg
@@ -169,20 +172,20 @@ function Navbar() {
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link
               href="/"
-              className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-200 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
             >
               Home
             </Link>
             <Link
               href="/Articulos"
-              className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-200 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
             >
               Artículos
             </Link>
             {isAdmin && (
               <Link
                 href="/admin/users"
-                className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                className="text-gray-200 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
               >
                 Users
               </Link>
