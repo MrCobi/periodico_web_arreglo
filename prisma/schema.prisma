@@ -24,6 +24,9 @@ model User {
   accounts      Account[]
   favoriteSources FavoriteSource[]
   ratings       Rating[]        // Relación con Rating
+  comments      Comment[]       // Relación con Comment
+  followers     Follow[]        @relation("follower") // Usuarios que siguen a este usuario
+  following     Follow[]        @relation("following") // Usuarios que este usuario sigue
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -63,12 +66,13 @@ model Source {
   name        String
   description String
   url         String  @db.VarChar(512) // Limitar a 512 caracteres
-  imageUrl    String?
+  imageUrl    String? @db.VarChar(512)
   category    String
   language    String
   country     String
   favoriteSources FavoriteSource[]
   ratings     Rating[]
+  comments    Comment[] // Relación con Comment
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -94,4 +98,36 @@ model Rating {
   source    Source  @relation(fields: [sourceId], references: [id])
 
   @@unique([userId, sourceId]) // Un usuario solo puede valorar una fuente una vez
+}
+
+model Comment {
+  id        String  @id @default(cuid())
+  content   String  @db.Text // Contenido del comentario
+  userId    String  // ID del usuario que hizo el comentario
+  sourceId  String  // ID del Source en el que se hizo el comentario
+  isDeleted Boolean @default(false)
+  parentId  String?  // Para comentarios anidados
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  user      User    @relation(fields: [userId], references: [id])
+  source    Source  @relation(fields: [sourceId], references: [id])
+
+  @@index([userId]) // Índice para búsquedas por usuario
+  @@index([sourceId]) // Índice para búsquedas por Source
+}
+
+model Follow {
+  followerId   String // ID del usuario que sigue
+  followingId  String // ID del usuario que es seguido
+  createdAt    DateTime @default(now())
+
+  // Relaciones
+  follower     User    @relation("follower", fields: [followerId], references: [id])
+  following    User    @relation("following", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId]) // Clave primaria compuesta
+  @@index([followerId]) // Índice para búsquedas por seguidor
+  @@index([followingId]) // Índice para búsquedas por seguido
 }

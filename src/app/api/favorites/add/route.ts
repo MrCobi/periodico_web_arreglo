@@ -3,10 +3,22 @@ import { auth } from "@/auth"; // Importa la función auth
 import prisma from "@/lib/db";
 
 export async function POST(request: Request) {
-  const session = await auth(); // Obtén la sesión
+  const session = await auth();
 
+  // Validar sesión y existencia del usuario
   if (!session?.user?.id) {
     return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+  });
+
+  if (!user) {
+    return NextResponse.json(
+      { message: "Usuario no encontrado en la base de datos" },
+      { status: 404 }
+    );
   }
 
   const { sourceId } = await request.json();

@@ -7,6 +7,10 @@ import { SourceImage } from "./SourceImage.client";
 import { StarRating } from "@/src/app/components/StarRating.client";
 import Image from "next/image";
 import { fetchArticlesBySource } from "@/lib/api";
+import { useSession } from "next-auth/react";
+import CommentForm from "@/src/app/components/CommentForm";
+import CommentList from "@/src/app/components/CommentList";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
 interface SourcePageClientProps {
   source: Source;
@@ -28,29 +32,70 @@ export default function SourcePageClient({
     "popularity" | "publishedAt" | "relevancy"
   >("popularity");
   const [isAnimating, setIsAnimating] = useState(false);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const { data: session } = useSession();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [showComments, setShowComments] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(0);
 
-  // Guarda inicialmente los artículos en cache para "popularidad" si no existen
   useEffect(() => {
-    const cacheKey = `articles_${source.id}_popularity_${source.language}`;
-    if (!sessionStorage.getItem(cacheKey)) {
-      sessionStorage.setItem(cacheKey, JSON.stringify(initialArticles));
+    const loadFavorites = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch("/api/favorites/list");
+          if (response.ok) {
+            const data = await response.json();
+            setFavorites(new Set(data.favoriteIds));
+          }
+        } catch (error) {
+          console.error("Error cargando favoritos:", error);
+        }
+      }
+    };
+    loadFavorites();
+  }, [session]);
+
+  const handleFavoriteClick = async (sourceId: string) => {
+    if (!session?.user?.id) {
+      alert("Debes iniciar sesión para agregar a favoritos");
+      return;
     }
-  }, [source.id, initialArticles]);
+    try {
+      if (favorites.has(sourceId)) {
+        await fetch("/api/favorites/remove", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sourceId }),
+        });
+        setFavorites((prev) => {
+          const newFav = new Set(prev);
+          newFav.delete(sourceId);
+          return newFav;
+        });
+      } else {
+        await fetch("/api/favorites/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sourceId }),
+        });
+        setFavorites((prev) => new Set(prev).add(sourceId));
+      }
+    } catch (error) {
+      console.error("Error al actualizar favoritos:", error);
+    }
+  };
 
   const loadArticles = async (order: typeof sortBy) => {
     const cacheKey = `articles_${source.id}_${order}`;
     const cachedArticles = sessionStorage.getItem(cacheKey);
 
     if (cachedArticles) {
-      // Si ya están en cache, los usamos sin hacer petición
       setArticles(JSON.parse(cachedArticles));
     } else {
-      // Si no, se hace la petición y se almacena en cache
-      // En la llamada a fetchArticlesBySource dentro de loadArticles
       const fetchedArticles = await fetchArticlesBySource(
         source.id,
         order,
-        source.language // Pasar el idioma del source
+        source.language
       );
       setArticles(fetchedArticles);
       sessionStorage.setItem(cacheKey, JSON.stringify(fetchedArticles));
@@ -59,7 +104,6 @@ export default function SourcePageClient({
 
   const rotateSort = () => {
     setIsAnimating(true);
-
     const sortOrder: (typeof sortBy)[] = [
       "relevancy",
       "popularity",
@@ -76,11 +120,43 @@ export default function SourcePageClient({
     }, 300);
   };
 
+  const fetchComments = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
+
+  const fetchCommentsCount = async () => {
+    try {
+      const response = await fetch(`/api/comments/${source.id}/count`);
+      if (response.ok) {
+        const { count } = await response.json();
+        setCommentsCount(count);
+      }
+    } catch (error) {
+      console.error("Error obteniendo conteo de comentarios:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCommentsCount();
+  }, [refreshKey]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="relative bg-gradient-to-r from-blue-900 to-blue-700 py-16">
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <button
+            onClick={() => handleFavoriteClick(source.id)}
+            className="absolute top-4 right-4 bg-white/90 p-2 rounded-full text-xl hover:bg-white transition-all"
+            title={
+              favorites.has(source.id)
+                ? "Eliminar de favoritos"
+                : "Agregar a favoritos"
+            }
+          >
+            {favorites.has(source.id) ? "★" : "☆"}
+          </button>
+
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1">
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -115,9 +191,9 @@ export default function SourcePageClient({
               </a>
             </div>
 
-            {source.imageUrl !== null && (
+            {source.imageUrl && (
               <div className="md:ml-4">
-                <div className="w-64 h-64 md:w-80 md:h-80 rounded-full">
+                <div className="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl">
                   <SourceImage
                     imageUrl={source.imageUrl}
                     name={source.name}
@@ -129,6 +205,37 @@ export default function SourcePageClient({
           </div>
         </div>
       </header>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="border rounded-lg overflow-hidden">
+          <button 
+            onClick={() => setShowComments(!showComments)}
+            className="w-full p-4 bg-gray-100 flex justify-between items-center"
+          >
+            <h2 className="text-xl font-semibold">Comentarios ({commentsCount})</h2>
+            <ChevronDownIcon className={`w-6 h-6 transform transition-transform ${
+              showComments ? "rotate-180" : ""
+            }`}/>
+          </button>
+          
+          {showComments && (
+            <div className="p-6 bg-white">
+              <CommentForm
+                sourceId={source.id}
+                onCommentAdded={() => {
+                  fetchComments();
+                  fetchCommentsCount();
+                }}
+              />
+              <CommentList
+                sourceId={source.id}
+                refreshKey={refreshKey}
+                onCommentsLoaded={(count) => setCommentsCount(count)}
+              />
+            </div>
+          )}
+        </div>
+      </section>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <section className="mb-8">
