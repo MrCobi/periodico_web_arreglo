@@ -19,7 +19,6 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { getSession } from "next-auth/react";
 import Link from "next/link";
-import Image from "next/image";
 
 interface SigninFormProps {
   isVerified?: boolean;

@@ -139,7 +139,6 @@ const onSubmit = useCallback(async (values: z.infer<typeof ExtendedSignUpSchema>
           if (response.error) {
             setError(response.error);
           } else {
-            const session = await getSession();
             router.push("/");
           }
         } catch (err) {
