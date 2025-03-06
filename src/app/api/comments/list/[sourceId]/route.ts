@@ -42,16 +42,16 @@ export async function GET(
       skip: (page - 1) * limit,
       take: limit,
       include: {
-        user: { select: { id: true, name: true, image: true } },
+        user: { select: { id: true, username: true, image: true } },
         replies: {
           include: {
-            user: { select: { id: true, name: true, image: true } },
+            user: { select: { id: true, username: true, image: true } },
             replies: {
               include: {
-                user: { select: { id: true, name: true, image: true } },
+                user: { select: { id: true, username: true, image: true } },
                 replies: {
                   include: {
-                    user: { select: { id: true, name: true, image: true } },
+                    user: { select: { id: true, username: true, image: true } },
                   },
                 },
               },

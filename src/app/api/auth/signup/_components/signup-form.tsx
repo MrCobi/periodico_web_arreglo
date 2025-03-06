@@ -17,7 +17,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { registerAction } from "@/actions/auth-action";
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { getSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -130,7 +129,7 @@ const onSubmit = useCallback(async (values: z.infer<typeof ExtendedSignUpSchema>
 
       startTransition(async () => {
         try {
-          const { confirmPassword, ...signupData } = values;
+          const { confirmPassword: _confirmPassword, ...signupData } = values;
           const response = await registerAction({
             ...signupData,
             image: imageUrl,

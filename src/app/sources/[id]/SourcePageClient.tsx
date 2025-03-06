@@ -12,7 +12,6 @@ import CommentForm from "@/src/app/components/CommentForm";
 import CommentList from "@/src/app/components/CommentList";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
 
 interface SourcePageClientProps {
   source: Source;
@@ -29,7 +28,6 @@ export default function SourcePageClient({
   source,
   articles: initialArticles,
 }: SourcePageClientProps) {
-  const router = useRouter();
   const [articles, setArticles] = useState<Article[]>(initialArticles);
   const [sortBy, setSortBy] = useState<
     "popularity" | "publishedAt" | "relevancy"
@@ -128,20 +126,29 @@ export default function SourcePageClient({
   };
 
   const fetchCommentsCount = useCallback(async (invalidateCache = false) => {
+    const controller = new AbortController();
+    
     try {
       const url = `/api/comments/count/${source.id}${
         invalidateCache ? `?t=${Date.now()}` : ""
       }`;
-      const response = await fetch(url);
+      
+      const response = await fetch(url, {
+        signal: controller.signal
+      });
+      
       if (response.ok) {
         const { count } = await response.json();
         setCommentsCount(count);
-        router.refresh();
       }
     } catch (error) {
-      console.error("Error obteniendo conteo de comentarios:", error);
+      if (!controller.signal.aborted) {
+        console.error("Error obteniendo conteo:", error);
+      }
     }
-  }, [source.id, router]);
+    
+    return () => controller.abort();
+  }, [source.id]);
 
   useEffect(() => {
     fetchCommentsCount(true);
@@ -152,11 +159,18 @@ export default function SourcePageClient({
   }, [refreshKey, fetchCommentsCount]);
 
   useEffect(() => {
-    // Actualizar cada 2 segundos mientras los comentarios están visibles
+    let interval: NodeJS.Timeout;
+    
     if (showComments) {
-      const interval = setInterval(() => fetchCommentsCount(true), 2000);
-      return () => clearInterval(interval);
+      // Primera llamada inmediata
+      fetchCommentsCount(true); 
+      // Luego cada 10 segundos
+      interval = setInterval(() => fetchCommentsCount(true), 10000);
     }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [showComments, fetchCommentsCount]);
 
   return (

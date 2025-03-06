@@ -8,8 +8,8 @@ export default function AuthErrorPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push("/api/auth/signin?error=auth_error"); // Redirige a la página de inicio de sesión
-  }, []);
+    router.push("/api/auth/signin?error=auth_error");
+  }, [router]); // Se agrega router como dependencia
 
   return <div>Redirigiendo...</div>;
 }
