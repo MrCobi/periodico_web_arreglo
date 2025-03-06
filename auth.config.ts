@@ -77,7 +77,11 @@ export default {
 
         // Return the user object if everything is valid
         console.log("User authenticated:", user);
-        return user;
+        return {
+          ...user,
+          username: user.username ?? undefined
+        };
+        
       },
     }),
   ],

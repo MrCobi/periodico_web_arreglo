@@ -6,8 +6,10 @@ import { NextResponse } from "next/server";
 // Ruta: /api/comments/[commentId]/route.ts
 export async function DELETE(
     request: Request,
-    { params }: { params: { commentId: string } }
+    { params }: { params: Promise<{ commentId: string }> }
 ) {
+    const { commentId } = await params;
+
     const session = await auth();
     
     if (!session?.user) {
@@ -15,18 +17,17 @@ export async function DELETE(
     }
 
     try {
-        // Resolver parámetros dinámicos
-        const { commentId } = await params;
-
         const comment = await prisma.comment.findUnique({
             where: { id: commentId },
             include: { user: true }
         });
 
-        if (!comment) return NextResponse.json(
-            { message: "Comentario no encontrado" }, 
-            { status: 404 }
-        );
+        if (!comment) {
+            return NextResponse.json(
+                { message: "Comentario no encontrado" }, 
+                { status: 404 }
+            );
+        }
 
         // Permitir admin o dueño del comentario
         if (comment.userId !== session.user.id && session.user.role !== "admin") {
@@ -38,10 +39,10 @@ export async function DELETE(
 
         await prisma.comment.delete({
             where: { id: commentId },
-            include: { replies: true } // Elimina todas las respuestas
-          });
-        return NextResponse.json({ message: "Comentario eliminado" });
+            include: { replies: true }
+        });
 
+        return NextResponse.json({ message: "Comentario eliminado" });
     } catch (error) {
         console.error("Error deleting comment:", error);
         return NextResponse.json(

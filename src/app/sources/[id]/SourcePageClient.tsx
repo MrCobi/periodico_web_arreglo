@@ -1,3 +1,4 @@
+// src/app/sources/[id]/SourcePageClient.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -125,34 +126,54 @@ export default function SourcePageClient({
     setRefreshKey((prev) => prev + 1);
   };
 
-  const fetchCommentsCount = useCallback(async (invalidateCache = false) => {
-    const controller = new AbortController();
-    
-    try {
-      const url = `/api/comments/count/${source.id}${
-        invalidateCache ? `?t=${Date.now()}` : ""
-      }`;
+  const fetchCommentsCount = useCallback(
+    async (invalidateCache = false) => {
+      const controller = new AbortController();
       
-      const response = await fetch(url, {
-        signal: controller.signal
-      });
+      try {
+        const url = `/api/comments/count/${source.id}${
+          invalidateCache ? `?t=${Date.now()}` : ""
+        }`;
+        
+        const response = await fetch(url, {
+          signal: controller.signal
+        });
+        
+        if (response.ok) {
+          const { count } = await response.json();
+          setCommentsCount(count);
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Error obteniendo conteo:", error);
+        }
+      }
       
-      if (response.ok) {
-        const { count } = await response.json();
-        setCommentsCount(count);
-      }
-    } catch (error) {
-      if (!controller.signal.aborted) {
-        console.error("Error obteniendo conteo:", error);
-      }
-    }
-    
-    return () => controller.abort();
-  }, [source.id]);
-
+      return () => controller.abort();
+    }, 
+    [source.id, setCommentsCount] // Dependencias actualizadas
+  );
+  
   useEffect(() => {
     fetchCommentsCount(true);
-  }, []);
+  }, [fetchCommentsCount]); // Dependencia añadida
+  
+  useEffect(() => {
+    fetchCommentsCount(true);
+  }, [refreshKey, fetchCommentsCount]);
+  
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (showComments) {
+      fetchCommentsCount(true); 
+      interval = setInterval(() => fetchCommentsCount(true), 10000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [showComments, fetchCommentsCount]);
 
   useEffect(() => {
     fetchCommentsCount(true);
@@ -171,7 +192,7 @@ export default function SourcePageClient({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [showComments, fetchCommentsCount]);
+  }, [showComments, fetchCommentsCount]); // Corregido: añadido fetchCommentsCount como dependencia
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -268,7 +289,6 @@ export default function SourcePageClient({
                 key={refreshKey}
                 sourceId={source.id}
                 refreshKey={refreshKey}
-                //onCommentsLoaded={fetchCommentsCount}
               />
             </div>
           )}

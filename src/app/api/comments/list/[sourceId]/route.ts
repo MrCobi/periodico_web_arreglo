@@ -4,10 +4,10 @@ import prisma from "@/lib/db";
 
 export async function GET(
   request: Request,
-  { params }: { params: { sourceId: string } }
+  { params }: { params: Promise<{ sourceId: string }> }
 ) {
+  const { sourceId } = await params;
   try {
-    const { sourceId } = await params;
     const { searchParams } = new URL(request.url);
     
     // 1. Validar y parsear parámetros

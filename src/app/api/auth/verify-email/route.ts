@@ -2,12 +2,12 @@ import prisma from "@/lib/db";
 import { type NextRequest } from "next/server";
 import { redirect } from "next/navigation";
 
-export async function GET (request: NextRequest) {
+export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const token = searchParams.get('token')
 
-    if(!token) {
-        return new Response ('Token no proporcionado', {status: 400})
+    if (!token) {
+        return new Response('Token no proporcionado', { status: 400 })
     }
 
     //verificar token
@@ -17,24 +17,24 @@ export async function GET (request: NextRequest) {
         }
     })
 
-    if(!verifyToken) {
-        return new Response ('Token no proporcionado', {status: 400})
+    if (!verifyToken) {
+        return new Response('Token no proporcionado', { status: 400 })
     }
 
     //verificar si el token ya ha expirado
-    if(verifyToken.expires < new Date()) {
-        return new Response ('Token expirado', {status: 400})
+    if (verifyToken.expires < new Date()) {
+        return new Response('Token expirado', { status: 400 })
     }
 
-     // verificar si el email ya esta verificado
+    // verificar si el email ya esta verificado
     const user = await prisma.user.findUnique({
         where: {
             email: verifyToken.identifier,
         },
     });
 
-    if(user?.emailVerified) {
-        return new Response ('Email ya verificado', {status: 400})
+    if (user?.emailVerified) {
+        return new Response('Email ya verificado', { status: 400 })
     }
 
     //marcar email como verificado
@@ -48,11 +48,16 @@ export async function GET (request: NextRequest) {
     });
 
     //eliminar el token
+    // Eliminar el token usando la clave única compuesta
     await prisma.verificationToken.delete({
         where: {
-            identifier: verifyToken.identifier,
-        }
+            identifier_token: {
+                identifier: verifyToken.identifier,
+                token: verifyToken.token,
+            },
+        },
     });
+
 
     //return response.json ({token})
     redirect("/api/auth/signin?verified=true");

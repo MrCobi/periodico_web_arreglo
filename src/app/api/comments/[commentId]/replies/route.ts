@@ -5,8 +5,9 @@ import prisma from "@/lib/db";
 
 export async function POST(
   request: Request,
-  { params }: { params: { commentId: string } }
+  { params }: { params: Promise<{ commentId: string }> }
 ) {
+  const { commentId } = await params;
   const session = await auth();
   
   if (!session?.user?.id) {
@@ -14,7 +15,6 @@ export async function POST(
   }
 
   try {
-    const { commentId } = await params;
     const { content, sourceId } = await request.json();
     
     const parentComment = await prisma.comment.findUnique({

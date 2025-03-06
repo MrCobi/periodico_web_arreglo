@@ -1,13 +1,13 @@
+// src/app/sources/[id]/page.server.tsx
 import { fetchSourceById, fetchArticlesBySource } from "@/lib/api";
 import { Source } from "@/src/interface/source";
 import { Article } from "@/src/interface/article";
 import SourcePageClient from "./SourcePageClient";
 
-export type Props = { params: { id: string } };
+export type Props = { params: Promise<{ id: string }> };
 
 export default async function SourcePage({ params }: Props) {
-  const resolvedParams = await Promise.resolve(params);
-  const sourceId = resolvedParams.id;
+  const { id: sourceId } = await params;
 
   if (!sourceId || sourceId.trim() === "") {
     return (

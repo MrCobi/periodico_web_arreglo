@@ -4,24 +4,19 @@ import prisma from "@/lib/db";
 
 export async function GET(
   _: Request,
-  context: { params: { sourceId: string } }
+  context: { params: Promise<{ sourceId: string }> }
 ) {
-  try {
-    const { sourceId } = await context.params;
+  const { sourceId } = await context.params;
 
+  try {
     const count = await prisma.comment.count({
-      where: {
-        sourceId,
-        
-      },
+      where: { sourceId },
     });
 
     const headers = new Headers();
     headers.set("Cache-Control", "no-store, max-age=0");
     
-    return new NextResponse(JSON.stringify({ count }), {
-      headers: headers
-    });
+    return new NextResponse(JSON.stringify({ count }), { headers });
   } catch (error) {
     console.error("Error obteniendo conteo de comentarios:", error);
     return NextResponse.json(

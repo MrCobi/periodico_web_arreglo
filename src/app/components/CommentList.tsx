@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, memo } from "react";
+import { useEffect, useState, useRef, memo, useCallback } from "react";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { es } from "date-fns/locale";
@@ -359,38 +359,42 @@ export default function CommentList({
     commentId: "",
   });
 
-  const fetchComments = async (signal?: AbortSignal) => {
-    try {
-      const response = await fetch(
-        `/api/comments/list/${sourceId}?page=${currentPage}&limit=${commentsPerPage}`,
-        { signal }
-      );
+  const fetchComments = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const response = await fetch(
+          `/api/comments/list/${sourceId}?page=${currentPage}&limit=${commentsPerPage}`,
+          { signal }
+        );
 
-      if (!response.ok) throw new Error("Error en la solicitud");
+        if (!response.ok) throw new Error("Error en la solicitud");
 
-      const data = await response.json();
-      if (!data || typeof data.totalPages !== "number") {
-        throw new Error("Datos inválidos");
+        const data = await response.json();
+        if (!data || typeof data.totalPages !== "number") {
+          throw new Error("Datos inválidos");
+        }
+
+        setComments(data.comments || []);
+        setTotalPages(data.totalPages);
+
+        if (onCommentsLoaded) onCommentsLoaded(data.total || 0);
+        if (currentPage > data.totalPages && data.totalPages > 0) {
+          setCurrentPage(1);
+        }
+
+        setError(null);
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          console.error("Error:", error);
+          setError("Error al cargar comentarios");
+        }
+      } finally {
+        setIsLoading(false);
       }
-
-      setComments(data.comments || []);
-      setTotalPages(data.totalPages);
-
-      if (onCommentsLoaded) onCommentsLoaded(data.total || 0);
-      if (currentPage > data.totalPages && data.totalPages > 0) {
-        setCurrentPage(1);
-      }
-
-      setError(null);
-    } catch (error) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) {
-        console.error("Error:", error);
-        setError("Error al cargar comentarios");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    // 2. Especificar dependencias correctamente
+    [currentPage, sourceId, onCommentsLoaded, commentsPerPage]
+  );
 
   useEffect(() => {
     setCurrentPage(1);
@@ -400,7 +404,7 @@ export default function CommentList({
     const controller = new AbortController();
     fetchComments(controller.signal);
     return () => controller.abort();
-  }, [sourceId, refreshKey, currentPage]);
+  }, [sourceId, refreshKey, currentPage, fetchComments]);
 
   useEffect(() => {
     if (replyingTo && textareaRef.current) textareaRef.current.focus();
