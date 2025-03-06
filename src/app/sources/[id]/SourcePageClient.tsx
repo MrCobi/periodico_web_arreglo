@@ -12,6 +12,7 @@ import CommentForm from "@/src/app/components/CommentForm";
 import CommentList from "@/src/app/components/CommentList";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 interface SourcePageClientProps {
   source: Source;
@@ -28,6 +29,7 @@ export default function SourcePageClient({
   source,
   articles: initialArticles,
 }: SourcePageClientProps) {
+  const router = useRouter();
   const [articles, setArticles] = useState<Article[]>(initialArticles);
   const [sortBy, setSortBy] = useState<
     "popularity" | "publishedAt" | "relevancy"
@@ -125,27 +127,37 @@ export default function SourcePageClient({
     setRefreshKey((prev) => prev + 1);
   };
 
-  const fetchCommentsCount = useCallback(async () => {
+  const fetchCommentsCount = useCallback(async (invalidateCache = false) => {
     try {
-      const response = await fetch(`/api/comments/count/${source.id}`);
+      const url = `/api/comments/count/${source.id}${
+        invalidateCache ? `?t=${Date.now()}` : ""
+      }`;
+      const response = await fetch(url);
       if (response.ok) {
         const { count } = await response.json();
         setCommentsCount(count);
+        router.refresh();
       }
     } catch (error) {
       console.error("Error obteniendo conteo de comentarios:", error);
     }
-  }, [source.id]);
+  }, [source.id, router]);
 
   useEffect(() => {
-    fetchCommentsCount();
-  }, [refreshKey]);
+    fetchCommentsCount(true);
+  }, []);
 
   useEffect(() => {
+    fetchCommentsCount(true);
+  }, [refreshKey, fetchCommentsCount]);
+
+  useEffect(() => {
+    // Actualizar cada 2 segundos mientras los comentarios están visibles
     if (showComments) {
-      fetchCommentsCount();
+      const interval = setInterval(() => fetchCommentsCount(true), 2000);
+      return () => clearInterval(interval);
     }
-  }, [showComments]);
+  }, [showComments, fetchCommentsCount]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -235,14 +247,14 @@ export default function SourcePageClient({
                 sourceId={source.id}
                 onCommentAdded={() => {
                   fetchComments();
-                  fetchCommentsCount();
+                  fetchCommentsCount(true);
                 }}
               />
               <CommentList
+                key={refreshKey}
                 sourceId={source.id}
                 refreshKey={refreshKey}
-                // Añadir esta prop
-                onCommentsLoaded={(count) => setCommentsCount(count)}
+                //onCommentsLoaded={fetchCommentsCount}
               />
             </div>
           )}

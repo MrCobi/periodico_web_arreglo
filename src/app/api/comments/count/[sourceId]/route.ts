@@ -9,14 +9,19 @@ export async function GET(
   try {
     const { sourceId } = await context.params;
 
-    // Contar todos los comentarios (principales y respuestas) asociados a la fuente
     const count = await prisma.comment.count({
       where: {
         sourceId,
+        
       },
     });
 
-    return NextResponse.json({ count });
+    const headers = new Headers();
+    headers.set("Cache-Control", "no-store, max-age=0");
+    
+    return new NextResponse(JSON.stringify({ count }), {
+      headers: headers
+    });
   } catch (error) {
     console.error("Error obteniendo conteo de comentarios:", error);
     return NextResponse.json(
