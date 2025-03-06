@@ -9,6 +9,7 @@ import { sendEmailVerification } from "@/lib/mail"
 
 // Notice this is only an object, not a full Auth.js instance
 export default {
+  
   providers: [
     Credentials({
       authorize: async (credentials) => {
