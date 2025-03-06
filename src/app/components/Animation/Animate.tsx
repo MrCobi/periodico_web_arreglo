@@ -5,10 +5,12 @@ import { DELAY, useNavigationTransition } from "./context";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 
+// Animate.tsx
 export default function Animate({ children }: PropsWithChildren) {
-  const { pending, isAnimated } = useNavigationTransition(); // Obtener estado de animación
+  const { pending, isAnimated } = useNavigationTransition();
   const pathname = usePathname();
 
+  // Eliminar la lista duplicada de rutas no animadas
   if (!isAnimated) {
     return <div className="flex-1">{children}</div>;
   }

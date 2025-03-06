@@ -25,7 +25,6 @@ const AuthButton = () => {
     handleClose();
   };
 
-
   if (session) {
     return (
       <div style={{ position: "relative" }}>

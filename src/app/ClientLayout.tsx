@@ -9,12 +9,14 @@ import AuthButton from "@/src/app/api/auth/AuthButton/AuthButton";
 import Image from "next/image";
 import { useState } from "react";
 import { Suspense } from "react";
+import { useNavigationTransition } from "./components/Animation/context";
 
 export default function ClientLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  
   return (
     <>
       <Navbar />
@@ -39,11 +41,14 @@ function Navbar() {
   const isAdmin = session?.user?.role === "admin";
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const { navigate } = useNavigationTransition();
+
+  
 
   const handleNavbarSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      router.push(`/Articulos?q=${encodeURIComponent(searchQuery)}`);
+      navigate(`/Articulos?q=${encodeURIComponent(searchQuery)}`, true);
     }
   };
 
