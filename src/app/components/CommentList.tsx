@@ -28,8 +28,10 @@ interface Comment {
 
 interface CommentListProps {
   sourceId: string;
-  refreshKey?: number;
-  onCommentsLoaded?: (count: number) => void;
+  refreshKey: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
+  onCommentsLoaded?: (total: number) => void;
 }
 
 const DeleteConfirmationDialog = ({
@@ -337,6 +339,8 @@ CommentItem.displayName = "CommentItem";
 export default function CommentList({
   sourceId,
   refreshKey,
+  currentPage,
+  onPageChange,
   onCommentsLoaded,
 }: CommentListProps) {
   const { data: session } = useSession();
@@ -351,7 +355,6 @@ export default function CommentList({
   const [visibleReplies, setVisibleReplies] = useState<Set<string>>(new Set());
   const [newComments, setNewComments] = useState<Set<string>>(new Set());
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const commentsPerPage = 5;
   const [deleteState, setDeleteState] = useState({
@@ -379,7 +382,7 @@ export default function CommentList({
 
         if (onCommentsLoaded) onCommentsLoaded(data.total || 0);
         if (currentPage > data.totalPages && data.totalPages > 0) {
-          setCurrentPage(1);
+          onPageChange(1);
         }
 
         setError(null);
@@ -392,13 +395,8 @@ export default function CommentList({
         setIsLoading(false);
       }
     },
-    // 2. Especificar dependencias correctamente
-    [currentPage, sourceId, onCommentsLoaded, commentsPerPage]
+    [currentPage, sourceId, onCommentsLoaded, onPageChange, commentsPerPage]
   );
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [sourceId]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -552,7 +550,7 @@ export default function CommentList({
           {totalPages > 1 && (
             <div className="flex justify-center gap-2 md:gap-4 mt-8">
               <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
                 className="px-3 md:px-4 py-1.5 md:py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm text-sm"
               >
@@ -581,7 +579,7 @@ export default function CommentList({
                 </span>
               </div>
               <button
-                onClick={() => setCurrentPage((p) => p + 1)}
+                onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
                 className="px-3 md:px-4 py-1.5 md:py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm text-sm"
               >

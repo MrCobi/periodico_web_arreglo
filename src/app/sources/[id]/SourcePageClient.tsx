@@ -39,6 +39,8 @@ export default function SourcePageClient({
   const [refreshKey, setRefreshKey] = useState(0);
   const [showComments, setShowComments] = useState(false);
   const [commentsCount, setCommentsCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -122,23 +124,38 @@ export default function SourcePageClient({
     }, 300);
   };
 
-  const fetchComments = () => {
-    setRefreshKey((prev) => prev + 1);
+  const fetchComments = async () => {
+    setIsLoadingComments(true);
+    try {
+      // Aquí puedes hacer una solicitud para recargar los comentarios sin cambiar refreshKey
+      // Por ejemplo, puedes hacer una solicitud directa a la API para obtener los comentarios más recientes
+      const response = await fetch(
+        `/api/comments/list/${source.id}?page=${currentPage}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        // Actualizar los comentarios en el estado si es necesario
+      }
+    } catch (error) {
+      console.error("Error al cargar comentarios:", error);
+    } finally {
+      setIsLoadingComments(false);
+    }
   };
 
   const fetchCommentsCount = useCallback(
     async (invalidateCache = false) => {
       const controller = new AbortController();
-      
+
       try {
         const url = `/api/comments/count/${source.id}${
           invalidateCache ? `?t=${Date.now()}` : ""
         }`;
-        
+
         const response = await fetch(url, {
-          signal: controller.signal
+          signal: controller.signal,
         });
-        
+
         if (response.ok) {
           const { count } = await response.json();
           setCommentsCount(count);
@@ -148,28 +165,28 @@ export default function SourcePageClient({
           console.error("Error obteniendo conteo:", error);
         }
       }
-      
+
       return () => controller.abort();
-    }, 
+    },
     [source.id, setCommentsCount] // Dependencias actualizadas
   );
-  
+
   useEffect(() => {
     fetchCommentsCount(true);
   }, [fetchCommentsCount]); // Dependencia añadida
-  
+
   useEffect(() => {
     fetchCommentsCount(true);
   }, [refreshKey, fetchCommentsCount]);
-  
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (showComments) {
-      fetchCommentsCount(true); 
+      fetchCommentsCount(true);
       interval = setInterval(() => fetchCommentsCount(true), 10000);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -181,14 +198,14 @@ export default function SourcePageClient({
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (showComments) {
       // Primera llamada inmediata
-      fetchCommentsCount(true); 
+      fetchCommentsCount(true);
       // Luego cada 10 segundos
       interval = setInterval(() => fetchCommentsCount(true), 10000);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -285,11 +302,39 @@ export default function SourcePageClient({
                   fetchCommentsCount(true);
                 }}
               />
-              <CommentList
-                key={refreshKey}
-                sourceId={source.id}
-                refreshKey={refreshKey}
-              />
+              {isLoadingComments ? (
+                <div className="text-center py-4">
+                  <svg
+                    className="animate-spin h-8 w-8 text-blue-600 mx-auto"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <p className="text-gray-600 mt-2">Cargando comentarios...</p>
+                </div>
+              ) : (
+                <CommentList
+                  key={refreshKey}
+                  sourceId={source.id}
+                  refreshKey={refreshKey}
+                  currentPage={currentPage}
+                  onPageChange={setCurrentPage}
+                />
+              )}
             </div>
           )}
         </div>
