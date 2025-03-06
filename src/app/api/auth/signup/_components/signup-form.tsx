@@ -19,6 +19,7 @@ import { useState, useTransition, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 const ExtendedSignUpSchema = SignUpSchema.extend({
   confirmPassword: z.string()
@@ -38,6 +39,7 @@ export default function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const { update } = useSession();
 
   const form = useForm<z.infer<typeof ExtendedSignUpSchema>>({
     resolver: zodResolver(ExtendedSignUpSchema),
@@ -112,7 +114,7 @@ export default function SignupForm() {
   }, []);
 
 
-const onSubmit = useCallback(async (values: z.infer<typeof ExtendedSignUpSchema>) => {
+  const onSubmit = useCallback(async (values: z.infer<typeof ExtendedSignUpSchema>) => {
     setError(null);
     setUploadProgress(0);
 
@@ -138,6 +140,7 @@ const onSubmit = useCallback(async (values: z.infer<typeof ExtendedSignUpSchema>
           if (response.error) {
             setError(response.error);
           } else {
+            await update(); // Actualiza la sesión
             router.push("/");
           }
         } catch (err) {
@@ -148,7 +151,7 @@ const onSubmit = useCallback(async (values: z.infer<typeof ExtendedSignUpSchema>
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al procesar la solicitud");
     }
-  }, [file, router, startTransition, uploadFile]);
+  }, [file, router, startTransition, uploadFile, update]);
 
   const StrengthIndicator = useCallback(() => (
     <div className="flex gap-1 mt-1">

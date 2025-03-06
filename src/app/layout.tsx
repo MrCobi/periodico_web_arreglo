@@ -5,6 +5,8 @@ import Animate from "./components/Animation/Animate";
 import { SessionProvider } from "next-auth/react";
 import ClientLayout from "./ClientLayout";
 
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -16,7 +18,7 @@ export default function RootLayout({
         <SessionProvider>
           <Transitions>
             <Animate>
-            <ClientLayout>{children}</ClientLayout>
+              <ClientLayout>{children}</ClientLayout>
             </Animate>
           </Transitions>
         </SessionProvider>
