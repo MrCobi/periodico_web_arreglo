@@ -7,7 +7,23 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { User } from "@prisma/client";
 
-// auth.ts
+declare module "next-auth" {
+  interface User {
+    createdAt?: Date;
+  }
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      role: string;
+      username?: string | null;
+      email?: string | null;
+      image?: string | null;
+      createdAt?: Date;
+    };
+  }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
@@ -17,19 +33,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/api/auth/error",
   },
   callbacks: {
-    // auth.ts
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.username = user.username;
-        token.name = user.name; // Añade esto
-        token.image = user.image || "/images/AvatarPredeterminado.webp"; // Fallback directo
+        token.name = user.name;
+        token.image = user.image || "/images/AvatarPredeterminado.webp";
+        token.createdAt = user.createdAt; // Añadir esta línea
       }
       return token;
     },
     async session({ session, token }) {
-      const user = await prisma.user.findUnique({ where: { id: token.id } });
+      const user = await prisma.user.findUnique({
+        where: { id: token.id },
+        select: {
+          image: true,
+          createdAt: true // Incluir este campo
+        }
+      });
+      
       session.user = {
         ...session.user,
         id: token.id as string,
@@ -38,6 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         username: token.username as string,
         email: token.email as string,
         image: user?.image || "/images/AvatarPredeterminado.webp",
+        createdAt: user?.createdAt // Añadir esta propiedad
       };
       return session;
     }
