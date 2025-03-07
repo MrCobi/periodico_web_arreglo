@@ -1,19 +1,33 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { Source } from "@/src/interface/source";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/src/app/components/ui/card";
-import { LogOut, ChevronRight, Mail, User2, Newspaper, Settings, Home } from "lucide-react";
+import { 
+  LogOut, 
+  ChevronRight, 
+  Mail, 
+  User2, 
+  Newspaper, 
+  Settings, 
+  Home,
+  Star,
+  ExternalLink,
+  Menu,
+  Calendar,
+  MessageSquare,
+  Edit3
+} from "lucide-react";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
   const [favoriteSources, setFavoriteSources] = useState<Source[]>([]);
 
@@ -49,8 +63,11 @@ export default function DashboardPage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-blue-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-blue-900/30 dark:to-blue-800/20">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent dark:border-blue-400"></div>
+          <p className="mt-4 text-blue-800 dark:text-blue-300 font-medium">Cargando perfil...</p>
+        </div>
       </div>
     );
   }
@@ -67,29 +84,146 @@ export default function DashboardPage() {
     { icon: Newspaper, label: "Mis Periódicos", href: "/newspapers", active: false },
   ];
 
+  const stats = [
+    { icon: Star, label: "Favoritos", value: favoriteSources.length, color: "text-yellow-500" },
+    { icon: Newspaper, label: "Artículos", value: 0, color: "text-blue-500" },
+    { icon: MessageSquare, label: "Comentarios", value: 0, color: "text-green-500" },
+    { icon: Calendar, label: "Días activo", value: 0, color: "text-purple-500" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-blue-900/30 dark:to-blue-800/20">
       {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-blue-200/20 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-100/20 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-blue-300/20 dark:bg-blue-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-200/20 dark:bg-blue-600/10 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative">
+        {/* Mobile Header */}
+        <div className="lg:hidden flex items-center justify-between mb-6">
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="relative w-10 h-10">
+              <Image
+                src="/images/default_periodico.jpg"
+                alt="Logo"
+                layout="fill"
+                className="rounded-lg object-cover"
+                priority
+              />
+            </div>
+            <span className="text-xl font-semibold text-blue-900 dark:text-white">Hemeroteca</span>
+          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="text-blue-800 dark:text-blue-200"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+        </div>
+
+        {/* Mobile Menu */}
+        <div 
+          className={`lg:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-all duration-300 ${
+            mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div 
+            className={`absolute right-0 top-0 h-full w-72 bg-white dark:bg-gray-900 shadow-xl transform transition-transform duration-300 ease-out ${
+              mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center space-x-3">
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden">
+                    <Image
+                      src={user?.image || "/images/AvatarPredeterminado.webp"}
+                      alt={user?.name || "Avatar"}
+                      layout="fill"
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{user?.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">@{user?.username}</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-gray-500"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+              
+              <nav className="space-y-2">
+                {menuItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={`flex items-center px-4 py-3 rounded-xl transition-all ${
+                      item.active
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                    }`}
+                  >
+                    <item.icon className="h-5 w-5 mr-3" />
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+
+                <Button
+                  className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    signOut({ redirect: false }).then(() => router.push("/signin"));
+                  }}
+                >
+                  <LogOut className="h-5 w-5 mr-2" />
+                  Cerrar sesión
+                </Button>
+              </nav>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar */}
-          <aside className={`transition-all duration-300 ${isOpen ? "lg:w-64" : "lg:w-20"} bg-white/70 backdrop-blur-lg rounded-2xl p-4 shadow-lg hidden lg:block`}>
-            <div className="flex justify-end mb-6">
+          <aside className={`hidden lg:block transition-all duration-300 ${
+            isOpen ? "w-64" : "w-20"
+          } bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl p-4 shadow-lg sticky top-6 h-[calc(100vh-3rem)]`}>
+            <div className="flex items-center justify-between mb-8">
+              <Link href="/" className={`flex items-center ${!isOpen && 'justify-center'}`}>
+                <div className="relative w-10 h-10">
+                  <Image
+                    src="/images/default_periodico.jpg"
+                    alt="Logo"
+                    layout="fill"
+                    className="rounded-lg object-cover"
+                    priority
+                  />
+                </div>
+                {isOpen && <span className="ml-3 text-xl font-semibold text-blue-900 dark:text-white">Hemeroteca</span>}
+              </Link>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-gray-600 hover:bg-white/50"
+                className="text-gray-600 dark:text-gray-300"
               >
                 <ChevronRight className={`h-5 w-5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
               </Button>
             </div>
-            <nav className="space-y-2">
+            
+            <nav className="flex flex-col h-[calc(100%-8rem)] space-y-2">
               {menuItems.map((item) => (
                 <Link
                   key={item.label}
@@ -97,104 +231,181 @@ export default function DashboardPage() {
                   className={`flex items-center px-4 py-3 rounded-xl transition-all ${
                     item.active
                       ? "bg-blue-600 text-white"
-                      : "text-gray-600 hover:bg-white/50"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900/30"
                   } ${!isOpen ? "justify-center" : ""}`}
                 >
                   <item.icon className="h-5 w-5" />
                   {isOpen && <span className="ml-3">{item.label}</span>}
                 </Link>
               ))}
+              
+              <Button
+                className={`mt-auto ${isOpen ? "w-full" : ""} bg-red-600 hover:bg-red-700 text-white`}
+                onClick={() => signOut({ redirect: false }).then(() => router.push("/signin"))}
+              >
+                <LogOut className="h-5 w-5" />
+                {isOpen && <span className="ml-2">Cerrar sesión</span>}
+              </Button>
             </nav>
           </aside>
 
-          {/* Mobile Navigation */}
-          <div className="lg:hidden flex justify-between items-center mb-6 bg-white/70 backdrop-blur-lg rounded-xl p-4 shadow-lg">
-            <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-600 hover:bg-white/50"
-            >
-              <ChevronRight className={`h-5 w-5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-            </Button>
-          </div>
-
           {/* Main Content */}
           <main className="flex-1 space-y-6">
-            <Card className="bg-white/70 backdrop-blur-lg shadow-lg border-0">
-              <div className="p-6">
-                <div className="flex flex-col md:flex-row gap-8">
-                  {/* Avatar Section */}
-                  <div className="md:w-1/4 max-w-[300px]">
-                    <div className="relative group">
-                      <div className="relative rounded-2xl overflow-hidden w-full aspect-square max-w-[300px]">
-                        <Image
-                          src={user?.image || "/images/AvatarPredeterminado.webp"}
-                          alt={user?.name || "Avatar"}
-                          fill
-                          className="object-cover transition-transform group-hover:scale-105"
-                        />
-                      </div>
-                      <Button
-                        className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-300 hover:scale-[1.02]"
-                        onClick={() => router.push(`/users/edit/${user.username}`)}
-                      >
-                        Editar foto de perfil
-                      </Button>
+            {/* Profile Card - Improved Design */}
+            <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg shadow-xl border-0 overflow-hidden">
+              <div className="p-6 sm:p-8 relative">
+                <div className="flex flex-col items-center sm:flex-row sm:items-center gap-8">
+                  {/* Enhanced Profile Image */}
+                  <div className="relative group">
+                    <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-2xl transition-all duration-300 group-hover:scale-[1.03] z-10">
+                      <Image
+                        src={user?.image || "/images/AvatarPredeterminado.webp"}
+                        alt={user?.name || "Avatar"}
+                        layout="fill"
+                        className="object-cover"
+                        priority
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/images/AvatarPredeterminado.webp";
+                        }}
+                      />
                     </div>
                   </div>
 
-                  {/* User Info Section */}
-                  <div className="flex-1">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                      {user?.name || "Nombre del usuario"}
-                    </h1>
-                    <div className="text-blue-600 mb-6">@{user?.username || "username"}</div>
-
-                    <div className="grid gap-4">
-                      <div className="flex items-center text-gray-700 bg-white/50 backdrop-blur-sm rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]">
-                        <Mail className="h-5 w-5 mr-3 text-blue-600" />
-                        {user?.email || "email@example.com"}
+                  {/* User Info with Enhanced Design */}
+                  <div className="flex-1 text-center sm:text-left mt-6 sm:mt-0">
+                    <div className="space-y-6">
+                      <div>
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white tracking-tight">
+                          {user?.name || "Nombre del usuario"}
+                        </h1>
+                        <p className="text-xl text-blue-600 dark:text-blue-400 font-medium mt-2">
+                          @{user?.username || "username"}
+                        </p>
                       </div>
-                      <div className="flex items-center text-gray-700 bg-white/50 backdrop-blur-sm rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]">
-                        <User2 className="h-5 w-5 mr-3 text-blue-600" />
-                        {user?.role || "Usuario"}
-                      </div>
-                    </div>
 
-                    {/* Favorites Section */}
-                    <div className="mt-8">
-                      <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
-                        <Newspaper className="h-6 w-6 mr-2 text-blue-600" />
-                        Periódicos favoritos
-                      </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {favoriteSources.map((source) => (
-                          <div
-                            key={source.id}
-                            className="p-4 bg-white/50 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border border-white/20"
-                          >
-                            <h3 className="text-blue-600 font-medium mb-2">
-                              {source.name}
-                            </h3>
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex items-center justify-center sm:justify-start p-3 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl backdrop-blur-sm border border-blue-100/50 dark:border-blue-800/50 shadow-sm hover:shadow transition-shadow">
+                          <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-800/50 mr-3">
+                            <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                           </div>
-                        ))}
+                          <div>
+                            <p className="text-xs text-blue-600/70 dark:text-blue-400/70 font-medium">Email</p>
+                            <p className="text-gray-700 dark:text-gray-300 font-medium truncate max-w-[200px] sm:max-w-[250px]">
+                              {user?.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-center sm:justify-start p-3 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl backdrop-blur-sm border border-blue-100/50 dark:border-blue-800/50 shadow-sm hover:shadow transition-shadow">
+                          <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-800/50 mr-3">
+                            <User2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-blue-600/70 dark:text-blue-400/70 font-medium">Rol</p>
+                            <p className="text-gray-700 dark:text-gray-300 font-medium">
+                              {user?.role || "Usuario"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Button
+                          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                          onClick={() => router.push(`/users/edit/${user.username}`)}
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Editar perfil
+                        </Button>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Enhanced Stats Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12">
+                  {stats.map((stat, index) => (
+                    <div 
+                      key={index} 
+                      className="relative group bg-gradient-to-br from-white/90 to-white/60 dark:from-gray-800/90 dark:to-gray-800/60 rounded-xl p-5 text-center backdrop-blur-sm border border-white/20 dark:border-gray-700/20 hover:border-white/40 dark:hover:border-gray-700/40 transition-all shadow-md hover:shadow-lg"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="relative">
+                        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-${stat.color.split('-')[1]}-100 to-${stat.color.split('-')[1]}-50 dark:from-${stat.color.split('-')[1]}-900/30 dark:to-${stat.color.split('-')[1]}-800/20 mb-3 mx-auto`}>
+                          <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                        </div>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{stat.label}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </Card>
 
-            {/* Logout Button */}
-            <Button
-              className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white shadow-lg transition-all duration-300 hover:scale-[1.02]"
-              onClick={() => signOut({ redirect: false }).then(() => router.push("/signin"))}
-            >
-              <LogOut className="h-5 w-5 mr-2" />
-              Cerrar sesión
-            </Button>
+            {/* Favorites Section */}
+            <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg shadow-xl border-0">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center">
+                    <Star className="h-6 w-6 mr-2 text-yellow-500" />
+                    Periódicos favoritos
+                  </h2>
+                  <Link 
+                    href="/sources" 
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center"
+                  >
+                    Ver todos <ExternalLink className="h-4 w-4 ml-1" />
+                  </Link>
+                </div>
+
+                {favoriteSources.length === 0 ? (
+                  <div className="text-center py-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                    <Newspaper className="h-16 w-16 mx-auto text-blue-400 mb-4" />
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">No tienes periódicos favoritos</p>
+                    <Button 
+                      className="bg-blue-600 hover:bg-blue-700 text-white transition-transform hover:scale-105"
+                      onClick={() => router.push('/sources')}
+                    >
+                      Explorar periódicos
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {favoriteSources.map((source) => (
+                      <Link
+                        href={`/sources/${source.id}`}
+                        key={source.id}
+                        className="group"
+                      >
+                        <div className="p-5 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30">
+                          <div className="flex items-start justify-between mb-3">
+                            <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                              {source.name}
+                            </h3>
+                            <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                          </div>
+                          <p className="text-gray-600 dark:text-gray-400 text-sm">
+                            {source.language === 'es' ? 'Español' : source.language === 'en' ? 'Inglés' : source.language}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg shadow-xl border-0">
+              <div className="p-6">
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Actividad reciente</h2>
+                <div className="text-center py-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                  <MessageSquare className="h-16 w-16 mx-auto text-blue-400 mb-4" />
+                  <p className="text-gray-600 dark:text-gray-400">No hay actividad reciente</p>
+                </div>
+              </div>
+            </Card>
           </main>
         </div>
       </div>

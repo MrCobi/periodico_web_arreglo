@@ -17,17 +17,17 @@ export function StarRating({ sourceId }: { sourceId: string }) {
     const fetchRatings = async () => {
       try {
         if (session?.user?.id) {
-          const userRes = await fetch(`/api/sources/ratings?sourceId=${sourceId}`);
+          const userRes = await fetch(`/api/sources/ratings?sourceId=${sourceId}&t=${Date.now()}`);
           if (!userRes.ok) throw new Error("Error al obtener la valoración del usuario");
           const userData = await userRes.json();
           setUserRating(userData.rating || 0);
         }
 
-        const avgRes = await fetch(`/api/sources/ratings/average?sourceId=${sourceId}`);
+        const avgRes = await fetch(`/api/sources/ratings/average?sourceId=${sourceId}&t=${Date.now()}`);
         if (!avgRes.ok) throw new Error("Error al obtener la media de valoraciones");
         const avgData = await avgRes.json();
         setAverageRating(avgData.average);
-        setTotalRatings(avgData.total || 0);
+        setTotalRatings(avgData.total);
       } catch (error) {
         console.error("Error fetching ratings:", error);
       }
@@ -51,7 +51,7 @@ export function StarRating({ sourceId }: { sourceId: string }) {
 
       setUserRating(value);
       
-      const avgRes = await fetch(`/api/sources/ratings/average?sourceId=${sourceId}`);
+      const avgRes = await fetch(`/api/sources/ratings/average?sourceId=${sourceId}&t=${Date.now()}`);
       if (!avgRes.ok) throw new Error("Error al obtener la media actualizada");
       const avgData = await avgRes.json();
       setAverageRating(avgData.average);
@@ -76,7 +76,7 @@ export function StarRating({ sourceId }: { sourceId: string }) {
 
       setUserRating(0);
       
-      const avgRes = await fetch(`/api/sources/ratings/average?sourceId=${sourceId}`);
+      const avgRes = await fetch(`/api/sources/ratings/average?sourceId=${sourceId}&t=${Date.now()}`);
       if (!avgRes.ok) throw new Error("Error al obtener la media actualizada");
       const avgData = await avgRes.json();
       setAverageRating(avgData.average);
@@ -122,6 +122,19 @@ export function StarRating({ sourceId }: { sourceId: string }) {
     );
   };
 
+  const formatRatingCount = (count: number): string => {
+    if (count >= 1_000_000) {
+      return `${(count / 1_000_000).toFixed(1)}M`;
+    }
+    if (count >= 10_000) {
+      return `${Math.round(count / 1000)}k`;
+    }
+    if (count >= 1_000) {
+      return `${(count / 1_000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
+
   return (
     <div className="space-y-3 sm:space-y-4">
       <div className="bg-gradient-to-br from-blue-600/10 to-indigo-600/10 p-3 sm:p-4 rounded-xl backdrop-blur-sm border border-white/20">
@@ -138,7 +151,7 @@ export function StarRating({ sourceId }: { sourceId: string }) {
             onMouseLeave={() => setShowTooltip(false)}
           >
             <span className="text-xs sm:text-sm text-white/80 cursor-help">
-              {totalRatings} {totalRatings === 1 ? 'valoración' : 'valoraciones'}
+            {formatRatingCount(totalRatings)} {totalRatings === 1 ? 'valoración' : 'valoraciones'}
             </span>
             {showTooltip && (
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 sm:px-3 py-1 bg-black/90 text-white text-xs rounded whitespace-nowrap z-10">

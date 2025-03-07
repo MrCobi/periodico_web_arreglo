@@ -14,21 +14,18 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Obtener todas las valoraciones de la fuente
     const ratings = await prisma.rating.findMany({
-      where: {
-        sourceId,
-      },
-      select: {
-        value: true,
-      },
+      where: { sourceId },
     });
 
-    // Calcular la media
-    const total = ratings.reduce((sum, rating) => sum + rating.value, 0);
-    const average = ratings.length > 0 ? total / ratings.length : 0;
+    const totalRatings = ratings.length; // Nuevo: Obtener conteo total
+    const totalValue = ratings.reduce((sum, r) => sum + r.value, 0);
+    const average = totalRatings > 0 ? totalValue / totalRatings : 0;
 
-    return NextResponse.json({ average });
+    return NextResponse.json({
+      average,
+      total: totalRatings // Añadir total a la respuesta
+    });
   } catch (error) {
     console.error("Error al obtener la valoración media:", error);
     return NextResponse.json(
