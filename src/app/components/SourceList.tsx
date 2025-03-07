@@ -17,11 +17,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/app/components/ui/card";
-import { Search, Globe2, Star, Info, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import {
+  Search,
+  Globe2,
+  Star,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Source } from "@/src/interface/source";
-
-
+import { useSession } from "next-auth/react";
 
 const languages = [
   { code: "es", name: "Español", flag: "🇪🇸" },
@@ -41,6 +49,7 @@ interface SourcesListProps {
 
 export default function SourcesPage({ sources }: SourcesListProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
@@ -64,18 +73,59 @@ export default function SourcesPage({ sources }: SourcesListProps) {
   const totalPages = Math.ceil(filteredSources.length / sourcesPerPage);
   const indexOfLastSource = currentPage * sourcesPerPage;
   const indexOfFirstSource = indexOfLastSource - sourcesPerPage;
-  const currentSources = filteredSources.slice(indexOfFirstSource, indexOfLastSource);
+  const currentSources = filteredSources.slice(
+    indexOfFirstSource,
+    indexOfLastSource
+  );
 
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(id)) {
-        newFavorites.delete(id);
-      } else {
-        newFavorites.add(id);
+  useEffect(() => {
+    setIsLoaded(true);
+    loadFavorites();
+  }, []);
+
+  const loadFavorites = async () => {
+    if (session?.user?.id) {
+      try {
+        const response = await fetch("/api/favorites/list");
+        if (response.ok) {
+          const data = await response.json();
+          setFavorites(new Set(data.favoriteIds));
+        }
+      } catch (error) {
+        console.error("Error cargando favoritos:", error);
       }
-      return newFavorites;
-    });
+    }
+  };
+
+  const toggleFavorite = async (sourceId: string) => {
+    if (!session?.user?.id) {
+      alert("Debes iniciar sesión para agregar a favoritos");
+      return;
+    }
+
+    try {
+      if (favorites.has(sourceId)) {
+        await fetch("/api/favorites/remove", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sourceId }),
+        });
+        setFavorites((prev) => {
+          const newFav = new Set(prev);
+          newFav.delete(sourceId);
+          return newFav;
+        });
+      } else {
+        await fetch("/api/favorites/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sourceId }),
+        });
+        setFavorites((prev) => new Set(prev).add(sourceId));
+      }
+    } catch (error) {
+      console.error("Error al actualizar favoritos:", error);
+    }
   };
 
   const navigateToSource = (sourceId: string) => {
@@ -191,15 +241,17 @@ export default function SourcesPage({ sources }: SourcesListProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-4 left-4 text-yellow-400 hover:text-yellow-500 bg-white/20 backdrop-blur-sm hover:bg-white/30"
+                    className="absolute top-4 left-4 text-yellow-400 hover:text-yellow-500 bg-white/90 backdrop-blur-sm hover:bg-white/100 shadow-md hover:shadow-lg" // Contraste mejorado
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleFavorite(source.id);
                     }}
                   >
                     <Star
-                      className={`w-5 h-5 ${
-                        favorites.has(source.id) ? "fill-current" : ""
+                      className={`w-6 h-6 ${
+                        favorites.has(source.id)
+                          ? "fill-current stroke-yellow-600"
+                          : "stroke-current stroke-2"
                       }`}
                     />
                   </Button>
@@ -210,7 +262,7 @@ export default function SourcesPage({ sources }: SourcesListProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-between items-center">
-                    <Button 
+                    <Button
                       variant="default"
                       size="sm"
                       className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -245,13 +297,13 @@ export default function SourcesPage({ sources }: SourcesListProps) {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
                 className="w-10 h-10 p-0"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              
+
               <div className="flex items-center space-x-1">
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum;
@@ -285,7 +337,9 @@ export default function SourcesPage({ sources }: SourcesListProps) {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
                 disabled={currentPage === totalPages}
                 className="w-10 h-10 p-0"
               >
@@ -301,9 +355,11 @@ export default function SourcesPage({ sources }: SourcesListProps) {
                 <ChevronsRight className="h-4 w-4" />
               </Button>
             </div>
-            
+
             <p className="text-sm text-gray-600">
-              Mostrando {indexOfFirstSource + 1} - {Math.min(indexOfLastSource, filteredSources.length)} de {filteredSources.length} fuentes
+              Mostrando {indexOfFirstSource + 1} -{" "}
+              {Math.min(indexOfLastSource, filteredSources.length)} de{" "}
+              {filteredSources.length} fuentes
             </p>
           </div>
         )}
@@ -316,7 +372,8 @@ export default function SourcesPage({ sources }: SourcesListProps) {
               No se encontraron resultados
             </h3>
             <p className="text-blue-600">
-              Intenta con otros términos de búsqueda o cambia el filtro de idioma
+              Intenta con otros términos de búsqueda o cambia el filtro de
+              idioma
             </p>
           </div>
         )}

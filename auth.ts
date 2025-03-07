@@ -34,6 +34,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         ...session.user,
         id: token.id as string,
         name: token.name as string,
+        role: token.role as string,
+        username: token.username as string,
         email: token.email as string,
         image: user?.image || "/images/AvatarPredeterminado.webp",
       };
