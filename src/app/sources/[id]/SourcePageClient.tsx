@@ -146,9 +146,8 @@ export default function SourcePageClient({
       const controller = new AbortController();
 
       try {
-        const url = `/api/comments/count/${source.id}${
-          invalidateCache ? `?t=${Date.now()}` : ""
-        }`;
+        const url = `/api/comments/count/${source.id}${invalidateCache ? `?t=${Date.now()}` : ""
+          }`;
 
         const response = await fetch(url, {
           signal: controller.signal,
@@ -211,53 +210,58 @@ export default function SourcePageClient({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <header className="relative bg-gradient-to-br from-blue-800 via-blue-700 to-indigo-800 py-16 md:py-24">
-        <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30" />
+      <header className="relative bg-blue-800 py-16 md:py-24 overflow-hidden">
+        {/* Simplificación de capas de fondo */}
+        <div className="absolute inset-0 bg-black/20" />
 
-        {/* Animated background patterns */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full">
-            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-            <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse-slow delay-1000"></div>
-          </div>
+        {/* Patrones de fondo optimizados */}
+        <div className="absolute inset-0 opacity-10">
+          {/* Reemplazar blur por SVG para mejor rendimiento */}
+          <svg
+            className="w-full h-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="xMidYMid slice"
+          >
+            <circle
+              cx="25"
+              cy="75"
+              r="30"
+              fill="rgba(59, 130, 246, 0.15)"
+              className="animate-pulse-slow"
+            />
+            <circle
+              cx="75"
+              cy="25"
+              r="25"
+              fill="rgba(79, 70, 229, 0.1)"
+              className="animate-pulse-slow delay-1000"
+            />
+          </svg>
         </div>
 
+        {/* Contenido principal */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Botón de favoritos más responsivo */}
           <button
             onClick={() => handleFavoriteClick(source.id)}
-            className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-white/90 hover:bg-white p-2 sm:p-3 rounded-full text-base sm:text-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl z-10"
-            title={
-              favorites.has(source.id)
-                ? "Eliminar de favoritos"
-                : "Agregar a favoritos"
-            }
-            aria-label={
-              favorites.has(source.id)
-                ? "Eliminar de favoritos"
-                : "Agregar a favoritos"
-            }
+            className="absolute top-4 right-4 bg-white/90 hover:bg-white p-2 rounded-full text-xl transition-transform duration-300 hover:scale-105 shadow-lg z-10"
+            style={{ willChange: "transform" }} // Mejora rendimiento de animación
           >
-            <span className="block">
-              {favorites.has(source.id) ? "★" : "☆"}
-            </span>
+            {favorites.has(source.id) ? "★" : "☆"}
           </button>
 
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
                 {source.name}
               </h1>
-              <p className="text-lg md:text-xl text-gray-100/90 mb-6 max-w-2xl leading-relaxed">
+              <p className="text-xl text-gray-100/90 mb-6 max-w-2xl">
                 {source.description}
               </p>
-              
-              {/* Componente de valoración más responsivo */}
-              <div className="w-full max-w-xs sm:max-w-sm mx-auto md:mx-0 mb-6">
+
+              <div className="w-full max-w-sm md:mx-0 mb-6">
                 <StarRating sourceId={source.id} />
               </div>
-              
+
               <a
                 href={source.url}
                 target="_blank"
@@ -283,11 +287,11 @@ export default function SourcePageClient({
 
             {source.imageUrl && (
               <div className="md:ml-4 transform hover:scale-105 transition-transform duration-300">
-                <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white/90 shadow-2xl relative">
+                <div className="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white/90 shadow-2xl relative">
                   <SourceImage
                     imageUrl={source.imageUrl}
                     name={source.name}
-                    size="xlarge"
+                    size="xlarge"// Carga prioritária de la imagen
                   />
                 </div>
               </div>
@@ -306,9 +310,8 @@ export default function SourcePageClient({
               Comentarios ({commentsCount})
             </h2>
             <ChevronDownIcon
-              className={`w-5 h-5 sm:w-6 sm:h-6 transform transition-transform ${
-                showComments ? "rotate-180" : ""
-              }`}
+              className={`w-5 h-5 sm:w-6 sm:h-6 transform transition-transform ${showComments ? "rotate-180" : ""
+                }`}
             />
           </button>
 
@@ -367,11 +370,10 @@ export default function SourcePageClient({
                 Artículos Destacados por{" "}
                 <span
                   onClick={rotateSort}
-                  className={`text-blue-600 cursor-pointer inline-block transition-all duration-300 ${
-                    isAnimating
+                  className={`text-blue-600 cursor-pointer inline-block transition-all duration-300 ${isAnimating
                       ? "opacity-0 transform -translate-y-4"
                       : "opacity-100"
-                  }`}
+                    }`}
                 >
                   {sortLabels[sortBy]}
                 </span>
@@ -382,32 +384,31 @@ export default function SourcePageClient({
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 bg-white p-2 rounded-lg shadow-sm self-end">
-              <span className="text-xs sm:text-sm text-gray-500">Ordenar por:</span>
+              <span className="text-xs sm:text-sm text-gray-500">
+                Ordenar por:
+              </span>
               <div className="flex gap-1">
                 <span
-                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${
-                    sortBy === "relevancy"
+                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${sortBy === "relevancy"
                       ? "bg-blue-600 text-white"
                       : "text-gray-500"
-                  }`}
+                    }`}
                 >
                   Relevancia
                 </span>
                 <span
-                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${
-                    sortBy === "popularity"
+                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${sortBy === "popularity"
                       ? "bg-blue-600 text-white"
                       : "text-gray-500"
-                  }`}
+                    }`}
                 >
                   Popularidad
                 </span>
                 <span
-                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${
-                    sortBy === "publishedAt"
+                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${sortBy === "publishedAt"
                       ? "bg-blue-600 text-white"
                       : "text-gray-500"
-                  }`}
+                    }`}
                 >
                   Fecha
                 </span>
