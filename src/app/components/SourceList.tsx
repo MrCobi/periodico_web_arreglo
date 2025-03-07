@@ -30,6 +30,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Source } from "@/src/interface/source";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 const languages = [
   { code: "es", name: "Español", flag: "🇪🇸" },
@@ -45,9 +46,19 @@ const languages = [
 
 interface SourcesListProps {
   sources: Source[];
+  showFilters?: boolean;
+  showPagination?: boolean;
+  isFavoritePage?: boolean;
+  onFavoriteUpdate?: (sourceId: string) => void;
 }
 
-export default function SourcesPage({ sources }: SourcesListProps) {
+export default function SourcesPage({
+  sources,
+  showFilters = true,
+  showPagination = true,
+  isFavoritePage = false,
+  onFavoriteUpdate,
+}: SourcesListProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
@@ -103,6 +114,10 @@ export default function SourcesPage({ sources }: SourcesListProps) {
       return;
     }
 
+    if (isFavoritePage && favorites.has(sourceId)) {
+      onFavoriteUpdate?.(sourceId);
+    }
+
     try {
       if (favorites.has(sourceId)) {
         await fetch("/api/favorites/remove", {
@@ -135,83 +150,90 @@ export default function SourcesPage({ sources }: SourcesListProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-600/5 to-indigo-600/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Header */}
-        <div
-          className={`text-center mb-16 transition-all duration-1000 ${
-            isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-        >
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            Fuentes de Noticias
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Explora nuestra colección de periódicos y medios de comunicación de
-            todo el mundo.
-          </p>
-          <div className="h-1 w-20 bg-blue-600 mx-auto mt-6"></div>
-        </div>
-
-        {/* Filters */}
-        <div
-          className={`mb-12 transition-all duration-1000 delay-200 ${
-            isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-        >
-          <Card className="backdrop-blur-sm bg-white/80 border-blue-100">
-            <CardHeader>
-              <CardTitle className="text-blue-900">Filtrar Fuentes</CardTitle>
-              <CardDescription>
-                Encuentra las fuentes que más te interesan
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <Select
-                    value={selectedLanguage}
-                    onValueChange={(value) => {
-                      setSelectedLanguage(value);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <Globe2 className="w-4 h-4 mr-2" />
-                      <SelectValue placeholder="Seleccionar idioma" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los idiomas</SelectItem>
-                      {languages.map((lang) => (
-                        <SelectItem key={lang.code} value={lang.code}>
-                          <span className="flex items-center">
-                            <span className="mr-2">{lang.flag}</span>
-                            {lang.name}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      type="text"
-                      placeholder="Buscar por nombre..."
-                      value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
+        {/* Header condicional */}
+        {!isFavoritePage && (
+          <div
+            className={`text-center mb-16 transition-all duration-1000 ${
+              isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+            }`}
+          >
+            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+              {isFavoritePage ? 'Mis Favoritos' : 'Fuentes de Noticias'}
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              {isFavoritePage
+                ? 'Tu colección personal de periódicos favoritos'
+                : 'Explora nuestra colección de periódicos y medios de comunicación de todo el mundo'}
+            </p>
+            <div className="h-1 w-20 bg-blue-600 mx-auto mt-6"></div>
+          </div>
+        )}
+  
+        {/* Filtros condicionales */}
+        {showFilters && (
+          <div
+            className={`mb-12 transition-all duration-1000 delay-200 ${
+              isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+            }`}
+          >
+            <Card className="backdrop-blur-sm bg-white/80 border-blue-100">
+              <CardHeader>
+                <CardTitle className="text-blue-900">Filtrar Fuentes</CardTitle>
+                <CardDescription>
+                  {isFavoritePage 
+                    ? 'Filtra tus favoritos' 
+                    : 'Encuentra las fuentes que más te interesan'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <Select
+                      value={selectedLanguage}
+                      onValueChange={(value) => {
+                        setSelectedLanguage(value);
                         setCurrentPage(1);
                       }}
-                      className="pl-10"
-                    />
+                    >
+                      <SelectTrigger className="w-full">
+                        <Globe2 className="w-4 h-4 mr-2" />
+                        <SelectValue placeholder="Seleccionar idioma" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los idiomas</SelectItem>
+                        {languages.map((lang) => (
+                          <SelectItem key={lang.code} value={lang.code}>
+                            <span className="flex items-center">
+                              <span className="mr-2">{lang.flag}</span>
+                              {lang.name}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        type="text"
+                        placeholder="Buscar por nombre..."
+                        value={searchTerm}
+                        onChange={(e) => {
+                          setSearchTerm(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="pl-10"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sources Grid */}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+  
+        {/* Grid de fuentes */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {currentSources.map((source, index) => (
             <div
@@ -241,7 +263,7 @@ export default function SourcesPage({ sources }: SourcesListProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-4 left-4 text-yellow-400 hover:text-yellow-500 bg-white/90 backdrop-blur-sm hover:bg-white/100 shadow-md hover:shadow-lg" // Contraste mejorado
+                    className="absolute top-4 left-4 text-yellow-400 hover:text-yellow-500 bg-white/90 backdrop-blur-sm hover:bg-white/100 shadow-md hover:shadow-lg"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleFavorite(source.id);
@@ -280,9 +302,9 @@ export default function SourcesPage({ sources }: SourcesListProps) {
             </div>
           ))}
         </div>
-
-        {/* Pagination */}
-        {filteredSources.length > sourcesPerPage && (
+  
+        {/* Paginación condicional */}
+        {showPagination && filteredSources.length > sourcesPerPage && (
           <div className="mt-12 flex flex-col items-center space-y-4">
             <div className="flex items-center space-x-2">
               <Button
@@ -303,7 +325,7 @@ export default function SourcesPage({ sources }: SourcesListProps) {
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-
+  
               <div className="flex items-center space-x-1">
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum;
@@ -316,7 +338,7 @@ export default function SourcesPage({ sources }: SourcesListProps) {
                   } else {
                     pageNum = currentPage - 2 + i;
                   }
-
+  
                   return (
                     <Button
                       key={pageNum}
@@ -333,7 +355,7 @@ export default function SourcesPage({ sources }: SourcesListProps) {
                   );
                 })}
               </div>
-
+  
               <Button
                 variant="outline"
                 size="icon"
@@ -355,7 +377,7 @@ export default function SourcesPage({ sources }: SourcesListProps) {
                 <ChevronsRight className="h-4 w-4" />
               </Button>
             </div>
-
+  
             <p className="text-sm text-gray-600">
               Mostrando {indexOfFirstSource + 1} -{" "}
               {Math.min(indexOfLastSource, filteredSources.length)} de{" "}
@@ -363,18 +385,26 @@ export default function SourcesPage({ sources }: SourcesListProps) {
             </p>
           </div>
         )}
-
-        {/* Empty State */}
+  
+        {/* Estado vacío */}
         {filteredSources.length === 0 && (
           <div className="text-center py-16 bg-white/50 backdrop-blur-sm rounded-xl border border-blue-100">
             <Search className="w-16 h-16 mx-auto text-blue-300 mb-4" />
             <h3 className="text-2xl font-bold text-blue-900 mb-2">
-              No se encontraron resultados
+              {isFavoritePage ? 'No hay favoritos' : 'No se encontraron resultados'}
             </h3>
             <p className="text-blue-600">
-              Intenta con otros términos de búsqueda o cambia el filtro de
-              idioma
+              {isFavoritePage
+                ? 'Agrega periódicos a tus favoritos para verlos aquí'
+                : 'Intenta con otros términos de búsqueda o cambia el filtro de idioma'}
             </p>
+            {isFavoritePage && (
+              <Link href="/sources" className="mt-4 inline-block">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                  Explorar periódicos
+                </Button>
+              </Link>
+            )}
           </div>
         )}
       </div>
