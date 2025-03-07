@@ -8,7 +8,6 @@ import Image from "next/image";
 
 const AuthButton = () => {
   const { data: session } = useSession();
-  console.log(session);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -36,7 +35,7 @@ const AuthButton = () => {
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <Image
-                src={session.user?.image || "/images/AvatarPredeterminado.webp"}
+                src={session.user?.image ?? "/images/AvatarPredeterminado.webp"}
                 alt={session.user?.name || "Usuario"}
                 width={48}
                 height={48}

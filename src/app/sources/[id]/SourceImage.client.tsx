@@ -5,7 +5,6 @@ import Image from "next/image";
 export const SourceImage = ({
   imageUrl,
   name,
-  size = "default",
 }: {
   imageUrl?: string;
   name: string;

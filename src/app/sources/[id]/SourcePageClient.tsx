@@ -36,7 +36,7 @@ export default function SourcePageClient({
   const [isAnimating, setIsAnimating] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const { data: session } = useSession();
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshKey, _setRefreshKey] = useState(0);
   const [showComments, setShowComments] = useState(false);
   const [commentsCount, setCommentsCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -131,7 +131,7 @@ export default function SourcePageClient({
         `/api/comments/list/${source.id}?page=${currentPage}`
       );
       if (response.ok) {
-        const data = await response.json();
+        const _data = await response.json();
         // Actualizar los comentarios en el estado si es necesario
       }
     } catch (error) {

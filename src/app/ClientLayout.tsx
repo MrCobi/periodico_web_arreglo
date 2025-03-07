@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import AuthButton from "@/src/app/api/auth/AuthButton/AuthButton";
@@ -41,7 +40,6 @@ export default function ClientLayout({
 function Navbar() {
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "admin";
-  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 

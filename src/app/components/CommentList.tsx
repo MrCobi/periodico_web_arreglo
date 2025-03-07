@@ -133,7 +133,7 @@ const CommentItem = memo(
               <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-full animate-pulse-slow"></div>
                 <Image
-                  src={comment.user.image || "/default-avatar.png"}
+                  src={comment.user.image ?? "/default-avatar.png"}
                   alt={comment.user.username}
                   width={40}
                   height={40}

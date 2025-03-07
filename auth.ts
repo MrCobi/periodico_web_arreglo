@@ -17,26 +17,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/api/auth/error",
   },
   callbacks: {
+    // auth.ts
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.username = user.username;
-        token.image = user.image;
+        token.name = user.name; // Añade esto
+        token.image = user.image || "/images/AvatarPredeterminado.webp"; // Fallback directo
       }
       return token;
     },
     async session({ session, token }) {
+      const user = await prisma.user.findUnique({ where: { id: token.id } });
       session.user = {
+        ...session.user,
         id: token.id as string,
-        email: token.email as string,
         name: token.name as string,
-        role: token.role as string,
-        username: token.username as string,
-        emailVerified: token.emailVerified as Date | null,
-        image: token.image as string,
+        email: token.email as string,
+        image: user?.image || "/images/AvatarPredeterminado.webp",
       };
       return session;
-    },
+    }
   },
 });

@@ -19,15 +19,9 @@ import {
 } from "@/src/app/components/ui/card";
 import { Search, Globe2, Star, Info, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Source } from "@/src/interface/source";
 
-interface Source {
-  id: string;
-  name: string;
-  description: string;
-  language: string;
-  category: string;
-  imageUrl?: string;
-}
+
 
 const languages = [
   { code: "es", name: "Español", flag: "🇪🇸" },
