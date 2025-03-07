@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/src/app/components/ui/alert";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export default function EditUserPage() {
   const router = useRouter();
@@ -169,12 +170,6 @@ export default function EditUserPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-blue-900/30 dark:to-blue-800/20">
-      {/* Background decorative elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-blue-300/20 dark:bg-blue-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-200/20 dark:bg-blue-600/10 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         <Link
           href="/api/auth/dashboard"
@@ -195,21 +190,19 @@ export default function EditUserPage() {
               {/* Profile Image Section */}
               <div className="flex flex-col items-center space-y-4">
                 <div className="relative group">
-                  <Avatar className="h-32 w-32 ring-4 ring-blue-100 dark:ring-blue-900 group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all duration-300">
-                    <AvatarImage
-                      src={
-                        formData.image || "/images/AvatarPredeterminado.webp"
-                      }
+                  <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-2xl transition-all duration-300">
+                    <Image
+                      src={formData.image || "/images/AvatarPredeterminado.webp"}
+                      alt={user?.name || "Avatar"}
+                      layout="fill"
                       className="object-cover"
+                      priority
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = "/images/AvatarPredeterminado.webp";
                       }}
                     />
-                    <AvatarFallback className="bg-blue-600">
-                      <UserIcon className="h-16 w-16 text-white" />
-                    </AvatarFallback>
-                  </Avatar>
+                  </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                     <input
                       type="file"
@@ -298,16 +291,11 @@ export default function EditUserPage() {
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg transition-all duration-300 hover:scale-[1.02]"
                 >
                   {saving ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Guardando cambios...
-                    </>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   ) : (
-                    <>
-                      <CheckCircle2 className="mr-2 h-5 w-5" />
-                      Guardar cambios
-                    </>
+                    <CheckCircle2 className="mr-2 h-5 w-5" />
                   )}
+                  {saving ? "Guardando cambios..." : "Guardar cambios"}
                 </Button>
               </div>
             </form>
