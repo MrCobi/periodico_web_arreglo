@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Mail,
   User2,
+  Activity,
   Newspaper,
   Settings,
   Home,
@@ -31,6 +32,7 @@ export default function DashboardPage() {
   const [favoriteSources, setFavoriteSources] = useState<Source[]>([]);
   const [commentCount, setCommentCount] = useState(0);
   const [activeDays, setActiveDays] = useState(0);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -82,17 +84,17 @@ export default function DashboardPage() {
   useEffect(() => {
     const calculateActiveDays = () => {
       if (!session?.user?.createdAt) return;
-      
+
       const creationDate = new Date(session.user.createdAt);
       const today = new Date();
-      
+
       // Normalizar fechas a UTC
       const startDate = Date.UTC(
         creationDate.getFullYear(),
         creationDate.getMonth(),
         creationDate.getDate()
       );
-      
+
       const endDate = Date.UTC(
         today.getFullYear(),
         today.getMonth(),
@@ -101,12 +103,27 @@ export default function DashboardPage() {
 
       const timeDiff = endDate - startDate;
       const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-      
+
       setActiveDays(dayDiff);
     };
 
     calculateActiveDays();
   }, [session?.user?.createdAt]);
+
+  useEffect(() => {
+    const loadRecentActivity = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch(`/api/activity/${session.user.id}`);
+          const data = await response.json();
+          setRecentActivity(data.activities || []);
+        } catch (error) {
+          console.error("Error cargando actividad reciente:", error);
+        }
+      }
+    };
+    loadRecentActivity();
+  }, [session?.user?.id]);
 
   if (status === "loading") {
     return (
@@ -526,15 +543,74 @@ export default function DashboardPage() {
             {/* Recent Activity */}
             <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg shadow-xl border-0">
               <div className="p-6">
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+                  <Activity className="h-6 w-6 mr-2 text-blue-500" />
                   Actividad reciente
                 </h2>
-                <div className="text-center py-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                  <MessageSquare className="h-16 w-16 mx-auto text-blue-400 mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400">
-                    No hay actividad reciente
-                  </p>
-                </div>
+
+                {recentActivity.length === 0 ? (
+                  <div className="text-center py-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                    <MessageSquare className="h-16 w-16 mx-auto text-blue-400 mb-4" />
+                    <p className="text-gray-600 dark:text-gray-400">
+                      No hay actividad reciente
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {recentActivity.map((activity, index) => (
+                      <div
+                        key={index}
+                        className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="flex-shrink-0">
+                            {activity.type === "favorite_added" && (
+                              <Star className="h-5 w-5 text-yellow-500" />
+                            )}
+                            {activity.type === "favorite_removed" && (
+                              <Star className="h-5 w-5 text-red-500" />
+                            )}
+                            {activity.type === "comment" && (
+                              <MessageSquare className="h-5 w-5 text-green-500" />
+                            )}
+                            {activity.type === "rating" && (
+                              <Star className="h-5 w-5 text-purple-500" />
+                            )}
+                            {activity.type === "follow" && (
+                              <User2 className="h-5 w-5 text-blue-500" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {activity.type === "favorite_added" &&
+                                `Agregaste ${activity.sourceName} a favoritos.`}
+                              {activity.type === "favorite_removed" &&
+                                `Eliminaste ${activity.sourceName} de favoritos.`}
+                              {activity.type === "comment" &&
+                                `Comentaste en ${activity.sourceName}.`}
+                              {activity.type === "rating" &&
+                                `Valoraste ${activity.sourceName}.`}
+                              {activity.type === "follow" &&
+                                `Comenzaste a seguir a ${activity.userName}.`}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {new Date(activity.createdAt).toLocaleDateString(
+                                "es-ES",
+                                {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </Card>
           </main>

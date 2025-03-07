@@ -89,6 +89,8 @@ model FavoriteSource {
   source    Source @relation(fields: [sourceId], references: [id])
   userId    String @map("user_id")
   sourceId  String @map("source_id")
+  createdAt DateTime @default(now()) @map("created_at") // Añade esta línea
+  updatedAt DateTime @updatedAt @map("updated_at") // Añade esta línea
 
   @@id([userId, sourceId])
   @@map("favorite_sources")
