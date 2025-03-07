@@ -33,6 +33,11 @@ export default function DashboardPage() {
   const [commentCount, setCommentCount] = useState(0);
   const [activeDays, setActiveDays] = useState(0);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const displayedFavorites =
+    favoriteSources.length > 6 ? favoriteSources.slice(0, 5) : favoriteSources;
+
+  const remainingCount =
+    favoriteSources.length > 6 ? favoriteSources.length - 5 : 0;
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -88,7 +93,6 @@ export default function DashboardPage() {
       const creationDate = new Date(session.user.createdAt);
       const today = new Date();
 
-      // Normalizar fechas a UTC
       const startDate = Date.UTC(
         creationDate.getFullYear(),
         creationDate.getMonth(),
@@ -490,7 +494,7 @@ export default function DashboardPage() {
                     Periódicos favoritos
                   </h2>
                   <Link
-                    href="/sources"
+                    href="/favorites"
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center"
                   >
                     Ver todos <ExternalLink className="h-4 w-4 ml-1" />
@@ -512,7 +516,7 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {favoriteSources.map((source) => (
+                    {displayedFavorites.map((source) => (
                       <Link
                         href={`/sources/${source.id}`}
                         key={source.id}
@@ -535,6 +539,18 @@ export default function DashboardPage() {
                         </div>
                       </Link>
                     ))}
+                    {remainingCount > 0 && (
+                      <Link href="/favorites" className="group">
+                        <div className="p-5 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-lg h-full flex flex-col items-center justify-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30">
+                          <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                            +{remainingCount}
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                            Ver todos los favoritos
+                          </p>
+                        </div>
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
