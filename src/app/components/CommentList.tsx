@@ -54,26 +54,25 @@ const DeleteConfirmationDialog = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full shadow-xl">
-        <h3 className="text-lg font-semibold mb-4 dark:text-white">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full shadow-2xl transform transition-all scale-100 animate-in zoom-in-95 duration-200">
+        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
           ¿Eliminar comentario?
         </h3>
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          Esta acción no se puede deshacer. ¿Estás seguro de que quieres
-          eliminar permanentemente este comentario?
+          Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar permanentemente este comentario?
         </p>
         <div className="flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-600"
           >
             Cancelar
           </button>
           <button
             ref={confirmRef}
             onClick={onConfirm}
-            className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
+            className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
           >
             Eliminar
           </button>
@@ -120,37 +119,37 @@ const CommentItem = memo(
       <div
         className={`${
           depth > 0 ? "ml-2 md:ml-6 lg:ml-8" : ""
-        } mt-4 border-l-2 border-indigo-100 dark:border-indigo-900/30 pl-3 md:pl-4 relative transition-all`}
+        } mt-4 border-l-2 border-indigo-100 dark:border-indigo-900/30 pl-3 md:pl-4 relative transition-all animate-in slide-in-from-left-1 duration-200`}
       >
         <div
-          className={`bg-white dark:bg-gray-800 p-3 md:p-4 rounded-xl shadow-md relative ${
+          className={`bg-white dark:bg-gray-800/90 p-4 md:p-5 rounded-xl shadow-md relative backdrop-blur-sm transition-all duration-300 hover:shadow-lg ${
             isNewComment
               ? "animate-pulse-light border-2 border-blue-200 dark:border-blue-800"
-              : ""
+              : "border border-gray-100 dark:border-gray-700/50"
           }`}
         >
-          <div className="flex justify-between items-start">
-            <div className="flex items-start gap-2 md:gap-3 flex-1">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex items-start gap-3 md:gap-4 flex-1">
               <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-full animate-pulse-slow"></div>
                 <Image
                   src={comment.user.image || "/default-avatar.png"}
                   alt={comment.user.username}
-                  width={36}
-                  height={36}
+                  width={40}
+                  height={40}
                   className="rounded-full border-2 border-gray-100 dark:border-gray-700 object-cover z-10 relative"
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-1 md:gap-2 mb-1 md:mb-2">
-                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base truncate max-w-[120px] md:max-w-none">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base truncate max-w-[150px] md:max-w-none">
                     {comment.user.username}
                   </h3>
                   {comment.parent && (
-                    <span className="text-xs px-1.5 py-0.5 md:px-2 md:py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center">
+                    <span className="text-xs px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center gap-1">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-3 w-3 mr-0.5"
+                        className="h-3 w-3"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
@@ -160,7 +159,7 @@ const CommentItem = memo(
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="truncate max-w-[80px] md:max-w-none">
+                      <span className="truncate max-w-[100px] md:max-w-none">
                         {comment.parent.user.username}
                       </span>
                     </span>
@@ -172,11 +171,11 @@ const CommentItem = memo(
                     })}
                   </span>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap text-sm md:text-base break-words">
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap text-sm md:text-base break-words leading-relaxed">
                   {comment.content}
                 </p>
 
-                <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center justify-between mt-3">
                   {depth < 3 && (
                     <button
                       onClick={() =>
@@ -185,11 +184,11 @@ const CommentItem = memo(
                           userName: comment.user.username,
                         })
                       }
-                      className="text-blue-600 dark:text-blue-400 text-xs md:text-sm hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
+                      className="text-blue-600 dark:text-blue-400 text-xs md:text-sm hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1.5 transition-colors group"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-3.5 w-3.5 md:h-4 md:w-4"
+                        className="h-4 w-4 transition-transform group-hover:scale-110"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
@@ -208,11 +207,11 @@ const CommentItem = memo(
                     <button
                       aria-label="Eliminar comentario"
                       onClick={() => handleDelete(comment.id)}
-                      className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors ml-auto p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
+                      className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors ml-auto p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 group"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 md:h-5 md:w-5"
+                        className="h-4 w-4 md:h-5 md:w-5 transition-transform group-hover:scale-110"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
@@ -230,12 +229,12 @@ const CommentItem = memo(
           </div>
 
           {replyingTo?.id === comment.id && (
-            <div className="mt-3 md:mt-4 ml-2 md:ml-6 transition-all">
-              <div className="p-3 md:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30">
-                <div className="mb-2 md:mb-3 flex items-center gap-1 md:gap-2 text-xs md:text-sm font-medium text-blue-600 dark:text-blue-400">
+            <div className="mt-4 md:mt-5 ml-2 md:ml-6 transition-all animate-in slide-in-from-left-2">
+              <div className="p-4 md:p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                <div className="mb-3 flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-3.5 w-3.5 md:h-4 md:w-4"
+                    className="h-4 w-4"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -253,7 +252,7 @@ const CommentItem = memo(
                   value={replyContent}
                   onChange={(e) => setReplyContent(e.target.value)}
                   placeholder="Escribe tu respuesta..."
-                  className="w-full p-2 md:p-3 border-2 border-blue-100 dark:border-blue-800/50 rounded-lg mb-2 md:mb-3 resize-none focus:border-blue-300 focus:ring-2 focus:ring-blue-200 dark:bg-gray-800 dark:text-white transition-all text-sm md:text-base"
+                  className="w-full p-3 md:p-4 border-2 border-blue-100 dark:border-blue-800/50 rounded-lg mb-3 resize-none focus:border-blue-300 focus:ring-2 focus:ring-blue-200 dark:bg-gray-800 dark:text-white transition-all text-sm md:text-base"
                   rows={3}
                 />
                 <div className="flex flex-wrap gap-2">
@@ -263,13 +262,13 @@ const CommentItem = memo(
                       replyContent.trim().length < 3 ||
                       replyContent.trim().length > 500
                     }
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg disabled:opacity-50 transition-all shadow hover:shadow-md text-xs md:text-sm"
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 transition-all shadow hover:shadow-md text-sm"
                   >
                     Publicar respuesta
                   </button>
                   <button
                     onClick={() => setReplyingTo(null)}
-                    className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs md:text-sm"
+                    className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-sm"
                   >
                     Cancelar
                   </button>
@@ -283,11 +282,11 @@ const CommentItem = memo(
           <div className="mt-2 ml-2 md:ml-4">
             <button
               onClick={() => toggleReplyVisibility(comment.id)}
-              className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50/80 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs md:text-sm transition-all"
+              className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50/80 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs md:text-sm transition-all"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`h-3.5 w-3.5 md:h-4 md:w-4 transition-transform duration-300 ${
+                className={`h-4 w-4 transition-transform duration-300 ${
                   isVisible ? "rotate-90" : "group-hover:translate-x-0.5"
                 }`}
                 fill="none"

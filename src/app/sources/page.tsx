@@ -1,7 +1,7 @@
 // app/sources/page.tsx
 import { Source } from "@/src/interface/source";
 import prisma from "@/lib/db";
-import SourcesList from "@/src/app/components/SourceList"; // Importa el Client Component
+import SourcesPage from "@/src/app/components/SourceList";
 
 // Función para obtener todas las fuentes (periódicos) desde la base de datos
 async function fetchAllSources(): Promise<Source[]> {
@@ -14,10 +14,7 @@ async function fetchAllSources(): Promise<Source[]> {
   }
 }
 
-export default async function SourcesPage() {
-  // Obtener todas las fuentes
+export default async function Page() {
   const sources = await fetchAllSources();
-  
-  // Pasa los datos al Client Component
-  return <SourcesList sources={sources} />;
+  return <SourcesPage sources={sources} />;
 }

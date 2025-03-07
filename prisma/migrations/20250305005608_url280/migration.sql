@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `Source` MODIFY `url` VARCHAR(280) NOT NULL;

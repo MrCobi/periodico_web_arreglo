@@ -9,34 +9,37 @@ import prisma from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 
+// auth-action.tsx
 export const loginAction = async (values: z.infer<typeof loginSchema>) => {
   try {
-    const result = await signIn("credentials", {
+    await signIn("credentials", {
       email: values.email,
       password: values.password,
       redirect: false,
     });
 
-    // Manejar resultado manualmente
-    if (result?.error) {
-      return { 
-        error: "Credenciales inválidas. Verifique su email y contraseña." 
-      };
-    }
-
     return { success: true };
-
   } catch (error) {
-    // Captura específicamente el error de NextAuth
-    if (error instanceof AuthError && error.type === "CredentialsSignin") {
-      return { error: "Credenciales inválidas. Verifique su email y contraseña." };
+    let errorMessage = "Error de autenticación";
+
+    if (error instanceof Error) {
+      switch (error.message) {
+        case "Usuario no encontrado":
+          errorMessage = "No existe una cuenta con este email";
+          break;
+        case "Contraseña incorrecta":
+          errorMessage = "La contraseña es incorrecta";
+          break;
+        case "Datos inválidos":
+          errorMessage = "Formato de email o contraseña inválido";
+          break;
+      }
     }
 
-    // Otros errores
-    console.error("Error interno:", error);
-    return { error: "Error interno del servidor" };
+    return { error: errorMessage };
   }
 };
+
 export const registerAction = async (values: z.infer<typeof SignUpSchema>) => {
   try {
     const { data, success } = SignUpSchema.safeParse(values);
@@ -68,7 +71,15 @@ export const registerAction = async (values: z.infer<typeof SignUpSchema>) => {
         username: data.username,
         email: data.email,
         password: hashedPassword,
-        image: values.image || "/images/AvatarPredeterminado.webp",
+        image: data.image || "/images/AvatarPredeterminado.webp",
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        image: true,
+        role: true,
+        username: true,
       },
     });
 
@@ -79,19 +90,18 @@ export const registerAction = async (values: z.infer<typeof SignUpSchema>) => {
     });
 
     return { success: true };
-    
   } catch (error) {
     // Manejo adicional de errores de Prisma
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') {
+      if (error.code === "P2002") {
         return { error: "El correo electrónico ya está registrado" };
       }
     }
-    
+
     if (error instanceof AuthError) {
       return { error: error.cause?.err?.message };
     }
-    
+
     return { error: "Error interno del servidor" };
   }
 };

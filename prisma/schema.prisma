@@ -47,10 +47,9 @@ model Account {
   id_token                 String? @db.Text
   session_state            String?
   refresh_token_expires_in Int?
-  user                     User?   @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  user                     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -86,7 +85,7 @@ model Source {
 }
 
 model FavoriteSource {
-  user      User   @relation(fields: [userId], references: [id])
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   source    Source @relation(fields: [sourceId], references: [id])
   userId    String @map("user_id")
   sourceId  String @map("source_id")
@@ -102,8 +101,7 @@ model Rating {
   value     Int
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
-  user      User    @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   source    Source  @relation(fields: [sourceId], references: [id])
 
   @@unique([userId, sourceId])
@@ -121,9 +119,7 @@ model Comment {
   path      String   @default("/")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Relaciones
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   source    Source   @relation(fields: [sourceId], references: [id])
   parent    Comment? @relation("CommentHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   replies   Comment[] @relation("CommentHierarchy")
@@ -139,10 +135,8 @@ model Follow {
   followerId   String   @map("follower_id")
   followingId  String   @map("following_id")
   createdAt    DateTime @default(now()) @map("created_at")
-
-  // Relaciones
-  follower     User    @relation("follower", fields: [followerId], references: [id])
-  following    User    @relation("following", fields: [followingId], references: [id])
+  follower     User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following    User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@id([followerId, followingId])
   @@index([followerId])

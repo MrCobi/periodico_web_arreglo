@@ -141,6 +141,7 @@ export default function SignupForm() {
             setError(response.error);
           } else {
             await update(); // Actualiza la sesión
+            router.refresh(); // Fuerza recarga de datos del lado del cliente
             router.push("/");
           }
         } catch (err) {

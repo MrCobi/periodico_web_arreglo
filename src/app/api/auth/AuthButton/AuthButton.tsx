@@ -1,13 +1,14 @@
 "use client";
 import { useSession, signOut } from "next-auth/react";
 import { Menu } from "@mui/material";
-import Link from "@/src/app/components/Animation/Link";
+import Link from "next/link";
 import React from "react";
 import styled from "styled-components";
 import Image from "next/image";
 
 const AuthButton = () => {
   const { data: session } = useSession();
+  console.log(session);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -86,7 +87,6 @@ const AuthButton = () => {
             <div className="input">
               <Link
                 href="/api/auth/dashboard"
-                animated={false}
                 passHref
                 legacyBehavior
               >
@@ -142,10 +142,10 @@ const AuthButton = () => {
   return (
     <div className="contenedor-botones">
       <StyledWrapper>
-        <Link href="/api/auth/signin" animated={false} passHref legacyBehavior>
+        <Link href="/api/auth/signin"  passHref legacyBehavior>
           <button className="boton-elegante">Iniciar Sesión</button>
         </Link>
-        <Link href="/api/auth/signup" animated={false} passHref legacyBehavior>
+        <Link href="/api/auth/signup"  passHref legacyBehavior>
           <button className="boton-elegante">Registrarse</button>
         </Link>
       </StyledWrapper>

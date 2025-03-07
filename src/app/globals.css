@@ -181,6 +181,18 @@ nav a:hover {
   .animate-slideInFromRight {
     animation: slideInFromRight 0.3s ease-in-out;
   }
+
+  .animate-scrollText {
+    animation-play-state: running;
+  }
+
+  .animate-scrollText:hover {
+    animation-play-state: paused;
+  }
+
+  .group:hover .animate-scrollText {
+    transition: all 0.5s ease-in-out;
+  }
 }
 
 .whitespace-pre-wrap {
@@ -191,9 +203,24 @@ nav a:hover {
   resize: none;
 }
 
-/* Agregar en tu archivo CSS global */
 .comment-reply {
   border-left: 2px solid #e5e7eb;
   margin-left: 1rem;
   padding-left: 1rem;
+}
+
+/* Agregar esto a tu archivo globals.css */
+.group:hover .description-text {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+@keyframes fadeInDescription {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.group:hover .absolute p {
+  animation: fadeInDescription 0.7s ease-in-out forwards;
+  animation-delay: 0.2s;
 }

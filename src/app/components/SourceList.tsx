@@ -1,520 +1,331 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useSession } from "next-auth/react";
-import { Source } from "@/src/interface/source";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/src/app/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/src/app/components/ui/card";
+import { Search, Globe2, Star, Info, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+interface Source {
+  id: string;
+  name: string;
+  description: string;
+  language: string;
+  category: string;
+  imageUrl?: string;
+}
+
+const languages = [
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "en", name: "Inglés", flag: "🇬🇧" },
+  { code: "fr", name: "Francés", flag: "🇫🇷" },
+  { code: "pt", name: "Portugués", flag: "🇵🇹" },
+  { code: "it", name: "Italiano", flag: "🇮🇹" },
+  { code: "de", name: "Alemán", flag: "🇩🇪" },
+  { code: "ar", name: "Árabe", flag: "🇸🇦" },
+  { code: "zh", name: "Chino", flag: "🇨🇳" },
+  { code: "ru", name: "Ruso", flag: "🇷🇺" },
+];
 
 interface SourcesListProps {
   sources: Source[];
 }
 
-export default function SourcesList({ sources }: SourcesListProps) {
-  const { data: session } = useSession();
-
-  // Estados inicializados con valores por defecto
-  const [selectedLanguage, setSelectedLanguage] = useState("all");
+export default function SourcesPage({ sources }: SourcesListProps) {
+  const router = useRouter();
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoaded, setIsLoaded] = useState(false);
-  const sourcesPerPage = 9;
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const sourcesPerPage = 6;
 
-  // Cargar estados desde sessionStorage solo en el cliente
   useEffect(() => {
-    setSelectedLanguage(
-      sessionStorage.getItem("sources_selectedLanguage") || "all"
-    );
-    setSearchTerm(sessionStorage.getItem("sources_searchTerm") || "");
-    setCurrentPage(
-      Number(sessionStorage.getItem("sources_currentPage")) || 1
-    );
+    setIsLoaded(true);
   }, []);
 
-  // Sincronizar estados con sessionStorage
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("sources_selectedLanguage", selectedLanguage);
-      sessionStorage.setItem("sources_searchTerm", searchTerm);
-      sessionStorage.setItem("sources_currentPage", currentPage.toString());
-    }
-  }, [selectedLanguage, searchTerm, currentPage]);
-
-  // Cargar favoritos
-  useEffect(() => {
-    const loadFavorites = async () => {
-      if (session?.user?.id) {
-        try {
-          const response = await fetch("/api/favorites/list");
-          if (response.ok) {
-            const data = await response.json();
-            setFavorites(new Set(data.favoriteIds));
-            setIsLoaded(true);
-          }
-        } catch (error) {
-          console.error("Error cargando favoritos:", error);
-          setIsLoaded(true);
-        }
-      }
-    };
-    loadFavorites();
-  }, [session]);
-
-  // Manejar el cambio de idioma y reiniciar currentPage
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedLanguage(e.target.value);
-    setCurrentPage(1); // Reiniciamos la página al cambiar el filtro
-  };
-
-  // Manejar el cambio en el input de búsqueda y reiniciar currentPage
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reiniciamos la página al cambiar el término de búsqueda
-  };
-
-  // Cargar favoritos desde la API
-  useEffect(() => {
-    const loadFavorites = async () => {
-      if (session?.user?.id) {
-        try {
-          const response = await fetch("/api/favorites/list", {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setFavorites(new Set(data.favoriteIds));
-          } else {
-            console.error("Error al cargar favoritos");
-          }
-        } catch (error) {
-          console.error("Error al cargar favoritos:", error);
-        }
-      }
-    };
-
-    loadFavorites();
-  }, [session]);
-
-  // Filtrado de fuentes según idioma y término de búsqueda
   const filteredSources = sources.filter((source) => {
     const matchesLanguage =
       selectedLanguage === "all" || source.language === selectedLanguage;
-    const matchesSearchTerm = source.name
+    const matchesSearch = source.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-    return matchesLanguage && matchesSearchTerm;
+    return matchesLanguage && matchesSearch;
   });
 
   const totalPages = Math.ceil(filteredSources.length / sourcesPerPage);
-  const currentSources = filteredSources.slice(
-    (currentPage - 1) * sourcesPerPage,
-    currentPage * sourcesPerPage
-  );
+  const indexOfLastSource = currentPage * sourcesPerPage;
+  const indexOfFirstSource = indexOfLastSource - sourcesPerPage;
+  const currentSources = filteredSources.slice(indexOfFirstSource, indexOfLastSource);
 
-  const getLanguageName = (code: string) => {
-    const languages: Record<string, string> = {
-      es: "Español",
-      en: "Inglés",
-      fr: "Francés",
-      pt: "Portugués",
-      it: "Italiano",
-      de: "Alemán",
-      ar: "Árabe",
-      zh: "Chino",
-      ru: "Ruso",
-    };
-    return languages[code] || code;
-  };
-
-  const getLanguageFlag = (code: string) => {
-    const flags: Record<string, string> = {
-      es: "🇪🇸",
-      en: "🇬🇧",
-      fr: "🇫🇷",
-      pt: "🇵🇹",
-      it: "🇮🇹",
-      de: "🇩🇪",
-      ar: "🇸🇦",
-      zh: "🇨🇳",
-      ru: "🇷🇺",
-    };
-    return flags[code] || "🌐";
-  };
-
-  // Manejador para favoritos (sin cambios)
-  const handleFavoriteClick = async (sourceId: string) => {
-    if (!session?.user?.id) {
-      alert("Debes iniciar sesión para agregar a favoritos");
-      return;
-    }
-    try {
-      if (favorites.has(sourceId)) {
-        await fetch("/api/favorites/remove", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sourceId }),
-        });
-        setFavorites((prev) => {
-          const newFav = new Set(prev);
-          newFav.delete(sourceId);
-          return newFav;
-        });
+  const toggleFavorite = (id: string) => {
+    setFavorites((prev) => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(id)) {
+        newFavorites.delete(id);
       } else {
-        await fetch("/api/favorites/add", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sourceId }),
-        });
-        setFavorites((prev) => new Set(prev).add(sourceId));
+        newFavorites.add(id);
       }
-    } catch (error) {
-      console.error("Error al actualizar favoritos:", error);
-    }
+      return newFavorites;
+    });
+  };
+
+  const navigateToSource = (sourceId: string) => {
+    router.push(`/sources/${sourceId}`);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50 py-16">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-600/5 to-indigo-600/5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Header */}
         <div
-          className={`mb-12 transition-all duration-700 ${
+          className={`text-center mb-16 transition-all duration-1000 ${
             isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >
-          <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold text-gray-900 mb-4">
-              Explora Nuestras Fuentes de Noticias
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Descubre periódicos y medios de comunicación de todo el mundo,
-              organizados por idioma y relevancia.
-            </p>
-            <div className="h-1 w-32 bg-blue-600 mx-auto mt-6"></div>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-4xl mx-auto">
-            <div className="flex flex-col md:flex-row gap-6 items-end">
-              <div className="flex-1">
-                <label
-                  htmlFor="language"
-                  className="block mb-2 text-sm font-medium text-gray-700"
-                >
-                  Filtrar por idioma:
-                </label>
-                <select
-                  id="language"
-                  name="language"
-                  value={selectedLanguage}
-                  onChange={handleLanguageChange}
-                  className="w-full p-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white"
-                >
-                  <option value="all">Todos los idiomas</option>
-                  <option value="es">Español</option>
-                  <option value="en">Inglés</option>
-                  <option value="fr">Francés</option>
-                  <option value="pt">Portugués</option>
-                  <option value="it">Italiano</option>
-                  <option value="de">Alemán</option>
-                  <option value="ar">Árabe</option>
-                  <option value="zh">Chino</option>
-                  <option value="ru">Ruso</option>
-                </select>
-              </div>
-              <div className="flex-1">
-                <label
-                  htmlFor="search"
-                  className="block mb-2 text-sm font-medium text-gray-700"
-                >
-                  Buscar periódico:
-                </label>
-                <div className="relative">
-                  <input
-                    id="search"
-                    type="text"
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    className="w-full p-4 pl-12 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                    placeholder="Nombre del periódico..."
-                  />
-                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8">
-          <p className="text-gray-600 mb-6 text-center">
-            Mostrando{" "}
-            {Math.min(currentPage * sourcesPerPage, filteredSources.length) -
-              (currentPage - 1) * sourcesPerPage}{" "}
-            de {filteredSources.length} fuentes disponibles
-            {totalPages > 1 && ` (Página ${currentPage} de ${totalPages})`}
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+            Fuentes de Noticias
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Explora nuestra colección de periódicos y medios de comunicación de
+            todo el mundo.
           </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {currentSources.map((source, index) => (
-              <div
-                key={source.id}
-                className={`group bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
-                  isLoaded
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-10"
-                }`}
-                style={{ transitionDelay: `${index * 50}ms` }}
-              >
-                <div className="relative h-40 bg-gradient-to-r from-blue-600 to-blue-800 overflow-hidden flex items-center justify-center">
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-300"></div>
-
-                  {source.imageUrl ? (
-                    <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg z-10">
-                      <Image
-                        src={source.imageUrl}
-                        alt={source.name}
-                        fill
-                        className="object-cover"
-                        sizes="112px"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "/images/default_periodico.jpg";
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-28 h-28 rounded-full bg-white flex items-center justify-center shadow-lg z-10">
-                      <span className="text-4xl font-bold text-blue-700">
-                        {source.name.charAt(0)}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-sm font-medium text-gray-800 flex items-center">
-                    <span className="mr-1">
-                      {getLanguageFlag(source.language)}
-                    </span>
-                    {getLanguageName(source.language)}
-                  </div>
-
-                  <button
-                    onClick={() => handleFavoriteClick(source.id)}
-                    className="absolute top-4 left-4 bg-white/90 p-2 rounded-full text-xl hover:bg-white transition-all"
-                    title={
-                      favorites.has(source.id)
-                        ? "Eliminar de favoritos"
-                        : "Agregar a favoritos"
-                    }
-                  >
-                    {favorites.has(source.id) ? "★" : "☆"}
-                  </button>
-                </div>
-
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
-                    {source.name}
-                  </h2>
-
-                  <p className="text-gray-600 mb-4 line-clamp-2">
-                    {source.description || "Sin descripción disponible"}
-                  </p>
-
-                  <div className="flex items-center justify-between mt-4">
-                    <Link
-                      href={`/sources/${source.id}`}
-                      className="text-sm text-blue-600 font-medium flex items-center"
-                    >
-                      <svg
-                        className="w-5 h-5 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      Ver detalles
-                    </Link>
-
-                    <span className="text-sm text-gray-500 flex items-center">
-                      <svg
-                        className="w-5 h-5 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
-                        />
-                      </svg>
-                      {source.category || "General"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {filteredSources.length === 0 && (
-            <div className="text-center py-16">
-              <div className="text-5xl mb-4">🔍</div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                No se encontraron resultados
-              </h3>
-              <p className="text-gray-600">
-                Intenta con otros términos de búsqueda o cambia el filtro de
-                idioma
-              </p>
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="mt-12 flex flex-col items-center space-y-4">
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-
-                <div className="flex items-center space-x-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`w-10 h-10 rounded-md flex items-center justify-center ${
-                          currentPage === pageNum
-                            ? "bg-blue-600 text-white"
-                            : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-
-                <button
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 5l7 7-7 7M5 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              <p className="text-sm text-gray-600">
-                Mostrando {(currentPage - 1) * sourcesPerPage + 1} -{" "}
-                {Math.min(currentPage * sourcesPerPage, filteredSources.length)}{" "}
-                de {filteredSources.length} fuentes
-              </p>
-            </div>
-          )}
+          <div className="h-1 w-20 bg-blue-600 mx-auto mt-6"></div>
         </div>
+
+        {/* Filters */}
+        <div
+          className={`mb-12 transition-all duration-1000 delay-200 ${
+            isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
+          <Card className="backdrop-blur-sm bg-white/80 border-blue-100">
+            <CardHeader>
+              <CardTitle className="text-blue-900">Filtrar Fuentes</CardTitle>
+              <CardDescription>
+                Encuentra las fuentes que más te interesan
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <Select
+                    value={selectedLanguage}
+                    onValueChange={(value) => {
+                      setSelectedLanguage(value);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <Globe2 className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="Seleccionar idioma" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los idiomas</SelectItem>
+                      {languages.map((lang) => (
+                        <SelectItem key={lang.code} value={lang.code}>
+                          <span className="flex items-center">
+                            <span className="mr-2">{lang.flag}</span>
+                            {lang.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      type="text"
+                      placeholder="Buscar por nombre..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sources Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {currentSources.map((source, index) => (
+            <div
+              key={source.id}
+              className={`transform transition-all duration-500 ${
+                isLoaded
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-10"
+              }`}
+              style={{ transitionDelay: `${index * 100}ms` }}
+            >
+              <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-blue-100 group hover:scale-[1.02]">
+                <div className="relative h-48">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                    style={{
+                      backgroundImage: `url(${source.imageUrl})`,
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-sm font-medium text-gray-800 flex items-center shadow-lg">
+                    {languages.find((l) => l.code === source.language)?.flag}{" "}
+                    <span className="ml-2">
+                      {languages.find((l) => l.code === source.language)?.name}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 left-4 text-yellow-400 hover:text-yellow-500 bg-white/20 backdrop-blur-sm hover:bg-white/30"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(source.id);
+                    }}
+                  >
+                    <Star
+                      className={`w-5 h-5 ${
+                        favorites.has(source.id) ? "fill-current" : ""
+                      }`}
+                    />
+                  </Button>
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-blue-900">{source.name}</CardTitle>
+                  <CardDescription>{source.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <Button 
+                      variant="default"
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => navigateToSource(source.id)}
+                    >
+                      <Info className="w-4 h-4 mr-2" />
+                      Ver detalles
+                    </Button>
+                    <span className="text-sm text-blue-600 font-medium px-3 py-1 bg-blue-50 rounded-full">
+                      {source.category}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
+        {filteredSources.length > sourcesPerPage && (
+          <div className="mt-12 flex flex-col items-center space-y-4">
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="w-10 h-10 p-0"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="w-10 h-10 p-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-10 h-10 p-0 ${
+                        currentPage === pageNum
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : ""
+                      }`}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="w-10 h-10 p-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="w-10 h-10 p-0"
+              >
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <p className="text-sm text-gray-600">
+              Mostrando {indexOfFirstSource + 1} - {Math.min(indexOfLastSource, filteredSources.length)} de {filteredSources.length} fuentes
+            </p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {filteredSources.length === 0 && (
+          <div className="text-center py-16 bg-white/50 backdrop-blur-sm rounded-xl border border-blue-100">
+            <Search className="w-16 h-16 mx-auto text-blue-300 mb-4" />
+            <h3 className="text-2xl font-bold text-blue-900 mb-2">
+              No se encontraron resultados
+            </h3>
+            <p className="text-blue-600">
+              Intenta con otros términos de búsqueda o cambia el filtro de idioma
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

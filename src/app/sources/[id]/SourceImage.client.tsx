@@ -1,4 +1,3 @@
-// SourceImage.client.tsx
 "use client";
 
 import Image from "next/image";
@@ -6,57 +5,42 @@ import Image from "next/image";
 export const SourceImage = ({
   imageUrl,
   name,
-  size = "default", // Añadimos un prop para controlar el tamaño
+  size = "default",
 }: {
   imageUrl?: string;
   name: string;
   size?: "default" | "large" | "xlarge";
 }) => {
-  // Trim any trailing spaces or control characters from the image URL
   const trimmedImageUrl = imageUrl?.trimEnd();
   
-  // Determinar las clases de tamaño basadas en el prop size
-  const sizeClasses = {
-    default: "w-full h-full",
-    large: "w-56 h-56", // 224px x 224px
-    xlarge: "w-64 h-64", // 256px x 256px
-  };
-  
-  const containerClass = sizeClasses[size] || sizeClasses.default;
+  // Eliminamos las dimensiones fijas para permitir que el componente
+  // se adapte al tamaño de su contenedor padre
 
   return (
-    <div className={`relative shrink-0 ${containerClass}`}>
-      <div className="rounded-full overflow-hidden border-4 border-white shadow-xl w-full h-full">
+    <div className="relative group w-full h-full">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-full animate-pulse-slow"></div>
+      <div className="absolute inset-0 rounded-full overflow-hidden border-4 border-white/90 shadow-xl transition-transform duration-300 group-hover:scale-105">
         {trimmedImageUrl ? (
           <Image
             src={trimmedImageUrl}
             alt={`Logo de ${name}`}
             fill
-            className="object-cover"
-            sizes={size === "xlarge" ? "256px" : size === "large" ? "224px" : "(max-width: 768px) 200px, 256px"}
+            className="object-cover transition-transform duration-300 group-hover:scale-110"
+            sizes="(max-width: 640px) 12rem, (max-width: 768px) 16rem, 20rem"
+            priority
             onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                "/images/default_periodico.jpg";
+              (e.target as HTMLImageElement).src = "/images/default_periodico.jpg";
             }}
           />
         ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <svg
-              className="w-24 h-24 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-              />
-            </svg>
+          <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center group-hover:from-blue-200 group-hover:to-indigo-200 transition-colors duration-300">
+            <div className="text-4xl font-bold text-blue-600/80 group-hover:scale-110 transition-transform duration-300">
+              {name.charAt(0).toUpperCase()}
+            </div>
           </div>
         )}
       </div>
+      <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
     </div>
   );
 };

@@ -1,6 +1,5 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopHeadlines } from "../services/NewsEverythingService";
 import { Article } from "../../interface/article";
 import Image from "next/image";
@@ -9,16 +8,14 @@ import Loading from "../components/Loading";
 import NoArticlesError from "../components/NoArticlesError";
 import ArticleForm from "../components/ArticleForm";
 import Pagination from "../components/Pagination";
-import "bootstrap-icons/font/bootstrap-icons.css";
 import { useSearchParams } from "next/navigation";
-import { useCallback } from "react";
 
 const defaultSearchParams = {
   sources: "",
   q: "",
   language: "es",
   sortBy: "",
-  pageSize: 9, // Artículos por página
+  pageSize: 9,
 };
 
 const Page = () => {
@@ -28,8 +25,8 @@ const Page = () => {
   const [firstVisit, setFirstVisit] = useState(true);
   const [imagePath, setImagePath] = useState("");
   const [searchParams, setSearchParams] = useState(defaultSearchParams);
-  const [currentPage, setCurrentPage] = useState(1); // Página actual
-  const [totalPages, setTotalPages] = useState(1); // Total de páginas
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const router = useSearchParams();
   const urlQuery = router.get("q");
 
@@ -47,11 +44,8 @@ const Page = () => {
       setCurrentPage(savedCurrentPage ? parseInt(savedCurrentPage, 10) : 1);
       setTotalPages(savedTotalPages ? parseInt(savedTotalPages, 10) : 1);
       setFirstVisit(!savedArticles);
-      
     }
   }, []);
-
-
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -60,75 +54,66 @@ const Page = () => {
     setSearchParams((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSearch = useCallback(async (e?: React.FormEvent | null) => {
-    if (e) e.preventDefault();
-  
-    if (!searchParams.q.trim() && !searchParams.sources) {
-      setError(
-        "No se han encontrado artículos. Busque por palabra clave o seleccione una fuente."
-      );
-      setImagePath(getRandomImage());
-      return;
-    }
-  
-    setLoading(true);
-    setError(null);
-  
-    try {
-      const data = await fetchTopHeadlines({
-        ...searchParams,
-        pageSize: 100,
-        page: 1,
-      });
-  
-      if (!data.articles || data.articles.length === 0) {
+  const handleSearch = useCallback(
+    async (e?: React.FormEvent | null) => {
+      if (e) e.preventDefault();
+
+      if (!searchParams.q.trim() && !searchParams.sources) {
         setError(
-          "No se han encontrado artículos. Intente una búsqueda diferente."
+          "No se han encontrado artículos. Busque por palabra clave o seleccione una fuente."
         );
         setImagePath(getRandomImage());
-      } else {
-        setArticles(data.articles);
-        const totalArticles = data.articles.length;
-        const calculatedTotalPages = Math.ceil(
-          totalArticles / searchParams.pageSize
-        );
-        setTotalPages(calculatedTotalPages);
-        sessionStorage.setItem("articles", JSON.stringify(data.articles));
-        sessionStorage.setItem("searchParams", JSON.stringify(searchParams));
-        sessionStorage.setItem("totalPages", calculatedTotalPages.toString());
-        setCurrentPage(1);
-        sessionStorage.setItem("currentPage", "1");
-  
-        // Actualizamos `firstVisit` porque ya se realizó una búsqueda
-        setFirstVisit(false);
+        setFirstVisit(false); // Desactivar firstVisit en caso de error
+        return;
       }
-    } catch {
-      setError("Error fetching news");
-      setImagePath(getRandomImage());
-    } finally {
-      setLoading(false);
-    }
-  }, [searchParams]); // Add dependencies here
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await fetchTopHeadlines({
+          ...searchParams,
+          pageSize: 100,
+          page: 1,
+        });
+
+        if (!data.articles || data.articles.length === 0) {
+          setError(
+            "No se han encontrado artículos. Intente una búsqueda diferente."
+          );
+          setImagePath(getRandomImage());
+          setFirstVisit(false); // Desactivar firstVisit en caso de error
+        } else {
+          setArticles(data.articles);
+          const totalArticles = data.articles.length;
+          const calculatedTotalPages = Math.ceil(
+            totalArticles / searchParams.pageSize
+          );
+          setTotalPages(calculatedTotalPages);
+          sessionStorage.setItem("articles", JSON.stringify(data.articles));
+          sessionStorage.setItem("searchParams", JSON.stringify(searchParams));
+          sessionStorage.setItem("totalPages", calculatedTotalPages.toString());
+          setCurrentPage(1);
+          sessionStorage.setItem("currentPage", "1");
+          setFirstVisit(false); // Desactivar firstVisit cuando hay resultados
+        }
+      } catch {
+        setError("Error fetching news");
+        setImagePath(getRandomImage());
+        setFirstVisit(false); // Desactivar firstVisit en caso de error
+      } finally {
+        setLoading(false);
+      }
+    },
+    [searchParams]
+  );
 
   useEffect(() => {
     if (urlQuery) {
-      // Actualiza los parámetros de búsqueda con el valor de la URL
       setSearchParams((prev) => ({ ...prev, q: urlQuery }));
-      // Ejecuta la búsqueda automáticamente
       handleSearch();
     }
-  }, [urlQuery, handleSearch]); 
-  
-  // ... other code ...
-  
-  useEffect(() => {
-    if (urlQuery) {
-      // Actualiza los parámetros de búsqueda con el valor de la URL
-      setSearchParams((prev) => ({ ...prev, q: urlQuery }));
-      // Ejecuta la búsqueda automáticamente
-      handleSearch();
-    }
-  }, [urlQuery, handleSearch]); // Add handleSearch to the dependency array
+  }, [urlQuery, handleSearch]);
 
   const getPaginatedArticles = () => {
     const storedArticles = JSON.parse(
@@ -138,34 +123,29 @@ const Page = () => {
     const endIndex = Math.min(
       startIndex + searchParams.pageSize,
       storedArticles.length
-    ); // Ajuste del índice final
+    );
     return storedArticles.slice(startIndex, endIndex);
   };
 
   const smoothScrollToTop = () => {
-    const scrollDuration = 500; // Duración en milisegundos
-    const scrollStep = -window.scrollY / (scrollDuration / 15); // Cantidad de desplazamiento por intervalo
+    const scrollDuration = 500;
+    const scrollStep = -window.scrollY / (scrollDuration / 15);
 
     const scrollInterval = setInterval(() => {
       if (window.scrollY > 0) {
-        window.scrollBy(0, scrollStep); // Desplazamos hacia arriba
+        window.scrollBy(0, scrollStep);
       } else {
-        clearInterval(scrollInterval); // Finalizamos la animación al llegar al inicio
+        clearInterval(scrollInterval);
       }
-    }, 15); // Intervalo de 15ms para un desplazamiento fluido
+    }, 15);
   };
 
   const handlePageChange = (page: number) => {
     setLoading(true);
     setCurrentPage(page);
     sessionStorage.setItem("currentPage", page.toString());
-
-    // Animación personalizada de desplazamiento
     smoothScrollToTop();
-
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
+    setTimeout(() => setLoading(false), 500);
   };
 
   const getRandomImage = () =>
@@ -174,43 +154,67 @@ const Page = () => {
     }.jpg`;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <ArticleForm
-        searchParams={searchParams}
-        handleInputChange={handleInputChange}
-        handleSearch={handleSearch}
-      />
-
-      {loading && <Loading />}
-      {!loading && firstVisit && articles.length === 0 && (
-        <div className="h-screen flex flex-col items-center justify-center bg-white-100">
-          <Image
-            src="/images/PrimeraVista.png"
-            alt="No articles found"
-            width={300}
-            height={300}
-          />
-          <h1 className="text-2xl font-bold text-green-800">
-            Empieza a buscar noticias
-          </h1>
+    <main className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-blue-200/20 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-100/20 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
         </div>
-      )}
 
-      {!loading && error && (
-        <NoArticlesError message={error} imagePath={imagePath} />
-      )}
-
-      {!loading && !error && articles.length > 0 && (
-        <>
-          <ArticleList articles={getPaginatedArticles()} />
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
+        {/* Content */}
+        <div className="relative">
+          <ArticleForm
+            searchParams={searchParams}
+            handleInputChange={handleInputChange}
+            handleSearch={handleSearch}
           />
-        </>
-      )}
-    </div>
+
+          {loading && (
+            <div className="flex justify-center items-center min-h-[400px]">
+              <Loading />
+            </div>
+          )}
+          {!loading && error && (
+            <div className="mt-8">
+              <NoArticlesError message={error} imagePath={imagePath} />
+            </div>
+          )}
+
+          {!loading && firstVisit && articles.length === 0 && !error && (
+            <div className="flex flex-col items-center justify-center min-h-[500px] bg-white/50 rounded-2xl backdrop-blur-sm p-8 shadow-lg">
+              <Image
+                src="/images/PrimeraVista.png"
+                alt="No articles found"
+                width={300}
+                height={300}
+                className="animate-float"
+              />
+              <h1 className="text-2xl sm:text-3xl font-bold text-blue-800 mt-6 text-center">
+                Empieza a buscar noticias
+              </h1>
+              <p className="text-blue-600 mt-4 text-center max-w-md">
+                Utiliza el formulario de búsqueda para encontrar artículos de tu
+                interés
+              </p>
+            </div>
+          )}
+
+          {!loading && !error && articles.length > 0 && (
+            <div className="space-y-8 mt-8">
+              <ArticleList articles={getPaginatedArticles()} />
+              <div className="mt-8 flex justify-center">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
   );
 };
 

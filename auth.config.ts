@@ -7,83 +7,43 @@ import { nanoid } from "nanoid"
 import { sendEmailVerification } from "@/lib/mail"
 
 
-// Notice this is only an object, not a full Auth.js instance
+// auth.config.ts
 export default {
-  
   providers: [
     Credentials({
       authorize: async (credentials) => {
-        // Validate the credentials using Zod
         const { data, success } = loginSchema.safeParse(credentials);
+        
         if (!success) {
-          console.log("Validation failed:", loginSchema.safeParse(credentials).error);
-          throw new Error("Invalid credentials");
+          throw new Error("Datos inválidos");
         }
-      
-        // Fetch the user from the database
+
         const user = await prisma.user.findUnique({
-          where: {
-            email: data.email,
-          },
+          where: { email: data.email.toLowerCase() },
         });
-      
-        // Check if the user exists and has a password
-        if (!user || !user.password) {
-          console.log("User not found or password missing:", data.email);
-          throw new Error("Invalid credentials");
+
+        if (!user) {
+          throw new Error("Usuario no encontrado");
         }
-      
-        // Compare the provided password with the hashed password in the database
-        const isPasswordCorrect = await bcryptjs.compare(data.password, user.password);
-        if (!isPasswordCorrect) {
-          console.log("Invalid password for user:", data.email);
-          throw new Error("Invalid credentials");
+
+        if (!user.password) {
+          throw new Error("Cuenta registrada con otro método");
         }
-      
-        /*
-        //verificacion email
-        if (!user.emailVerified) {
-          const verifyTokenExists = await prisma.verificationToken.findFirst({
-            where: {
-             identifier: user.email as string,
-            },
-          })
 
-          //si existe un token lo eliminamos
-          if (verifyTokenExists?.identifier) {
-            await prisma.verificationToken.delete({
-              where: {
-                identifier: user.email as string,
-              },
-            })
-          }
-
-          const token = nanoid()
-
-          await prisma.verificationToken.create({
-            data: {
-              identifier: user.email as string,
-              token,
-              expires: new Date(Date.now() + 60 * 60 * 1000),
-            },
-          })
-
-          // enviar email de verificacion
-          await sendEmailVerification(user.email as string , token);
-
-          throw new Error("Correo de verificacion pendiente")
-
+        const isValid = await bcryptjs.compare(data.password, user.password);
+        
+        if (!isValid) {
+          throw new Error("Contraseña incorrecta");
         }
-          */
 
-        // Return the user object if everything is valid
-        console.log("User authenticated:", user);
         return {
-          ...user,
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
           username: user.username ?? undefined
         };
-        
       },
     }),
   ],
-} satisfies NextAuthConfig
+} satisfies NextAuthConfig;

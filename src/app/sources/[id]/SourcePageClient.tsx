@@ -127,8 +127,6 @@ export default function SourcePageClient({
   const fetchComments = async () => {
     setIsLoadingComments(true);
     try {
-      // Aquí puedes hacer una solicitud para recargar los comentarios sin cambiar refreshKey
-      // Por ejemplo, puedes hacer una solicitud directa a la API para obtener los comentarios más recientes
       const response = await fetch(
         `/api/comments/list/${source.id}?page=${currentPage}`
       );
@@ -212,42 +210,63 @@ export default function SourcePageClient({
   }, [showComments, fetchCommentsCount]); // Corregido: añadido fetchCommentsCount como dependencia
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="relative bg-gradient-to-r from-blue-900 to-blue-700 py-16">
-        <div className="absolute inset-0 bg-black/30" />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <header className="relative bg-gradient-to-br from-blue-800 via-blue-700 to-indigo-800 py-16 md:py-24">
+        <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30" />
+
+        {/* Animated background patterns */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full">
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+            <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse-slow delay-1000"></div>
+          </div>
+        </div>
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Botón de favoritos más responsivo */}
           <button
             onClick={() => handleFavoriteClick(source.id)}
-            className="absolute top-4 right-4 bg-white/90 p-2 rounded-full text-xl hover:bg-white transition-all"
+            className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-white/90 hover:bg-white p-2 sm:p-3 rounded-full text-base sm:text-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl z-10"
             title={
               favorites.has(source.id)
                 ? "Eliminar de favoritos"
                 : "Agregar a favoritos"
             }
+            aria-label={
+              favorites.has(source.id)
+                ? "Eliminar de favoritos"
+                : "Agregar a favoritos"
+            }
           >
-            {favorites.has(source.id) ? "★" : "☆"}
+            <span className="block">
+              {favorites.has(source.id) ? "★" : "☆"}
+            </span>
           </button>
 
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight">
                 {source.name}
               </h1>
-              <p className="text-xl text-gray-100 mb-6 max-w-2xl">
+              <p className="text-lg md:text-xl text-gray-100/90 mb-6 max-w-2xl leading-relaxed">
                 {source.description}
               </p>
-              <div className="max-w-xs">
+              
+              {/* Componente de valoración más responsivo */}
+              <div className="w-full max-w-xs sm:max-w-sm mx-auto md:mx-0 mb-6">
                 <StarRating sourceId={source.id} />
               </div>
+              
               <a
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors mt-4"
+                className="inline-flex items-center bg-white/95 hover:bg-white text-blue-700 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 Visitar sitio web
                 <svg
-                  className="ml-2 w-5 h-5"
+                  className="ml-2 w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -263,8 +282,8 @@ export default function SourcePageClient({
             </div>
 
             {source.imageUrl && (
-              <div className="md:ml-4">
-                <div className="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl">
+              <div className="md:ml-4 transform hover:scale-105 transition-transform duration-300">
+                <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white/90 shadow-2xl relative">
                   <SourceImage
                     imageUrl={source.imageUrl}
                     name={source.name}
@@ -281,20 +300,20 @@ export default function SourcePageClient({
         <div className="border rounded-lg overflow-hidden">
           <button
             onClick={() => setShowComments(!showComments)}
-            className="w-full p-4 bg-gray-100 flex justify-between items-center"
+            className="w-full p-3 sm:p-4 bg-gray-100 flex justify-between items-center"
           >
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-lg sm:text-xl font-semibold">
               Comentarios ({commentsCount})
             </h2>
             <ChevronDownIcon
-              className={`w-6 h-6 transform transition-transform ${
+              className={`w-5 h-5 sm:w-6 sm:h-6 transform transition-transform ${
                 showComments ? "rotate-180" : ""
               }`}
             />
           </button>
 
           {showComments && (
-            <div className="p-6 bg-white">
+            <div className="p-4 sm:p-6 bg-white">
               <CommentForm
                 sourceId={source.id}
                 onCommentAdded={() => {
@@ -305,7 +324,7 @@ export default function SourcePageClient({
               {isLoadingComments ? (
                 <div className="text-center py-4">
                   <svg
-                    className="animate-spin h-8 w-8 text-blue-600 mx-auto"
+                    className="animate-spin h-6 h-6 sm:h-8 sm:w-8 text-blue-600 mx-auto"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -344,7 +363,7 @@ export default function SourcePageClient({
         <section className="mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="relative">
-              <h2 className="text-3xl font-bold text-gray-900">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Artículos Destacados por{" "}
                 <span
                   onClick={rotateSort}
@@ -362,11 +381,11 @@ export default function SourcePageClient({
               </p>
             </div>
 
-            <div className="flex items-center gap-3 bg-white p-2 rounded-lg shadow-sm self-end">
-              <span className="text-sm text-gray-500">Ordenar por:</span>
+            <div className="flex items-center gap-2 sm:gap-3 bg-white p-2 rounded-lg shadow-sm self-end">
+              <span className="text-xs sm:text-sm text-gray-500">Ordenar por:</span>
               <div className="flex gap-1">
                 <span
-                  className={`px-3 py-1 rounded-md text-sm transition-all ${
+                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${
                     sortBy === "relevancy"
                       ? "bg-blue-600 text-white"
                       : "text-gray-500"
@@ -375,7 +394,7 @@ export default function SourcePageClient({
                   Relevancia
                 </span>
                 <span
-                  className={`px-3 py-1 rounded-md text-sm transition-all ${
+                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${
                     sortBy === "popularity"
                       ? "bg-blue-600 text-white"
                       : "text-gray-500"
@@ -384,7 +403,7 @@ export default function SourcePageClient({
                   Popularidad
                 </span>
                 <span
-                  className={`px-3 py-1 rounded-md text-sm transition-all ${
+                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${
                     sortBy === "publishedAt"
                       ? "bg-blue-600 text-white"
                       : "text-gray-500"
@@ -400,7 +419,7 @@ export default function SourcePageClient({
         {articles.length === 0 ? (
           <div className="text-center text-gray-500 py-12">
             <svg
-              className="w-16 h-16 mx-auto text-gray-300 mb-4"
+              className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-300 mb-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -415,13 +434,13 @@ export default function SourcePageClient({
             <p className="text-xl">No se encontraron artículos.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {articles.map((article) => (
               <article
                 key={article.url}
                 className="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
-                <figure className="relative h-48">
+                <figure className="relative h-40 sm:h-48">
                   {article.urlToImage ? (
                     <Image
                       src={article.urlToImage}
@@ -433,7 +452,7 @@ export default function SourcePageClient({
                   ) : (
                     <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                       <svg
-                        className="w-12 h-12 text-gray-400"
+                        className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -449,25 +468,25 @@ export default function SourcePageClient({
                   )}
                 </figure>
 
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <header>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600">
                       {article.title}
                     </h3>
                   </header>
 
                   {article.description && (
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-sm sm:text-base text-gray-600 mb-4 line-clamp-3">
                       {article.description}
                     </p>
                   )}
 
                   <footer className="mt-auto">
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                    <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500 mb-4">
                       {article.author && (
                         <span className="flex items-center">
                           <svg
-                            className="w-4 h-4 mr-1"
+                            className="w-3 h-3 sm:w-4 sm:h-4 mr-1"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -479,14 +498,14 @@ export default function SourcePageClient({
                               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                             />
                           </svg>
-                          <span className="truncate max-w-[120px]">
+                          <span className="truncate max-w-[80px] sm:max-w-[120px]">
                             {article.author}
                           </span>
                         </span>
                       )}
                       <time className="flex items-center">
                         <svg
-                          className="w-4 h-4 mr-1"
+                          className="w-3 h-3 sm:w-4 sm:h-4 mr-1"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -513,11 +532,11 @@ export default function SourcePageClient({
                       href={article.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+                      className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors text-sm sm:text-base"
                     >
                       Leer más
                       <svg
-                        className="ml-2 w-4 h-4"
+                        className="ml-1 sm:ml-2 w-3 h-3 sm:w-4 sm:h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

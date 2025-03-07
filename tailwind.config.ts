@@ -57,14 +57,13 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
       animation: {
-        'pulse-light': 'pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'scrollText': 'scrollText 12s linear infinite',
       },
       keyframes: {
-        'pulse-light': {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.8' },
-        },
+        'scrollText': {
+          '0%': { transform: 'translateY(0)' },
+          '100%': { transform: 'translateY(-50%)' }
+        }
       },
   	}
   },

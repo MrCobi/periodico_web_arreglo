@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Article } from "../../interface/article";
 import Image from "next/image";
 import Link from "next/link";
+import { Calendar, User, ArrowRight } from "lucide-react";
 
 interface Props {
   articles: Article[];
@@ -28,121 +29,148 @@ export default function ArticleList({ articles }: Props) {
   };
 
   return (
-    <div className="px-16 sm:px-16 lg:px-20">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="w-full px-4 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         {articles && articles.length > 0 ? (
           articles.map((article, index) => (
             <article
               key={index}
-              className={`group relative bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:z-10 ${
-                showArticles ? "opacity-100 animate-fadeIn" : "opacity-0"
-              }`}
+              className={`group relative bg-white rounded-lg shadow-md overflow-hidden 
+                         transform transition-all duration-700 ease-in-out hover:-translate-y-2 hover:shadow-xl 
+                         ${showArticles ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+              style={{ transitionDelay: `${index * 100}ms` }}
             >
-              {/* Capa de imagen de fondo en hover */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <Image
-                  src={article.urlToImage || "/images/default_periodico.jpg"}
-                  alt=""
-                  fill
-                  className="object-cover blur-sm brightness-[0.2]"
-                />
-              </div>
-
-              {/* Contenido normal */}
-              <div className="relative h-48">
+              <div className="relative h-56 sm:h-64">
                 <Image
                   src={article.urlToImage || "/images/default_periodico.jpg"}
                   alt={article.title}
-                  width={500}
-                  height={300}
-                  loading="lazy"
-                  placeholder="blur"
-                  blurDataURL="/images/default_periodico.jpg"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  fill
+                  className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
-                <h2 className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-lg font-bold p-2 line-clamp-2">
-                  {article.title}
-                </h2>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
+                <div className="absolute inset-0 flex items-end p-4 sm:p-6">
+                  <h2 className="text-white text-xl sm:text-2xl font-bold leading-tight">
+                    {article.title}
+                  </h2>
+                </div>
               </div>
 
-              {/* Contenido principal */}
-              <div className="relative p-6 transition-colors duration-500 group-hover:bg-transparent">
-                <p className="text-gray-600 mb-4 line-clamp-3 group-hover:text-white group-hover:line-clamp-none transition-all duration-500">
-                  {article.description}
-                </p>
+              <div className="p-4 sm:p-6 relative">
+                <div className="absolute inset-0 bg-gradient-to-b from-blue-900/90 to-indigo-900/95 
+                              opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out z-10"></div>
                 
-                {/* Metadatos */}
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-4 group-hover:text-gray-300">
-                  <span className="flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                <div className="relative z-20 group-hover:opacity-0 transition-opacity duration-500">
+                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm sm:text-base">
+                    {article.description}
+                  </p>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <User className="w-4 h-4 mr-1" />
+                      <span className="truncate max-w-[120px]">
+                        {article.author || 'Anónimo'}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      <span>{formatDate(article.publishedAt)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                    <Link 
+                      href={`/sources/${article.source.id}`}
+                      className="text-sm text-gray-500 hover:text-blue-600"
+                      aria-label={`Ver más noticias de ${article.source.name}`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                    {article.author || 'Anónimo'}
-                  </span>
-                  <span className="flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                      {article.source.name || 'El Mundo'}
+                    </Link>
+                    <a
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    {formatDate(article.publishedAt)}
-                  </span>
+                      Leer más
+                      <ArrowRight className="ml-1 w-4 h-4" />
+                    </a>
+                  </div>
                 </div>
+                
+                <div className="absolute inset-0 p-4 sm:p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out z-20 flex flex-col">
+                  <div className="flex-grow overflow-hidden mb-4">
+                    <div className="animate-scrollText">
+                      <p className="text-white/90 mb-4">
+                        {article.description}
+                      </p>
+                      {article.source.name === "EL MUNDO" && (
+                        <div className="mb-4">
+                          <p className="text-white/90 mb-2 text-sm">
+                            Disponible en Orbyt desde las 23:30h. y cada día en tu quiosco, 
+                            la mejor información siempre con EL MUNDO.
+                          </p>
+                          <p className="text-white/90 text-sm">
+                            Suscríbete aquí a PREMIUM y tendrás acceso ilimitado a todo el contenido.
+                          </p>
+                        </div>
+                      )}
+                      <p className="text-white/90 mb-4 mt-8">
+                        {article.description}
+                      </p>
+                      {article.source.name === "EL MUNDO" && (
+                        <div className="mb-4">
+                          <p className="text-white/90 mb-2 text-sm">
+                            Disponible en Orbyt desde las 23:30h. y cada día en tu quiosco, 
+                            la mejor información siempre con EL MUNDO.
+                          </p>
+                          <p className="text-white/90 text-sm">
+                            Suscríbete aquí a PREMIUM y tendrás acceso ilimitado a todo el contenido.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                {/* Enlaces */}
-                <div className="flex items-center justify-between relative z-10">
-                  <Link 
-                    href={`/sources/${article.source.id}`}
-                    className="text-sm text-gray-500 hover:text-white transition-colors cursor-pointer group-hover:text-gray-300"
-                    aria-label={`Ver más noticias de ${article.source.name}`}
-                  >
-                    {article.source.name || 'Fuente desconocida'}
-                  </Link>
-                  <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-blue-600 hover:text-blue-400 transition-colors group-hover:text-blue-400"
-                  >
-                    Leer más
-                    <svg
-                      className="ml-2 w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14 5l7 7m0 0l-7 7m7-7H3"
-                      />
-                    </svg>
-                  </a>
+                  <div className="relative z-30">
+                    <div className="flex items-center justify-between text-sm text-blue-100 mb-4">
+                      <span className="flex items-center">
+                        <User className="w-4 h-4 mr-1" />
+                        <span className="truncate max-w-[120px]">
+                          {article.author || article.source.name}
+                        </span>
+                      </span>
+                      <span className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        {formatDate(article.publishedAt)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-4 border-t border-blue-300/20">
+                      <Link 
+                        href={`/sources/${article.source.id}`}
+                        className="text-sm text-blue-200 hover:text-white transition-colors duration-300 pointer-events-auto"
+                        aria-label={`Ver más noticias de ${article.source.name}`}
+                      >
+                        {article.source.name || 'El Mundo'}
+                      </Link>
+                      <a
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-white font-medium hover:text-blue-200 transition-colors duration-300 pointer-events-auto"
+                      >
+                        Leer más
+                        <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </article>
           ))
         ) : (
-          <p>No hay artículos disponibles.</p>
+          <div className="col-span-full text-center py-12">
+            <p className="text-gray-500 text-lg">No hay artículos disponibles.</p>
+          </div>
         )}
       </div>
     </div>
