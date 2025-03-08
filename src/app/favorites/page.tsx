@@ -1,9 +1,9 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Source } from "@/src/interface/source";
-import SourcesPage from "@/src/app/components/SourceList"; // Asegúrate de que la ruta sea correcta
+import SourcesPage from "@/src/app/components/SourceList";
 import { Button } from "@/components/ui/button";
 import { Star, ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -13,7 +13,7 @@ export default function FavoritesPage() {
   const [favoriteSources, setFavoriteSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadFavorites = async () => {
+  const loadFavorites = useCallback(async () => {
     if (session?.user?.id) {
       try {
         setLoading(true);
@@ -41,19 +41,19 @@ export default function FavoritesPage() {
         setLoading(false);
       }
     }
-  };
+  }, [session?.user?.id]); // Dependencia necesaria
 
   useEffect(() => {
     loadFavorites();
-  }, [session]);
+  }, [session, loadFavorites]); // Dependencia actualizada
 
   const handleFavoriteUpdate = (sourceId: string) => {
-    // Actualizar la lista después de quitar un favorito
     setFavoriteSources((prev) =>
       prev.filter((source) => source.id !== sourceId)
     );
   };
 
+  
   return (
     <div className="min-h-screen ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

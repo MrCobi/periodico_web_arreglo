@@ -8,11 +8,6 @@ import { User } from "@/src/interface/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/app/components/ui/avatar";
 import { Card } from "@/src/app/components/ui/card";
 import {
   ArrowLeft,
@@ -134,9 +129,13 @@ export default function EditUserPage() {
 
       toast.success("Perfil actualizado correctamente");
       router.push("/dashboard");
-    } catch (err) {
+    } catch (error: unknown) {
       setError("Error al guardar los cambios");
-      toast.error("Error al actualizar el perfil");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Error desconocido al actualizar el perfil"
+      );
     } finally {
       setSaving(false);
     }
@@ -192,7 +191,9 @@ export default function EditUserPage() {
                 <div className="relative group">
                   <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-2xl transition-all duration-300">
                     <Image
-                      src={formData.image || "/images/AvatarPredeterminado.webp"}
+                      src={
+                        formData.image || "/images/AvatarPredeterminado.webp"
+                      }
                       alt={user?.name || "Avatar"}
                       layout="fill"
                       className="object-cover"

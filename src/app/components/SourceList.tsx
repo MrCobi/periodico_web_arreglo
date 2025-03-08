@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -89,12 +89,8 @@ export default function SourcesPage({
     indexOfLastSource
   );
 
-  useEffect(() => {
-    setIsLoaded(true);
-    loadFavorites();
-  }, []);
-
-  const loadFavorites = async () => {
+  // Modifica la declaración de loadFavorites
+  const loadFavorites = useCallback(async () => {
     if (session?.user?.id) {
       try {
         const response = await fetch("/api/favorites/list");
@@ -106,7 +102,7 @@ export default function SourcesPage({
         console.error("Error cargando favoritos:", error);
       }
     }
-  };
+  }, [session?.user?.id]); // Dependencias necesarias
 
   const toggleFavorite = async (sourceId: string) => {
     if (!session?.user?.id) {
@@ -147,6 +143,11 @@ export default function SourcesPage({
     router.push(`/sources/${sourceId}`);
   };
 
+  useEffect(() => {
+    setIsLoaded(true);
+    loadFavorites();
+  }, [loadFavorites]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-600/5 to-indigo-600/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -154,35 +155,39 @@ export default function SourcesPage({
         {!isFavoritePage && (
           <div
             className={`text-center mb-16 transition-all duration-1000 ${
-              isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+              isLoaded
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
             }`}
           >
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-              {isFavoritePage ? 'Mis Favoritos' : 'Fuentes de Noticias'}
+              {isFavoritePage ? "Mis Favoritos" : "Fuentes de Noticias"}
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               {isFavoritePage
-                ? 'Tu colección personal de periódicos favoritos'
-                : 'Explora nuestra colección de periódicos y medios de comunicación de todo el mundo'}
+                ? "Tu colección personal de periódicos favoritos"
+                : "Explora nuestra colección de periódicos y medios de comunicación de todo el mundo"}
             </p>
             <div className="h-1 w-20 bg-blue-600 mx-auto mt-6"></div>
           </div>
         )}
-  
+
         {/* Filtros condicionales */}
         {showFilters && (
           <div
             className={`mb-12 transition-all duration-1000 delay-200 ${
-              isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+              isLoaded
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
             }`}
           >
             <Card className="backdrop-blur-sm bg-white/80 border-blue-100">
               <CardHeader>
                 <CardTitle className="text-blue-900">Filtrar Fuentes</CardTitle>
                 <CardDescription>
-                  {isFavoritePage 
-                    ? 'Filtra tus favoritos' 
-                    : 'Encuentra las fuentes que más te interesan'}
+                  {isFavoritePage
+                    ? "Filtra tus favoritos"
+                    : "Encuentra las fuentes que más te interesan"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -232,7 +237,7 @@ export default function SourcesPage({
             </Card>
           </div>
         )}
-  
+
         {/* Grid de fuentes */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {currentSources.map((source, index) => (
@@ -302,7 +307,7 @@ export default function SourcesPage({
             </div>
           ))}
         </div>
-  
+
         {/* Paginación condicional */}
         {showPagination && filteredSources.length > sourcesPerPage && (
           <div className="mt-12 flex flex-col items-center space-y-4">
@@ -325,7 +330,7 @@ export default function SourcesPage({
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-  
+
               <div className="flex items-center space-x-1">
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum;
@@ -338,7 +343,7 @@ export default function SourcesPage({
                   } else {
                     pageNum = currentPage - 2 + i;
                   }
-  
+
                   return (
                     <Button
                       key={pageNum}
@@ -355,7 +360,7 @@ export default function SourcesPage({
                   );
                 })}
               </div>
-  
+
               <Button
                 variant="outline"
                 size="icon"
@@ -377,7 +382,7 @@ export default function SourcesPage({
                 <ChevronsRight className="h-4 w-4" />
               </Button>
             </div>
-  
+
             <p className="text-sm text-gray-600">
               Mostrando {indexOfFirstSource + 1} -{" "}
               {Math.min(indexOfLastSource, filteredSources.length)} de{" "}
@@ -385,18 +390,20 @@ export default function SourcesPage({
             </p>
           </div>
         )}
-  
+
         {/* Estado vacío */}
         {filteredSources.length === 0 && (
           <div className="text-center py-16 bg-white/50 backdrop-blur-sm rounded-xl border border-blue-100">
             <Search className="w-16 h-16 mx-auto text-blue-300 mb-4" />
             <h3 className="text-2xl font-bold text-blue-900 mb-2">
-              {isFavoritePage ? 'No hay favoritos' : 'No se encontraron resultados'}
+              {isFavoritePage
+                ? "No hay favoritos"
+                : "No se encontraron resultados"}
             </h3>
             <p className="text-blue-600">
               {isFavoritePage
-                ? 'Agrega periódicos a tus favoritos para verlos aquí'
-                : 'Intenta con otros términos de búsqueda o cambia el filtro de idioma'}
+                ? "Agrega periódicos a tus favoritos para verlos aquí"
+                : "Intenta con otros términos de búsqueda o cambia el filtro de idioma"}
             </p>
             {isFavoritePage && (
               <Link href="/sources" className="mt-4 inline-block">

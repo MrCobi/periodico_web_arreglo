@@ -32,12 +32,24 @@ export default function DashboardPage() {
   const [favoriteSources, setFavoriteSources] = useState<Source[]>([]);
   const [commentCount, setCommentCount] = useState(0);
   const [activeDays, setActiveDays] = useState(0);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const displayedFavorites =
     favoriteSources.length > 6 ? favoriteSources.slice(0, 5) : favoriteSources;
 
   const remainingCount =
     favoriteSources.length > 6 ? favoriteSources.length - 5 : 0;
+
+    type Activity =
+  | {
+      type: 'favorite_added' | 'favorite_removed' | 'comment' | 'rating';
+      sourceName: string;
+      createdAt: string;
+    }
+  | {
+      type: 'follow';
+      userName: string;
+      createdAt: string;
+    };
 
   useEffect(() => {
     const loadFavorites = async () => {
