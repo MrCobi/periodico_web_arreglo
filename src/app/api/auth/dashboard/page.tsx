@@ -559,7 +559,7 @@ export default function DashboardPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center">
-                    <Star className="h-6 w-6 mr-2 text-yellow-500" />
+                    <Heart className="h-6 w-6 mr-2 text-red-500" />
                     Periódicos favoritos ({favoriteSources.length})
                   </h2>
                   <Link
@@ -596,7 +596,7 @@ export default function DashboardPage() {
                             <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300">
                               {source.name}
                             </h3>
-                            <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                            <Heart className="h-5 w-5 text-red-500 fill-red-500" />
                           </div>
                           <p className="text-gray-600 dark:text-gray-400 text-sm">
                             {source.language === "es"
