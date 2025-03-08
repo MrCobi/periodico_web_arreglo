@@ -25,7 +25,6 @@ import {
   Plus,
   Minus,
   Heart,
-  Users,
   UserPlus,
   UserCheck,
 } from "lucide-react";

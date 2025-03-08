@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
   try {
     // Transacción para ambas operaciones
-    const result = await prisma.$transaction(async (tx) => {
+    const _result = await prisma.$transaction(async (tx) => {
       // 1. Agregar a favoritos
       await tx.favoriteSource.create({
         data: {

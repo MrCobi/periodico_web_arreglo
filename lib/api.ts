@@ -20,7 +20,7 @@ export async function fetchArticlesBySource(
     if (!response.ok) return [];
     
     const data = await response.json();
-    return data.articles?.map((article: any) => ({
+    return data.articles?.map((article: Article) => ({
       sourceId: article.source?.id || sourceId,
       author: article.author || null,
       title: article.title,

@@ -69,17 +69,17 @@ export async function DELETE(
 
         return NextResponse.json({ message: "Comentario eliminado" });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error eliminando comentario:", error);
 
         // Manejar errores específicos
-        if (error.message === "Comentario no encontrado") {
+        if (error instanceof Error && error.message === "Comentario no encontrado") {
             return NextResponse.json(
                 { message: "Comentario no encontrado" },
                 { status: 404 }
             );
         }
-        if (error.message === "Sin permisos") {
+        if (error instanceof Error && error.message === "Sin permisos") {
             return NextResponse.json(
                 { message: "No tienes permiso" },
                 { status: 403 }

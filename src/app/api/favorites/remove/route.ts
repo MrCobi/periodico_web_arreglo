@@ -13,7 +13,7 @@ export async function DELETE(request: Request) {
   const { sourceId } = await request.json();
 
   try {
-    const result = await prisma.$transaction(async (tx) => {
+    const _result = await prisma.$transaction(async (tx) => {
       // 1. Eliminar de favoritos
       await tx.favoriteSource.delete({
         where: {

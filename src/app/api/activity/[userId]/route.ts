@@ -33,30 +33,31 @@ export async function GET(
 
     // Consulta SQL usando activity_history
     const query = await prisma.$queryRaw<ActivityResult[]>`
-    WITH limited_activities AS (
-      SELECT * FROM activity_history
-      WHERE user_id = ${userId}  -- Usar user_id en lugar de userId
+      WITH limited_activities AS (
+        SELECT * FROM activity_history
+        WHERE user_id = ${userId}
+        ORDER BY created_at DESC
+        LIMIT 20
+      )
+      SELECT 
+        *,
+        (SELECT COUNT(*) FROM limited_activities) AS total
+      FROM limited_activities
       ORDER BY created_at DESC
-      LIMIT 20
-    )
-    SELECT 
-      *,
-      (SELECT COUNT(*) FROM limited_activities) AS total
-    FROM limited_activities
-    ORDER BY created_at DESC
-    LIMIT ${limit}
-    OFFSET ${offset}
-  `;
-    // Convertir el total a number para evitar conflictos entre BigInt y number
-    const total = Number(query[0]?.total || 0);
-    const activities = query.map(({ total, ...rest }) => rest);
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+
+    // Extraer total y actividades
+    const totalCount = Number(query[0]?.total || 0);
+    const activities = query.map(({ total: _total, ...rest }) => rest);
 
     return NextResponse.json({
       success: true,
       data: {
         activities,
-        total,
-        totalPages: Math.ceil(total / limit),
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
         currentPage: page
       }
     });

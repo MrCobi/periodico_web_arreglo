@@ -7,10 +7,18 @@ import { FollowButton } from "@/src/app/components/FollowButton";
 import { Skeleton } from "@/src/app/components/ui/skeleton";
 import { useToast } from "@/src/app/components/ui/use-toast";
 
+type User = {
+  id: string;
+  name: string;
+  username: string;
+  image: string;
+  bio?: string;
+};
+
 export default function ExplorePage() {
   const { data: session } = useSession();
   const { toast } = useToast();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

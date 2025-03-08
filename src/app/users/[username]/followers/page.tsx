@@ -1,7 +1,15 @@
 // src/app/users/[username]/followers/page.tsx
-import prisma from "@/lib/db";
 import { UserCard } from "@/src/app/components/UserCard";
 import { FollowButton } from "@/src/app/components/FollowButton"; // Añade esto
+
+type Follower = {
+  id: string;
+  name: string;
+  username: string;
+  image: string;
+  bio?: string;
+  followingSince?: Date; // Añadir si es necesario
+};
 
 export default async function FollowersPage({
   params,
@@ -22,7 +30,7 @@ export default async function FollowersPage({
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Seguidores de {user.name}</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {followers.map((follower: any) => (
+        {followers.map((follower: Follower) => (
           <UserCard
             key={follower.id}
             user={follower}

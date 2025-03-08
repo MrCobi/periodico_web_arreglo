@@ -109,12 +109,12 @@ export async function DELETE(req: Request) {
       message: "Dejaste de seguir al usuario correctamente"
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error detallado:", error);
     return NextResponse.json(
       { 
         error: "Error al procesar la solicitud",
-        details: error.message 
+        details: (error instanceof Error) ? error.message : "Unknown error"
       },
       { status: 500 }
     );

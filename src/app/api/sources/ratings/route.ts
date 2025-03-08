@@ -111,10 +111,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ result });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error al guardar la valoración:", error);
     return NextResponse.json(
-      { message: error.message || "Error al guardar la valoración" },
+      { message: (error instanceof Error ? error.message : "Error al guardar la valoración") },
       { status: 500 }
     );
   }
@@ -139,7 +139,7 @@ export async function DELETE(req: Request) {
   }
 
   try {
-    const result = await prisma.$transaction(async (tx) => {
+    const _result = await prisma.$transaction(async (tx) => {
       // 1. Obtener rating y fuente
       const rating = await tx.rating.findUnique({
         where: { userId_sourceId: { userId: session.user.id, sourceId } },
@@ -184,10 +184,11 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ message: "Valoración eliminada" }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error al eliminar la valoración:", error);
+    const errorMessage = error instanceof Error ? error.message : "Error al eliminar la valoración";
     return NextResponse.json(
-      { message: error.message || "Error al eliminar la valoración" },
+      { message: errorMessage },
       { status: 500 }
     );
   }

@@ -37,7 +37,7 @@ export function FollowButton({
       if (data.followerCount !== undefined) {
         await update({ followerCount: data.followerCount });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "No se pudo verificar el estado de seguimiento",
@@ -84,7 +84,7 @@ export function FollowButton({
           ? "Has dejado de seguir a este usuario"
           : "Ahora estás siguiendo a este usuario",
       });
-    } catch (error) {
+    } catch  {
       setIsFollowing(originalState);
       toast({
         title: "Error",

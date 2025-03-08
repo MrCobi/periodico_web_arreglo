@@ -86,11 +86,11 @@ export async function POST(
 
     return NextResponse.json(result);
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creando respuesta:", error);
 
     // Manejar errores específicos
-    if (error.message === "Comentario padre, fuente o usuario no encontrados") {
+    if (error instanceof Error && error.message === "Comentario padre, fuente o usuario no encontrados") {
       return NextResponse.json(
         { message: "Comentario padre no válido" },
         { status: 404 }

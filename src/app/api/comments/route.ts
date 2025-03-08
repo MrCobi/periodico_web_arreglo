@@ -90,11 +90,11 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating comment:", error);
 
     // Manejar errores específicos
-    if (error.message === "La fuente no existe") {
+    if (error instanceof Error && error.message === "La fuente no existe") {
       return NextResponse.json(
         { message: "La fuente especificada no existe" },
         { status: 404 }
