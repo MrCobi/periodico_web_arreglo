@@ -25,6 +25,9 @@ import {
   Plus,
   Minus,
   Heart,
+  Users,
+  UserPlus,
+  UserCheck,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -232,23 +235,28 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      icon: Star,
-      label: "Favoritos",
-      value: favoriteSources.length,
-      color: "text-yellow-500",
+      icon: UserPlus, // Icono para nuevos seguidores
+      label: "Seguidores",
+      value: 0,
+      color: "text-blue-500",
     },
-    { icon: Newspaper, label: "Artículos", value: 0, color: "text-blue-500" },
+    {
+      icon: UserCheck, // Icono para seguidos
+      label: "Seguidos",
+      value: 0,
+      color: "text-green-500",
+    },
     {
       icon: MessageSquare,
       label: "Comentarios",
       value: commentCount,
-      color: "text-green-500",
+      color: "text-purple-500",
     },
     {
       icon: Calendar,
       label: "Días activo",
       value: activeDays || 0,
-      color: "text-purple-500",
+      color: "text-yellow-500",
     },
   ];
 
@@ -552,7 +560,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center">
                     <Star className="h-6 w-6 mr-2 text-yellow-500" />
-                    Periódicos favoritos
+                    Periódicos favoritos ({favoriteSources.length})
                   </h2>
                   <Link
                     href="/favorites"
