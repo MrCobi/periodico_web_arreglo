@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     // Usa await para obtener los valores de params
-    const { userId } = context.params;
+    const { userId } = await context.params;
 
     if (!userId || typeof userId !== 'string') {
       return NextResponse.json(
