@@ -1,22 +1,32 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
-export async function GET(
-  _: Request,
-  { params }: { params: { userId: string } }
-) {
-  // 1. Corregir manejo de parámetros según Next.js
-  const { userId } = await params; // <-- Await requerido
+export const dynamic = 'force-dynamic';
 
+export async function GET(
+  request: Request,
+  context: { params: { userId: string } } // Tipo correcto (sin Promise)
+) {
   try {
-    // 2. Consulta SQL corregida (sin comentarios inválidos)
+    // Usa await para obtener los valores de params
+    const { userId } = context.params;
+
+    if (!userId || typeof userId !== 'string') {
+      return NextResponse.json(
+        { success: false, error: "ID de usuario inválido" },
+        { status: 400 }
+      );
+    }
+
     const activities = await prisma.$queryRaw`
       (
         SELECT 
           'favorite_added' AS type,
           fh.created_at AS createdAt,
           s.name AS sourceName,
-          s.id AS sourceId
+          s.id AS sourceId,
+          NULL AS userName,
+          NULL AS userId
         FROM favorite_sources fh
         JOIN sources s ON fh.source_id = s.id
         WHERE fh.user_id = ${userId}
@@ -29,7 +39,9 @@ export async function GET(
           'favorite_removed' AS type,
           fh.created_at AS createdAt,
           s.name AS sourceName,
-          s.id AS sourceId
+          s.id AS sourceId,
+          NULL AS userName,
+          NULL AS userId
         FROM favorite_sources fh
         JOIN sources s ON fh.source_id = s.id
         WHERE fh.user_id = ${userId}
@@ -42,7 +54,9 @@ export async function GET(
           'comment' AS type,
           c.created_at AS createdAt,
           s.name AS sourceName,
-          s.id AS sourceId
+          s.id AS sourceId,
+          NULL AS userName,
+          NULL AS userId
         FROM comments c
         JOIN sources s ON c.source_id = s.id
         WHERE c.user_id = ${userId}
@@ -55,7 +69,9 @@ export async function GET(
           'rating' AS type,
           r.created_at AS createdAt,
           s.name AS sourceName,
-          s.id AS sourceId
+          s.id AS sourceId,
+          NULL AS userName,
+          NULL AS userId
         FROM ratings r
         JOIN sources s ON r.source_id = s.id
         WHERE r.user_id = ${userId}
@@ -67,7 +83,9 @@ export async function GET(
         SELECT 
           'follow' AS type,
           f.created_at AS createdAt,
-          u.name AS userName,  -- Comentario SQL válido
+          NULL AS sourceName,
+          NULL AS sourceId,
+          u.name AS userName,
           u.id AS userId
         FROM follows f
         JOIN users u ON f.following_id = u.id
@@ -76,14 +94,17 @@ export async function GET(
         LIMIT 5
       )
       ORDER BY createdAt DESC
-      LIMIT 5
+      LIMIT 20
     `;
 
-    return NextResponse.json({ activities });
+    return NextResponse.json({
+      success: true,
+      data: activities
+    });
   } catch (error) {
-    console.error("Error detallado:", error);
+    console.error("Error:", error);
     return NextResponse.json(
-      { message: "Error interno del servidor" },
+      { success: false, error: "Error al obtener actividades" },
       { status: 500 }
     );
   }
