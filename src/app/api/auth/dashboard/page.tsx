@@ -652,15 +652,19 @@ export default function DashboardPage() {
                                 <MessageSquare className="h-5 w-5 text-green-500" />
                               )}
                               {activity.type === "rating_added" && (
-                                <div className="relative">
-                                  <Star className="h-5 w-5 text-yellow-500" />
-                                  <Plus className="h-3 w-3 text-white absolute top-0 right-0" />
+                                <div className="relative flex items-center justify-center">
+                                  <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                                  <div className="absolute -top-1 -right-1 bg-white dark:bg-gray-800 rounded-full w-3.5 h-3.5 flex items-center justify-center border border-yellow-500">
+                                    <Plus className="h-2.5 w-2.5 text-yellow-500" />
+                                  </div>
                                 </div>
                               )}
                               {activity.type === "rating_removed" && (
-                                <div className="relative">
+                                <div className="relative flex items-center justify-center">
                                   <Star className="h-5 w-5 text-purple-500" />
-                                  <Minus className="h-3 w-3 text-white absolute top-0 right-0" />
+                                  <div className="absolute -top-1 -right-1 bg-white dark:bg-gray-800 rounded-full w-3.5 h-3.5 flex items-center justify-center border border-purple-500">
+                                    <Minus className="h-2.5 w-2.5 text-purple-500" />
+                                  </div>
                                 </div>
                               )}
                               {activity.type === "follow" && (
