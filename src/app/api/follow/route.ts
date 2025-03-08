@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
 
@@ -8,7 +9,7 @@ export async function POST(req: Request) {
 
   try {
     const { followingId } = await req.json();
-    
+
     if (!followingId) {
       return NextResponse.json({ error: "Missing followingId" }, { status: 400 });
     }
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
     });
 
     if (existingFollow) {
-      return NextResponse.json({ error: "Already following" }, { status: 400 });
+      return NextResponse.json({ error: "Ya estás siguiendo a este usuario" }, { status: 400 });
     }
 
     const newFollow = await prisma.follow.create({
@@ -44,6 +45,7 @@ export async function POST(req: Request) {
       }
     });
 
+    revalidateTag(`user-${session.user.id}-following`);
     return NextResponse.json(newFollow);
   } catch (error) {
     console.error("Error following user:", error);
@@ -61,7 +63,7 @@ export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const followingId = searchParams.get("followingId");
-    
+
     if (!followingId) {
       return NextResponse.json({ error: "Missing followingId" }, { status: 400 });
     }
@@ -74,6 +76,7 @@ export async function DELETE(req: Request) {
         }
       }
     });
+    revalidateTag(`user-${session.user.id}-following`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
