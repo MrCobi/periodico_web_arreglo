@@ -33,23 +33,27 @@ export default function DashboardPage() {
   const [commentCount, setCommentCount] = useState(0);
   const [activeDays, setActiveDays] = useState(0);
   const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalActivities, setTotalActivities] = useState(0);
+  const itemsPerPage = 5;
+
   const displayedFavorites =
     favoriteSources.length > 6 ? favoriteSources.slice(0, 5) : favoriteSources;
 
   const remainingCount =
     favoriteSources.length > 6 ? favoriteSources.length - 5 : 0;
 
-    type Activity =
-  | {
-      type: 'favorite_added' | 'favorite_removed' | 'comment' | 'rating';
-      sourceName: string;
-      createdAt: string;
-    }
-  | {
-      type: 'follow';
-      userName: string;
-      createdAt: string;
-    };
+  type Activity = {
+    type:
+      | "favorite_added"
+      | "favorite_removed"
+      | "comment"
+      | "rating"
+      | "follow";
+    sourceName?: string;
+    userName?: string;
+    createdAt: string;
+  };
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -130,16 +134,55 @@ export default function DashboardPage() {
     const loadRecentActivity = async () => {
       if (session?.user?.id) {
         try {
-          const response = await fetch(`/api/activity/${session.user.id}`);
+          const response = await fetch(
+            `/api/activity/${session.user.id}?page=${currentPage}&limit=${itemsPerPage}`
+          );
           const data = await response.json();
-          setRecentActivity(data.activities || []);
+          
+          if (!response.ok) {
+            throw new Error(data.error || "Error en la solicitud");
+          }
+  
+          if (data.success) {
+            setRecentActivity(data.data.activities);
+            setTotalActivities(data.data.total);
+          }
         } catch (error) {
-          console.error("Error cargando actividad reciente:", error);
+          console.error("Error al cargar actividad:", error);
+          setRecentActivity([]);
         }
       }
     };
     loadRecentActivity();
-  }, [session?.user?.id]);
+  }, [session?.user?.id, currentPage]);
+
+  const PaginationControls = () => {
+    const totalPages = Math.ceil(totalActivities / itemsPerPage);
+  
+    return (
+      <div className="flex justify-center gap-2 mt-4">
+        <Button
+          variant="outline"
+          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+        >
+          Anterior
+        </Button>
+        
+        <span className="flex items-center px-4 text-sm text-gray-600 dark:text-gray-400">
+          Página {currentPage} de {totalPages}
+        </span>
+        
+        <Button
+          variant="outline"
+          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          disabled={currentPage === totalPages}
+        >
+          Siguiente
+        </Button>
+      </div>
+    );
+  };
 
   if (status === "loading") {
     return (
@@ -584,60 +627,62 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {recentActivity.map((activity, index) => (
-                      <div
-                        key={index}
-                        className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="flex-shrink-0">
-                            {activity.type === "favorite_added" && (
-                              <Star className="h-5 w-5 text-yellow-500" />
-                            )}
-                            {activity.type === "favorite_removed" && (
-                              <Star className="h-5 w-5 text-red-500" />
-                            )}
-                            {activity.type === "comment" && (
-                              <MessageSquare className="h-5 w-5 text-green-500" />
-                            )}
-                            {activity.type === "rating" && (
-                              <Star className="h-5 w-5 text-purple-500" />
-                            )}
-                            {activity.type === "follow" && (
-                              <User2 className="h-5 w-5 text-blue-500" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {activity.type === "favorite_added" &&
-                                `Agregaste ${activity.sourceName} a favoritos.`}
-                              {activity.type === "favorite_removed" &&
-                                `Eliminaste ${activity.sourceName} de favoritos.`}
-                              {activity.type === "comment" &&
-                                `Comentaste en ${activity.sourceName}.`}
-                              {activity.type === "rating" &&
-                                `Valoraste ${activity.sourceName}.`}
-                              {activity.type === "follow" &&
-                                `Comenzaste a seguir a ${activity.userName}.`}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {new Date(activity.createdAt).toLocaleDateString(
-                                "es-ES",
-                                {
+                  <>
+                    <div className="space-y-4">
+                      {recentActivity.map((activity, index) => (
+                        <div
+                          key={index}
+                          className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="flex-shrink-0">
+                              {activity.type === "favorite_added" && (
+                                <Star className="h-5 w-5 text-yellow-500" />
+                              )}
+                              {activity.type === "favorite_removed" && (
+                                <Star className="h-5 w-5 text-red-500" />
+                              )}
+                              {activity.type === "comment" && (
+                                <MessageSquare className="h-5 w-5 text-green-500" />
+                              )}
+                              {activity.type === "rating" && (
+                                <Star className="h-5 w-5 text-purple-500" />
+                              )}
+                              {activity.type === "follow" && (
+                                <User2 className="h-5 w-5 text-blue-500" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {activity.type === "favorite_added" &&
+                                  `Agregaste ${activity.sourceName} a favoritos.`}
+                                {activity.type === "favorite_removed" &&
+                                  `Eliminaste ${activity.sourceName} de favoritos.`}
+                                {activity.type === "comment" &&
+                                  `Comentaste en ${activity.sourceName}.`}
+                                {activity.type === "rating" &&
+                                  `Valoraste ${activity.sourceName}.`}
+                                {activity.type === "follow" &&
+                                  `Comenzaste a seguir a ${activity.userName}.`}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {new Date(
+                                  activity.createdAt
+                                ).toLocaleDateString("es-ES", {
                                   day: "numeric",
                                   month: "long",
                                   year: "numeric",
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                }
-                              )}
-                            </p>
+                                })}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                    <PaginationControls />
+                  </>
                 )}
               </div>
             </Card>
