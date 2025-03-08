@@ -58,31 +58,64 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   try {
     const { searchParams } = new URL(req.url);
-    const followingId = searchParams.get("followingId");
+    const targetUserId = searchParams.get("targetUserId");
 
-    if (!followingId) {
-      return NextResponse.json({ error: "Missing followingId" }, { status: 400 });
+    // Validación mejorada con mensajes claros
+    if (!targetUserId) {
+      return NextResponse.json(
+        { error: "Parámetro 'targetUserId' requerido en la URL" },
+        { status: 400 }
+      );
     }
 
-    await prisma.follow.delete({
+    if (!/^[a-z0-9-]{20,}$/i.test(targetUserId)) {
+      return NextResponse.json(
+        { error: "Formato de ID inválido. Debe contener letras, números y guiones, con mínimo 20 caracteres" },
+        { status: 400 }
+      );
+    }
+
+    // Verificar existencia del usuario con manejo de errores
+    const userExists = await prisma.user.findUnique({
+      where: { id: targetUserId },
+    }).catch(() => null);
+
+    if (!userExists) {
+      return NextResponse.json(
+        { error: `Usuario con ID ${targetUserId} no encontrado` },
+        { status: 404 }
+      );
+    }
+
+    // Eliminar relación con validación de existencia
+    const deleteResult = await prisma.follow.delete({
       where: {
         followerId_followingId: {
           followerId: session.user.id,
-          followingId: followingId
+          followingId: targetUserId
         }
       }
     });
-    revalidateTag(`user-${session.user.id}-following`);
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error unfollowing user:", error);
+    if (!deleteResult) throw new Error("No se pudo eliminar la relación");
+
+    revalidateTag(`user-${session.user.id}-following`);
+    return NextResponse.json({ 
+      success: true,
+      message: "Dejaste de seguir al usuario correctamente"
+    });
+
+  } catch (error: any) {
+    console.error("Error detallado:", error);
     return NextResponse.json(
-      { error: "Failed to unfollow user" },
+      { 
+        error: "Error al procesar la solicitud",
+        details: error.message 
+      },
       { status: 500 }
     );
   }

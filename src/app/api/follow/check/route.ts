@@ -8,17 +8,27 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
+    // Cambiar de userId a targetUserId
+    const targetUserId = searchParams.get("targetUserId");
     
-    if (!userId) {
-      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+    if (!targetUserId) {
+      return NextResponse.json({ error: "Missing targetUserId" }, { status: 400 });
+    }
+
+    const userExists = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true }
+    });
+    
+    if (!userExists) {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     }
 
     const existingFollow = await prisma.follow.findUnique({
       where: {
         followerId_followingId: {
           followerId: session.user.id,
-          followingId: userId
+          followingId: targetUserId // Usar targetUserId
         }
       }
     });

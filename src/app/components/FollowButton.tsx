@@ -14,10 +14,10 @@ type FollowStatusResponse = {
 
 export function FollowButton({
   targetUserId,
-  onSuccess, // <- Nueva prop añadida
+  onSuccess,
 }: {
   targetUserId: string;
-  onSuccess?: () => void; // <- Definir como prop opcional
+  onSuccess?: () => void;
 }) {
   const { data: session, update } = useSession();
   const { toast } = useToast();
@@ -59,20 +59,24 @@ export function FollowButton({
     const originalState = isFollowing;
 
     try {
-      // Optimistic update
       setIsFollowing(!isFollowing);
 
       const method = originalState ? "DELETE" : "POST";
-      const res = await fetch("/api/follow", {
+      const url = originalState 
+        ? `/api/follow?targetUserId=${targetUserId}`
+        : "/api/follow";
+
+      const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ followingId: targetUserId }),
+        body: method === "POST" ? JSON.stringify({ followingId: targetUserId }) : undefined,
       });
 
       if (!res.ok) throw new Error("Error updating follow status");
 
       const data: FollowStatusResponse = await res.json();
       await update({ followerCount: data.followerCount });
+      onSuccess?.();
 
       toast({
         title: originalState ? "Dejaste de seguir" : "¡Nuevo seguidor!",
@@ -80,10 +84,6 @@ export function FollowButton({
           ? "Has dejado de seguir a este usuario"
           : "Ahora estás siguiendo a este usuario",
       });
-      if (res.ok) {
-        setIsFollowing(!isFollowing);
-        onSuccess?.(); // <- Ejecutar callback después del éxito
-      }
     } catch (error) {
       setIsFollowing(originalState);
       toast({
