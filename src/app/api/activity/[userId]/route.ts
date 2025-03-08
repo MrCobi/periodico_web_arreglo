@@ -13,15 +13,16 @@ interface ActivityResult {
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ userId: string }> } // params como promesa
+  context: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Esperar y desestructurar el objeto params
     const { userId } = await context.params;
     
+    // Obtener parámetros de paginación, pero se forzará un máximo de 20 actividades
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '5');
+    const limit = parseInt(searchParams.get('limit') || '5'); // Por página
     const offset = (page - 1) * limit;
 
     if (!userId || typeof userId !== 'string') {
@@ -31,7 +32,9 @@ export async function GET(
       );
     }
 
-    // Consulta SQL compatible con MySQL
+    // Usamos dos CTE:
+    // 1. "combined_activities": une todas las actividades.
+    // 2. "limited_activities": limita a las últimas 20 actividades.
     const query = await prisma.$queryRaw<ActivityResult[]>`
       WITH combined_activities AS (
         SELECT 
@@ -86,11 +89,16 @@ export async function GET(
         FROM follows f
         JOIN users u ON f.following_id = u.id
         WHERE f.follower_id = ${userId}
+      ),
+      limited_activities AS (
+        SELECT * FROM combined_activities
+        ORDER BY createdAt DESC
+        LIMIT 20
       )
       SELECT 
         *,
-        (SELECT COUNT(*) FROM combined_activities) AS total
-      FROM combined_activities
+        (SELECT COUNT(*) FROM limited_activities) AS total
+      FROM limited_activities
       ORDER BY createdAt DESC
       LIMIT ${limit}
       OFFSET ${offset}
