@@ -35,7 +35,7 @@ const AuthButton = () => {
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <Image
-                src={session.user?.image ?? "/images/AvatarPredeterminado.webp"}
+                src={`${session.user.image}?${Date.now()}`}
                 alt={session.user?.name || "Usuario"}
                 width={48}
                 height={48}

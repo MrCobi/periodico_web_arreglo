@@ -1,4 +1,5 @@
-export interface User {
+// src/interface/user.ts
+export interface CustomUser {
   id: string;
   name?: string | null;
   username?: string | null;
@@ -7,7 +8,7 @@ export interface User {
   emailVerified?: Date | null;
   image?: string | null;
   role: string;
-  favoriteSourceIds?: string[]; // Solo los IDs de las fuentes favoritas
+  favoriteSourceIds?: string[];
   createdAt: Date;
   updatedAt: Date;
 }

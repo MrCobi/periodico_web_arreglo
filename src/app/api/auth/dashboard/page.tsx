@@ -22,6 +22,9 @@ import {
   Menu,
   Calendar,
   MessageSquare,
+  Plus,
+  Minus,
+  Heart,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -44,17 +47,21 @@ export default function DashboardPage() {
     favoriteSources.length > 6 ? favoriteSources.length - 5 : 0;
 
   type Activity = {
+    id: string;
     type:
       | "favorite_added"
       | "favorite_removed"
       | "comment"
-      | "rating"
-      | "follow";
-    sourceName?: string;
-    userName?: string;
-    createdAt: string;
+      | "rating_added"
+      | "rating_removed"
+      | "follow"
+      | "comment_reply"
+      | "comment_deleted"
+      | "unfollow";
+    source_name?: string; // Usar source_name
+    user_name?: string;
+    created_at: string; // Usar created_at
   };
-
   useEffect(() => {
     const loadFavorites = async () => {
       if (session?.user?.id) {
@@ -138,11 +145,11 @@ export default function DashboardPage() {
             `/api/activity/${session.user.id}?page=${currentPage}&limit=${itemsPerPage}`
           );
           const data = await response.json();
-          
+
           if (!response.ok) {
             throw new Error(data.error || "Error en la solicitud");
           }
-  
+
           if (data.success) {
             setRecentActivity(data.data.activities);
             setTotalActivities(data.data.total);
@@ -157,25 +164,24 @@ export default function DashboardPage() {
   }, [session?.user?.id, currentPage]);
 
   const PaginationControls = () => {
-    const totalPages = Math.ceil(totalActivities / itemsPerPage);
-  
+    const totalPages = Math.ceil(Math.min(totalActivities, 20) / itemsPerPage);
+
     return (
       <div className="flex justify-center gap-2 mt-4">
         <Button
-          variant="outline"
-          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
           disabled={currentPage === 1}
         >
           Anterior
         </Button>
-        
-        <span className="flex items-center px-4 text-sm text-gray-600 dark:text-gray-400">
-          Página {currentPage} de {totalPages}
+
+        <span className="flex items-center px-4 text-sm">
+          Página {currentPage} de{" "}
+          {Math.ceil(Math.min(totalActivities, 20) / itemsPerPage)}
         </span>
-        
+
         <Button
-          variant="outline"
-          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
           disabled={currentPage === totalPages}
         >
           Siguiente
@@ -629,52 +635,98 @@ export default function DashboardPage() {
                 ) : (
                   <>
                     <div className="space-y-4">
-                      {recentActivity.map((activity, index) => (
+                      {recentActivity.map((activity) => (
                         <div
-                          key={index}
+                          key={activity.id}
                           className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md"
                         >
                           <div className="flex items-center space-x-3">
                             <div className="flex-shrink-0">
                               {activity.type === "favorite_added" && (
-                                <Star className="h-5 w-5 text-yellow-500" />
+                                <Heart className="h-5 w-5 text-red-500 fill-red-500" />
                               )}
                               {activity.type === "favorite_removed" && (
-                                <Star className="h-5 w-5 text-red-500" />
+                                <Heart className="h-5 w-5 text-red-500" />
                               )}
                               {activity.type === "comment" && (
                                 <MessageSquare className="h-5 w-5 text-green-500" />
                               )}
-                              {activity.type === "rating" && (
-                                <Star className="h-5 w-5 text-purple-500" />
+                              {activity.type === "rating_added" && (
+                                <div className="relative">
+                                  <Star className="h-5 w-5 text-yellow-500" />
+                                  <Plus className="h-3 w-3 text-white absolute top-0 right-0" />
+                                </div>
+                              )}
+                              {activity.type === "rating_removed" && (
+                                <div className="relative">
+                                  <Star className="h-5 w-5 text-purple-500" />
+                                  <Minus className="h-3 w-3 text-white absolute top-0 right-0" />
+                                </div>
                               )}
                               {activity.type === "follow" && (
                                 <User2 className="h-5 w-5 text-blue-500" />
+                              )}
+                              {activity.type === "comment_reply" && (
+                                <MessageSquare className="h-5 w-5 text-green-500" />
+                              )}
+                              {activity.type === "comment_deleted" && (
+                                <MessageSquare className="h-5 w-5 text-red-500" />
+                              )}
+                              {activity.type === "unfollow" && (
+                                <User2 className="h-5 w-5 text-red-500" />
                               )}
                             </div>
                             <div>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
                                 {activity.type === "favorite_added" &&
-                                  `Agregaste ${activity.sourceName} a favoritos.`}
+                                  `Agregaste ${
+                                    activity.source_name || "una fuente"
+                                  } a favoritos.`}
                                 {activity.type === "favorite_removed" &&
-                                  `Eliminaste ${activity.sourceName} de favoritos.`}
+                                  `Eliminaste ${
+                                    activity.source_name || "una fuente"
+                                  } de favoritos.`}
                                 {activity.type === "comment" &&
-                                  `Comentaste en ${activity.sourceName}.`}
-                                {activity.type === "rating" &&
-                                  `Valoraste ${activity.sourceName}.`}
+                                  `Comentaste en ${
+                                    activity.source_name || "una fuente"
+                                  }.`}
+                                {activity.type === "rating_added" &&
+                                  `Valoraste ${
+                                    activity.source_name || "una fuente"
+                                  }.`}
+                                {activity.type === "rating_removed" &&
+                                  `Eliminaste la valoración de ${
+                                    activity.source_name || "una fuente"
+                                  }.`}
                                 {activity.type === "follow" &&
-                                  `Comenzaste a seguir a ${activity.userName}.`}
+                                  `Comenzaste a seguir a ${
+                                    activity.user_name || "un usuario"
+                                  }.`}
+                                {activity.type === "comment_reply" &&
+                                  `Respondiste a un comentario en ${
+                                    activity.source_name || "una fuente"
+                                  }.`}
+                                {activity.type === "comment_deleted" &&
+                                  `Eliminaste un comentario en ${
+                                    activity.source_name || "una fuente"
+                                  }.`}
+                                {activity.type === "unfollow" &&
+                                  `Dejaste de seguir a ${
+                                    activity.user_name || "un usuario"
+                                  }.`}
                               </p>
                               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                {new Date(
-                                  activity.createdAt
-                                ).toLocaleDateString("es-ES", {
-                                  day: "numeric",
-                                  month: "long",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
+                                {activity.created_at
+                                  ? new Date(
+                                      activity.created_at
+                                    ).toLocaleDateString("es-ES", {
+                                      day: "numeric",
+                                      month: "long",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : "Fecha no disponible"}
                               </p>
                             </div>
                           </div>

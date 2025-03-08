@@ -20,6 +20,7 @@ model User {
   email         String          @unique
   emailVerified DateTime?       @map("email_verified")
   image         String?
+  bio           String?
   role          Role            @default(user)
   accounts      Account[]
   favoriteSources FavoriteSource[]
@@ -27,6 +28,7 @@ model User {
   comments      Comment[]
   followers     Follow[]        @relation("follower")
   following     Follow[]        @relation("following")
+  activityHistory ActivityHistory[] // Relación añadida
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
 
@@ -144,4 +146,17 @@ model Follow {
   @@index([followerId])
   @@index([followingId])
   @@map("follows")
+}
+
+model ActivityHistory {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  type        String
+  sourceName  String?   @map("source_name")
+  userName    String?   @map("user_name")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("activity_history")
 }

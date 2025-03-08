@@ -1,37 +1,26 @@
+// lib/api.ts
 import { Article } from "@/src/interface/article";
-import { Source } from "@/src/interface/source";
+import { Source } from "@prisma/client";
 import prisma from "./db";
 
 export async function fetchArticlesBySource(
-    sourceId: string,
-    sortBy: string = "popularity",
-    language: string = "es" // Nuevo parámetro para el idioma
-  ): Promise<Article[]> {
-    try {
-      const apiUrl = new URL("https://newsapi.org/v2/everything");
-  
-      // Configurar parámetros dinámicos
-      apiUrl.searchParams.set("sources", sourceId);
-      apiUrl.searchParams.set("pageSize", "6");
-      apiUrl.searchParams.set("sortBy", sortBy);
-      apiUrl.searchParams.set("language", language); // Añadir parámetro de idioma
-      apiUrl.searchParams.set("apiKey", "b8aceaf4472c40d786284bcf90cf6b75");
+  sourceId: string,
+  sortBy: string = "popularity",
+  language: string = "es"
+): Promise<Article[]> {
+  try {
+    const apiUrl = new URL("https://newsapi.org/v2/everything");
+    apiUrl.searchParams.set("sources", sourceId);
+    apiUrl.searchParams.set("pageSize", "6");
+    apiUrl.searchParams.set("sortBy", sortBy);
+    apiUrl.searchParams.set("language", language);
+    apiUrl.searchParams.set("apiKey", process.env.NEWS_API_KEY!);
 
     const response = await fetch(apiUrl.toString());
-
-    if (!response.ok) {
-      console.error("Error en la respuesta:", response.status);
-      return [];
-    }
-
+    if (!response.ok) return [];
+    
     const data = await response.json();
-
-    // Verificar si la respuesta contiene artículos
-    if (!data.articles || !Array.isArray(data.articles)) {
-      return [];
-    }
-
-    return data.articles.map((article: Article) => ({
+    return data.articles?.map((article: any) => ({
       sourceId: article.source?.id || sourceId,
       author: article.author || null,
       title: article.title,
@@ -40,7 +29,8 @@ export async function fetchArticlesBySource(
       urlToImage: article.urlToImage || null,
       publishedAt: article.publishedAt,
       content: article.content || null,
-    }));
+    })) || [];
+
   } catch (error) {
     console.error("Error fetching articles:", error);
     return [];
@@ -49,11 +39,14 @@ export async function fetchArticlesBySource(
 
 export async function fetchSourceById(id: string): Promise<Source | null> {
   try {
-    const source = await prisma.source.findUnique({
+    return await prisma.source.findUnique({
       where: { id },
+      include: {
+        ratings: true,
+        comments: true,
+        favoriteSources: true
+      }
     });
-    console.log("Fetched source:", source);
-    return source;
   } catch (error) {
     console.error("Error fetching source:", error);
     return null;

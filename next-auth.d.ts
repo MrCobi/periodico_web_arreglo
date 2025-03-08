@@ -1,4 +1,5 @@
 // next-auth.d.ts
+import { DefaultSession } from "next-auth";
 import "next-auth";
 
 declare module "next-auth" {
@@ -9,14 +10,13 @@ declare module "next-auth" {
     username?: string | null;
   }
 
-  interface Session {
+  interface Session extends DefaultSession {
     user: {
       id: string;
-      email: string;
-      name?: string | null;
-      role: string;
+      role: Role;
       username?: string | null;
-      image?: string | null;
-    };
+      createdAt?: string; // Asegúrate de que el tipo sea correcto
+      favoriteSourceIds?: string[];
+    } & DefaultSession["user"];
   }
 }
