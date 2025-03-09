@@ -14,43 +14,17 @@ type FollowStatusResponse = {
 
 export function FollowButton({
   targetUserId,
+  isFollowing: initialFollowingStatus,
   onSuccess,
 }: {
   targetUserId: string;
-  onSuccess?: () => void;
+  isFollowing?: boolean; // Recibir estado desde el padre
+  onSuccess?: (newStatus: boolean) => void;
 }) {
   const { data: session, update } = useSession();
   const { toast } = useToast();
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(initialFollowingStatus || false);
   const [isUpdating, setIsUpdating] = useState(false);
-
-  const checkFollowStatus = useCallback(async () => {
-    try {
-      if (!session?.user?.id) return;
-
-      const res = await fetch(`/api/follow/check?targetUserId=${targetUserId}`);
-      if (!res.ok) throw new Error("Error checking follow status");
-
-      const data: FollowStatusResponse = await res.json();
-      setIsFollowing(data.isFollowing);
-      if (data.followerCount !== undefined) {
-        await update({ followerCount: data.followerCount });
-      }
-    } catch {
-      toast({
-        title: "Error",
-        description: "No se pudo verificar el estado de seguimiento",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [session?.user?.id, targetUserId, toast, update]);
-
-  useEffect(() => {
-    checkFollowStatus();
-  }, [checkFollowStatus]);
 
   const handleFollow = async () => {
     if (!session) return;
@@ -59,7 +33,9 @@ export function FollowButton({
     const originalState = isFollowing;
 
     try {
-      setIsFollowing(!isFollowing);
+      // Actualización optimista
+      setIsFollowing(!originalState);
+      onSuccess?.(!originalState);
 
       const method = originalState ? "DELETE" : "POST";
       const url = originalState 
@@ -72,11 +48,14 @@ export function FollowButton({
         body: method === "POST" ? JSON.stringify({ followingId: targetUserId }) : undefined,
       });
 
-      if (!res.ok) throw new Error("Error updating follow status");
+      if (!res.ok) throw new Error();
 
       const data: FollowStatusResponse = await res.json();
-      await update({ followerCount: data.followerCount });
-      onSuccess?.();
+      
+      // Actualizar contador global de seguidores
+      if (data.followerCount !== undefined) {
+        await update({ followerCount: data.followerCount });
+      }
 
       toast({
         title: originalState ? "Dejaste de seguir" : "¡Nuevo seguidor!",
@@ -84,8 +63,10 @@ export function FollowButton({
           ? "Has dejado de seguir a este usuario"
           : "Ahora estás siguiendo a este usuario",
       });
-    } catch  {
+    } catch {
+      // Revertir en caso de error
       setIsFollowing(originalState);
+      onSuccess?.(originalState);
       toast({
         title: "Error",
         description: "No se pudo completar la acción",
@@ -110,7 +91,7 @@ export function FollowButton({
   return (
     <Button
       onClick={handleFollow}
-      disabled={isLoading || isUpdating}
+      disabled={isUpdating}
       variant={isFollowing ? "outline" : "default"}
       className="gap-2 transition-all"
       aria-live="polite"

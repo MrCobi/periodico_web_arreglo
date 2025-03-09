@@ -40,7 +40,7 @@ export async function GET(req: Request) {
         image: true,
         bio: true
       },
-      take: 20,
+      take: 30,
       orderBy: { createdAt: "desc" }
     });
 
