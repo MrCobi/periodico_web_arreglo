@@ -26,6 +26,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Heart,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Source } from "@/src/interface/source";
@@ -268,16 +269,16 @@ export default function SourcesPage({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-4 left-4 text-yellow-400 hover:text-yellow-500 bg-white/90 backdrop-blur-sm hover:bg-white/100 shadow-md hover:shadow-lg"
+                    className="absolute top-4 left-4 text-red-400 hover:text-red-500 bg-white/90 backdrop-blur-sm hover:bg-white/100 shadow-md hover:shadow-lg"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleFavorite(source.id);
                     }}
                   >
-                    <Star
+                    <Heart
                       className={`w-6 h-6 ${
                         favorites.has(source.id)
-                          ? "fill-current stroke-yellow-600"
+                          ? "fill-current stroke-red-600"
                           : "stroke-current stroke-2"
                       }`}
                     />

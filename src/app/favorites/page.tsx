@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Source } from "@/src/interface/source";
 import SourcesPage from "@/src/app/components/SourceList";
 import { Button } from "@/components/ui/button";
-import { Star, ExternalLink } from "lucide-react";
+import { Star, ExternalLink, Heart } from "lucide-react";
 import Link from "next/link";
 
 export default function FavoritesPage() {
@@ -59,7 +59,7 @@ export default function FavoritesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-            <Star className="h-8 w-8 mr-2 text-yellow-500" />
+            <Heart className="h-8 w-8 mr-2 text-red-500" />
             Todos mis periódicos favoritos
           </h1>
           <Link href="/api/auth/dashboard">

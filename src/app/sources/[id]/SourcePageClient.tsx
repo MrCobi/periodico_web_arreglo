@@ -13,6 +13,7 @@ import CommentForm from "@/src/app/components/CommentForm";
 import CommentList from "@/src/app/components/CommentList";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useCallback } from "react";
+import { Heart } from "lucide-react";
 
 interface SourcePageClientProps {
   source: Source;
@@ -146,8 +147,9 @@ export default function SourcePageClient({
       const controller = new AbortController();
 
       try {
-        const url = `/api/comments/count/${source.id}${invalidateCache ? `?t=${Date.now()}` : ""
-          }`;
+        const url = `/api/comments/count/${source.id}${
+          invalidateCache ? `?t=${Date.now()}` : ""
+        }`;
 
         const response = await fetch(url, {
           signal: controller.signal,
@@ -242,11 +244,20 @@ export default function SourcePageClient({
         {/* Contenido principal */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <button
-            onClick={() => handleFavoriteClick(source.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleFavoriteClick(source.id);
+            }}
             className="absolute top-4 right-4 bg-white/90 hover:bg-white p-2 rounded-full text-xl transition-transform duration-300 hover:scale-105 shadow-lg z-10"
-            style={{ willChange: "transform" }} // Mejora rendimiento de animación
+            style={{ willChange: "transform" }}
           >
-            {favorites.has(source.id) ? "★" : "☆"}
+            <Heart
+              className={`w-6 h-6 ${
+                favorites.has(source.id)
+                  ? "fill-current text-red-600" // Corazón lleno cuando está en favoritos
+                  : "stroke-current text-gray-400" // Corazón vacío cuando no está en favoritos
+              }`}
+            />
           </button>
 
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
@@ -291,7 +302,7 @@ export default function SourcePageClient({
                   <SourceImage
                     imageUrl={source.imageUrl}
                     name={source.name}
-                    size="xlarge"// Carga prioritária de la imagen
+                    size="xlarge" // Carga prioritária de la imagen
                   />
                 </div>
               </div>
@@ -310,8 +321,9 @@ export default function SourcePageClient({
               Comentarios ({commentsCount})
             </h2>
             <ChevronDownIcon
-              className={`w-5 h-5 sm:w-6 sm:h-6 transform transition-transform ${showComments ? "rotate-180" : ""
-                }`}
+              className={`w-5 h-5 sm:w-6 sm:h-6 transform transition-transform ${
+                showComments ? "rotate-180" : ""
+              }`}
             />
           </button>
 
@@ -370,10 +382,11 @@ export default function SourcePageClient({
                 Artículos Destacados por{" "}
                 <span
                   onClick={rotateSort}
-                  className={`text-blue-600 cursor-pointer inline-block transition-all duration-300 ${isAnimating
+                  className={`text-blue-600 cursor-pointer inline-block transition-all duration-300 ${
+                    isAnimating
                       ? "opacity-0 transform -translate-y-4"
                       : "opacity-100"
-                    }`}
+                  }`}
                 >
                   {sortLabels[sortBy]}
                 </span>
@@ -389,26 +402,29 @@ export default function SourcePageClient({
               </span>
               <div className="flex gap-1">
                 <span
-                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${sortBy === "relevancy"
+                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${
+                    sortBy === "relevancy"
                       ? "bg-blue-600 text-white"
                       : "text-gray-500"
-                    }`}
+                  }`}
                 >
                   Relevancia
                 </span>
                 <span
-                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${sortBy === "popularity"
+                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${
+                    sortBy === "popularity"
                       ? "bg-blue-600 text-white"
                       : "text-gray-500"
-                    }`}
+                  }`}
                 >
                   Popularidad
                 </span>
                 <span
-                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${sortBy === "publishedAt"
+                  className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm transition-all ${
+                    sortBy === "publishedAt"
                       ? "bg-blue-600 text-white"
                       : "text-gray-500"
-                    }`}
+                  }`}
                 >
                   Fecha
                 </span>

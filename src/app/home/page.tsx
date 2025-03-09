@@ -16,6 +16,7 @@ import {
   Star,
   Filter,
   ArrowRight,
+  Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -283,7 +284,7 @@ export default function HomePage() {
                 value: userStats.totalInteractions, // Suma de favoritos + comentarios + ratings
               },
               {
-                icon: <Star className="h-6 w-6 text-yellow-500" />,
+                icon: <Heart className="h-5 w-5 text-red-500 fill-red-500" />,
                 label: "Favoritos",
                 value: userStats.favoriteCount,
               },
