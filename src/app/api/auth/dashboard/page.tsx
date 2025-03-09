@@ -254,8 +254,8 @@ export default function DashboardPage() {
     },
     {
       icon: Newspaper,
-      label: "Mis Periódicos",
-      href: "/newspapers",
+      label: "Mis Periódicos favoritos",
+      href: "/favorites",
       active: false,
     },
   ];
