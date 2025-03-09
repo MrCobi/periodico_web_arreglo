@@ -3,85 +3,673 @@
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { motion } from "framer-motion";
-import { UserStats } from "@/src/app/components/home/UserStats";
-import { NewsGrid } from "../components/home/NewsGrid";
-import { ActivityStream } from "@/src/app/components/home/ActivityStream";
-import { SearchBar } from "@/src/app/components/home/SearchBar";
-import { RecommendedSources } from "../components/home/RecommendedSources";
-import { TrendingTopics } from "@/src/app/components/home/TrendingTopics";
-import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { useTheme } from "next-themes";
+import {
+  Loader2,
+  Search,
+  Clock,
+  Calendar,
+  BookOpen,
+  TrendingUp,
+  History,
+  Star,
+  Filter,
+  ArrowRight,
+  ChevronDown,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/src/app/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/src/app/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/src/app/components/ui/tabs";
+import { Avatar } from "@/src/app/components/ui/avatar";
+
+const decorativeElements = [
+  { left: "10%", top: "20%", width: "8px", height: "8px", duration: "2s" },
+  { left: "20%", top: "40%", width: "12px", height: "12px", duration: "2.5s" },
+  { left: "30%", top: "60%", width: "6px", height: "6px", duration: "3s" },
+  { left: "40%", top: "25%", width: "10px", height: "10px", duration: "2.2s" },
+  { left: "50%", top: "45%", width: "7px", height: "7px", duration: "2.8s" },
+  { left: "60%", top: "65%", width: "9px", height: "9px", duration: "2.4s" },
+  { left: "70%", top: "30%", width: "11px", height: "11px", duration: "2.6s" },
+  { left: "80%", top: "50%", width: "8px", height: "8px", duration: "2.3s" },
+  { left: "90%", top: "70%", width: "10px", height: "10px", duration: "2.7s" },
+  { left: "15%", top: "35%", width: "6px", height: "6px", duration: "2.9s" },
+];
+
+// Agrega esto antes del componente HomePage
+const StatItem = ({
+  icon,
+  label,
+  value,
+  isVisible,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  isVisible: boolean;
+}) => {
+  const count = useCounter(value, 2000); // Hook llamado incondicionalmente
+
+  return (
+    <Card className="overflow-hidden border-blue-100 dark:border-blue-900/30 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 hover:shadow-md">
+      <CardContent className="p-6 flex items-center space-x-4">
+        <div className="rounded-full p-3 bg-blue-100/50 dark:bg-blue-900/30">
+          {icon}
+        </div>
+        <div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+          <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            {isVisible ? count : 0}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const useCounter = (end: number, duration: number = 2000) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime: number | null = null;
+    let animationFrame: number;
+
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      setCount(Math.floor(progress * end));
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [end, duration]);
+
+  return count;
+};
 
 export default function HomePage() {
+  // Hooks en el nivel superior y en el mismo orden
   const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
+  const router = useRouter();
+  const [isVisible, setIsVisible] = useState({
+    stats: false,
+    featured: false,
+    collections: false,
+    recent: false,
+  });
 
+  // Efecto para manejar el montaje y el scroll
   useEffect(() => {
     setMounted(true);
+
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + window.innerHeight;
+
+      const statsSection = document.getElementById("stats-section");
+      const featuredSection = document.getElementById("featured-section");
+      const collectionsSection = document.getElementById("collections-section");
+      const recentSection = document.getElementById("recent-section");
+
+      if (statsSection && scrollPosition > statsSection.offsetTop + 100) {
+        setIsVisible((prev) => ({ ...prev, stats: true }));
+      }
+      if (featuredSection && scrollPosition > featuredSection.offsetTop + 100) {
+        setIsVisible((prev) => ({ ...prev, featured: true }));
+      }
+      if (
+        collectionsSection &&
+        scrollPosition > collectionsSection.offsetTop + 100
+      ) {
+        setIsVisible((prev) => ({ ...prev, collections: true }));
+      }
+      if (recentSection && scrollPosition > recentSection.offsetTop + 100) {
+        setIsVisible((prev) => ({ ...prev, recent: true }));
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  if (status === "unauthenticated") {
-    redirect("/");
-  }
+  // Redirigir si no está autenticado
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      redirect("/");
+    }
+  }, [status]);
 
+  // Mostrar carga si no está montado o está cargando
   if (!mounted || status === "loading") {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-900">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-white mx-auto" />
+          <p className="mt-4 text-blue-100 font-medium">
+            Cargando tu experiencia personalizada...
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background/80 dark:from-background dark:to-background/90">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="container mx-auto px-4 py-8 space-y-8"
-      >
-        {/* Header Section */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-          <UserStats user={session?.user} />
-          <SearchBar />
+    <main className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-gray-900 dark:via-blue-900/30 dark:to-blue-800/20">
+      <section className="relative min-h-[50vh] w-full overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-900">
+        <div className="absolute inset-0 overflow-hidden">
+          {decorativeElements.map((element, i) => (
+            <div
+              key={i}
+              className="absolute animate-pulse hidden sm:block"
+              style={{
+                left: element.left,
+                top: element.top,
+                width: element.width,
+                height: element.height,
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                borderRadius: "50%",
+                animation: `pulse ${element.duration} infinite`,
+              }}
+            />
+          ))}
+          <div className="absolute top-8 sm:top-1/4 right-[10%] w-16 h-16 sm:w-24 sm:h-24 md:w-40 md:h-40 bg-gradient-to-tr from-purple-400/10 to-pink-500/10 rounded-full opacity-40 blur-lg animate-pulse"></div>
+          <div className="absolute top-16 sm:bottom-1/3 left-[15%] w-20 h-20 sm:w-32 sm:h-32 md:w-48 md:h-48 bg-gradient-to-br from-blue-300/10 to-cyan-400/10 rounded-full opacity-40 blur-lg animate-pulse"></div>
         </div>
 
-        {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-          {/* Left Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="xl:col-span-3 space-y-6"
-          >
-            <TrendingTopics />
-          </motion.div>
-
-          {/* Main Content */}
+        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 flex flex-col justify-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="xl:col-span-6 space-y-6"
+            transition={{ duration: 0.5 }}
+            className="max-w-3xl"
           >
-            <NewsGrid />
-          </motion.div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+              Bienvenido, {session?.user?.name || "Investigador"}
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg text-blue-100 mb-6 sm:mb-8 max-w-2xl">
+              Continúa explorando nuestra colección de documentos históricos y
+              descubre nuevas perspectivas del pasado.
+            </p>
 
-          {/* Right Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="xl:col-span-3 space-y-6"
-          >
-            <ActivityStream />
-            <RecommendedSources />
+            <div className="relative max-w-2xl">
+              <div className="flex">
+                <Input
+                  type="text"
+                  placeholder="Buscar por título, autor, fecha o palabra clave..."
+                  className="flex-1 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-blue-200 focus-visible:ring-white/30 focus-visible:border-white/30"
+                />
+                <Button className="ml-2 bg-white text-blue-600 hover:bg-blue-50">
+                  <Search className="h-4 w-4 mr-2" /> Buscar
+                </Button>
+              </div>
+              <div className="flex items-center mt-2 text-sm text-blue-200">
+                <Button
+                  variant="link"
+                  className="text-blue-200 hover:text-white p-0 h-auto"
+                >
+                  <Filter className="h-3 w-3 mr-1" /> Búsqueda avanzada
+                </Button>
+              </div>
+            </div>
           </motion.div>
         </div>
-      </motion.div>
-    </div>
+
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 120"
+            className="w-full h-auto"
+          >
+            <path
+              fill="currentColor"
+              className="text-white dark:text-gray-900"
+              d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"
+            ></path>
+          </svg>
+        </div>
+      </section>
+
+      <section id="stats-section" className="py-12 sm:py-16 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              opacity: isVisible.stats ? 1 : 0,
+              y: isVisible.stats ? 0 : 20,
+            }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6"
+          >
+            {[
+              {
+                icon: <BookOpen className="h-6 w-6 text-blue-600" />,
+                label: "Artículos Leídos",
+                value: 124,
+              },
+              {
+                icon: <Star className="h-6 w-6 text-yellow-500" />,
+                label: "Favoritos",
+                value: 36,
+              },
+              {
+                icon: <History className="h-6 w-6 text-green-600" />,
+                label: "Búsquedas Recientes",
+                value: 58,
+              },
+              {
+                icon: <Calendar className="h-6 w-6 text-purple-600" />,
+                label: "Días Activo",
+                value: 42,
+              },
+            ].map((stat, i) => (
+              <StatItem
+                key={i}
+                icon={stat.icon}
+                label={stat.label}
+                value={stat.value}
+                isVisible={isVisible.stats}
+              />
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      <section
+        id="featured-section"
+        className="py-12 sm:py-16 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 dark:from-blue-900/30 dark:to-indigo-900/30 relative"
+      >
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-blue-500/5 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-indigo-500/5 rounded-full blur-3xl transform translate-x-1/2 translate-y-1/2"></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                Artículos Destacados
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                Selección especial de documentos históricos relevantes
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              className="mt-4 md:mt-0 border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-900/30"
+              onClick={() => router.push("/articulos")}
+            >
+              Ver todos <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              opacity: isVisible.featured ? 1 : 0,
+              y: isVisible.featured ? 0 : 20,
+            }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {[
+              {
+                title: "La Revolución Industrial en España",
+                excerpt:
+                  "Análisis detallado del impacto de la industrialización en la península ibérica durante el siglo XIX.",
+                image:
+                  "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&h=500&fit=crop",
+                date: "12 Jun 1892",
+                source: "El Imparcial",
+                category: "Economía",
+              },
+              {
+                title: "Crónicas de la Guerra Civil",
+                excerpt:
+                  "Testimonios y reportajes periodísticos sobre los acontecimientos más relevantes del conflicto.",
+                image:
+                  "https://images.unsplash.com/photo-1580130601254-05fa235abeac?w=800&h=500&fit=crop",
+                date: "3 Mar 1937",
+                source: "ABC",
+                category: "Política",
+              },
+              {
+                title: "El Descubrimiento de la Penicilina",
+                excerpt:
+                  "Cobertura periodística sobre uno de los avances médicos más importantes del siglo XX.",
+                image:
+                  "https://images.unsplash.com/photo-1582560475093-ba66accbc7f9?w=800&h=500&fit=crop",
+                date: "24 Sep 1945",
+                source: "La Vanguardia",
+                category: "Ciencia",
+              },
+            ].map((article, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{
+                  opacity: isVisible.featured ? 1 : 0,
+                  y: isVisible.featured ? 0 : 20,
+                }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="group cursor-pointer"
+                onClick={() => router.push(`/articulos/${i}`)}
+              >
+                <Card className="overflow-hidden border-blue-100 dark:border-blue-900/30 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 hover:shadow-lg">
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={article.image}
+                      alt={article.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <div className="flex justify-between items-center">
+                        <Badge className="bg-blue-600 hover:bg-blue-700">
+                          {article.category}
+                        </Badge>
+                        <span className="text-xs text-white/80">
+                          {article.date}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <CardContent className="p-4">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {article.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                      {article.excerpt}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Fuente: {article.source}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600 dark:text-blue-400 p-0 h-auto"
+                      >
+                        Leer más
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      <section id="collections-section" className="py-12 sm:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                Colecciones Temáticas
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                Explora nuestros documentos organizados por temas
+              </p>
+            </div>
+            <Tabs defaultValue="all" className="mt-4 md:mt-0">
+              <TabsList className="bg-blue-100/50 dark:bg-blue-900/30">
+                <TabsTrigger value="all">Todos</TabsTrigger>
+                <TabsTrigger value="politics">Política</TabsTrigger>
+                <TabsTrigger value="culture">Cultura</TabsTrigger>
+                <TabsTrigger value="science">Ciencia</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              opacity: isVisible.collections ? 1 : 0,
+              y: isVisible.collections ? 0 : 20,
+            }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            {[
+              {
+                title: "Guerra Civil Española",
+                count: 1243,
+                image:
+                  "https://images.unsplash.com/photo-1580130601254-05fa235abeac?w=400&h=300&fit=crop",
+                color: "from-red-500 to-orange-500",
+              },
+              {
+                title: "Transición Democrática",
+                count: 856,
+                image:
+                  "https://images.unsplash.com/photo-1569525484251-b4b1e8f3a9fe?w=400&h=300&fit=crop",
+                color: "from-blue-500 to-indigo-500",
+              },
+              {
+                title: "Movimientos Culturales",
+                count: 723,
+                image:
+                  "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=400&h=300&fit=crop",
+                color: "from-purple-500 to-pink-500",
+              },
+              {
+                title: "Avances Científicos",
+                count: 512,
+                image:
+                  "https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=400&h=300&fit=crop",
+                color: "from-green-500 to-teal-500",
+              },
+            ].map((collection, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{
+                  opacity: isVisible.collections ? 1 : 0,
+                  y: isVisible.collections ? 0 : 20,
+                }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="group cursor-pointer"
+                onClick={() =>
+                  router.push(
+                    `/colecciones/${collection.title
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`
+                  )
+                }
+              >
+                <div className="relative h-48 rounded-xl overflow-hidden">
+                  <img
+                    src={collection.image}
+                    alt={collection.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-t ${collection.color} opacity-70 group-hover:opacity-80 transition-opacity`}
+                  ></div>
+                  <div className="absolute inset-0 flex flex-col justify-end p-4">
+                    <h3 className="text-xl font-bold text-white mb-1">
+                      {collection.title}
+                    </h3>
+                    <p className="text-sm text-white/90">
+                      {collection.count} documentos
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-3 bg-white/20 border-white/40 text-white hover:bg-white/30 w-full sm:w-auto"
+                    >
+                      Explorar colección
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      <section
+        id="recent-section"
+        className="py-12 sm:py-16 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 dark:from-blue-900/30 dark:to-indigo-900/30"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{
+                opacity: isVisible.recent ? 1 : 0,
+                x: isVisible.recent ? 0 : -20,
+              }}
+              transition={{ duration: 0.5 }}
+              className="lg:col-span-2"
+            >
+              <Card className="border-blue-100 dark:border-blue-900/30 h-full">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+                    <Clock className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+                    Actividad Reciente
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      {
+                        user: {
+                          name: "María García",
+                          avatar:
+                            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop",
+                        },
+                        action: "comentó en",
+                        target: "La Revolución Industrial en España",
+                        time: "hace 5 minutos",
+                        comment:
+                          "Excelente artículo que detalla perfectamente el contexto económico de la época.",
+                      },
+                      {
+                        user: {
+                          name: "Carlos Rodríguez",
+                          avatar:
+                            "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=64&h=64&fit=crop",
+                        },
+                        action: "guardó en favoritos",
+                        target: "Crónicas de la Guerra Civil",
+                        time: "hace 2 horas",
+                      },
+                      {
+                        user: {
+                          name: "Laura Martínez",
+                          avatar:
+                            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop",
+                        },
+                        action: "compartió",
+                        target: "El Descubrimiento de la Penicilina",
+                        time: "hace 1 día",
+                      },
+                    ].map((activity, i) => (
+                      <div
+                        key={i}
+                        className="flex gap-4 p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                      >
+                        <Avatar className="h-10 w-10">
+                          <img
+                            src={activity.user.avatar}
+                            alt={activity.user.name}
+                          />
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-800 dark:text-gray-200">
+                            <span className="font-medium">
+                              {activity.user.name}
+                            </span>{" "}
+                            <span className="text-gray-600 dark:text-gray-400">
+                              {activity.action}
+                            </span>{" "}
+                            <span className="font-medium text-blue-600 dark:text-blue-400">
+                              {activity.target}
+                            </span>
+                          </p>
+                          {activity.comment && (
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md">
+                              "{activity.comment}"
+                            </p>
+                          )}
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                            {activity.time}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{
+                opacity: isVisible.recent ? 1 : 0,
+                x: isVisible.recent ? 0 : 20,
+              }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card className="border-blue-100 dark:border-blue-900/30 h-full">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+                    <TrendingUp className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+                    Tendencias
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { term: "Guerra Civil", count: 1243, trend: "+28%" },
+                      { term: "Transición", count: 856, trend: "+15%" },
+                      { term: "Movida Madrileña", count: 723, trend: "+12%" },
+                      { term: "Expo 92", count: 512, trend: "+8%" },
+                      { term: "Peseta", count: 498, trend: "+5%" },
+                    ].map((trend, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
+                        onClick={() => router.push(`/buscar?q=${trend.term}`)}
+                      >
+                        <div
+                          className="
+                          flex items-center gap-2"
+                        >
+                          <span className="text-sm text-gray-800 dark:text-gray-200">
+                            {trend.term}
+                          </span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {trend.trend}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

@@ -12,7 +12,7 @@ export function SearchBar() {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className="relative w-full lg:w-96">
+    <div className="relative w-full">
       <motion.div
         initial={false}
         animate={{ width: isExpanded ? "100%" : "auto" }}
@@ -22,7 +22,7 @@ export function SearchBar() {
           <Input
             type="text"
             placeholder="Buscar fuentes, artículos..."
-            className="pr-10 bg-white/80 dark:bg-black/50 backdrop-blur-lg"
+            className="pr-24 bg-background/80 dark:bg-black/50 backdrop-blur-lg border-border focus-visible:ring-primary/20 focus-visible:border-primary/50 transition-all duration-300"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsExpanded(true)}
@@ -32,16 +32,24 @@ export function SearchBar() {
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-8 w-8"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={() => setSearchQuery("")}
               >
                 <X className="h-4 w-4" />
               </Button>
             )}
-            <Button size="icon" variant="ghost" className="h-8 w-8">
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            >
               <Filter className="h-4 w-4" />
             </Button>
-            <Button size="icon" variant="ghost" className="h-8 w-8">
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-8 w-8 text-primary hover:text-primary/80"
+            >
               <Search className="h-4 w-4" />
             </Button>
           </div>
@@ -55,9 +63,9 @@ export function SearchBar() {
               exit={{ opacity: 0, y: -10 }}
               className="absolute top-full left-0 right-0 mt-2 z-50"
             >
-              <Card className="p-4 shadow-lg backdrop-blur-lg bg-white/80 dark:bg-black/50">
+              <Card className="p-4 shadow-lg backdrop-blur-lg bg-card/90 border-border">
                 <p className="text-sm text-muted-foreground">
-                  Resultados para "{searchQuery}"...
+                  Resultados para "<span className="font-medium text-foreground">{searchQuery}</span>"...
                 </p>
               </Card>
             </motion.div>

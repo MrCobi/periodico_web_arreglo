@@ -41,33 +41,33 @@ const activities = [
 
 export function ActivityStream() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Activity className="h-5 w-5" />
+    <Card className="border-border hover:border-primary/20 transition-all duration-300">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-foreground">
+          <Activity className="h-5 w-5 text-primary" />
           Recent Activity
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
         {activities.map((activity, index) => (
           <motion.div
             key={`${activity.user.name}-${activity.target}`}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="flex items-start gap-3"
+            className="flex items-start gap-3 group"
           >
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-8 w-8 border-2 border-background">
               <img src={activity.user.avatar} alt={activity.user.name} />
             </Avatar>
             <div className="flex-1">
               <p className="text-sm">
-                <span className="font-medium">{activity.user.name}</span>{" "}
-                {activity.action}{" "}
-                <span className="font-medium">{activity.target}</span>
+                <span className="font-medium text-foreground">{activity.user.name}</span>{" "}
+                <span className="text-muted-foreground">{activity.action}</span>{" "}
+                <span className="font-medium text-foreground group-hover:text-primary transition-colors duration-200">{activity.target}</span>
               </p>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs bg-secondary/50 text-secondary-foreground">
                   {activity.type}
                 </Badge>
                 <span className="text-xs text-muted-foreground">{activity.time}</span>

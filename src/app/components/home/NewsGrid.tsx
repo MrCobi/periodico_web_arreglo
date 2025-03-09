@@ -47,40 +47,44 @@ export function NewsGrid() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.2 }}
+          className="group"
         >
-          <Card>
+          <Card className="overflow-hidden border-border hover:border-primary/20 transition-all duration-300">
             <div className="relative">
               <img
                 src={item.image}
                 alt={item.title}
-                className="w-full h-48 object-cover rounded-t-lg"
+                className="w-full h-40 sm:h-48 object-cover"
               />
-              <Badge className="absolute top-4 left-4">{item.category}</Badge>
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <Badge className="absolute top-4 left-4 bg-primary/80 hover:bg-primary backdrop-blur-sm text-primary-foreground">
+                {item.category}
+              </Badge>
             </div>
-            <CardHeader>
-              <CardTitle className="text-2xl">{item.title}</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl sm:text-2xl line-clamp-2 text-foreground">{item.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-muted-foreground">{item.excerpt}</p>
+              <p className="text-muted-foreground text-sm sm:text-base line-clamp-3">{item.excerpt}</p>
               
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 border-2 border-background">
                     <img src={item.author.avatar} alt={item.author.name} />
                   </Avatar>
-                  <span className="text-sm font-medium">{item.author.name}</span>
+                  <span className="text-sm font-medium text-foreground">{item.author.name}</span>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                     <MessageSquare className="h-4 w-4 mr-1" />
                     {item.stats.comments}
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                     <Bookmark className="h-4 w-4 mr-1" />
                     {item.stats.bookmarks}
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                     <Share2 className="h-4 w-4" />
                   </Button>
                 </div>
