@@ -7,7 +7,7 @@ const { auth: middleware } = NextAuth(authConfig);
 const publicRoutes = [
   "/",
   "/login",
-  "/register",
+  "/signup",
   "/api/auth/verify-email",
 ]
 
