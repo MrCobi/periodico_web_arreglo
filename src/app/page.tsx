@@ -32,7 +32,6 @@ const useCounter = (end: number, duration: number = 2000) => {
       if (!startTime) startTime = currentTime;
       const progress = Math.min((currentTime - startTime) / duration, 1);
       setCount(Math.floor(progress * end));
-
       if (progress < 1) {
         animationFrame = requestAnimationFrame(animate);
       }
@@ -74,10 +73,8 @@ export default function HomePage() {
     features: false,
     timeline: false,
   });
-
   const { data: session } = useSession();
 
-  // Si el usuario está autenticado, redirigir a /home
   useEffect(() => {
     if (session) {
       router.push("/home");
@@ -98,11 +95,9 @@ export default function HomePage() {
       if (statsSection && scrollPosition > statsSection.offsetTop + 100) {
         setIsVisible((prev) => ({ ...prev, stats: true }));
       }
-
       if (featuresSection && scrollPosition > featuresSection.offsetTop + 100) {
         setIsVisible((prev) => ({ ...prev, features: true }));
       }
-
       if (timelineSection && scrollPosition > timelineSection.offsetTop + 100) {
         setIsVisible((prev) => ({ ...prev, timeline: true }));
       }
@@ -133,7 +128,6 @@ export default function HomePage() {
               }}
             />
           ))}
-
           {/* Additional depth circles - Responsive sizes */}
           <div className="absolute top-8 sm:top-1/4 right-[10%] w-16 h-16 sm:w-24 sm:h-24 md:w-40 md:h-40 bg-gradient-to-tr from-purple-400/10 to-pink-500/10 rounded-full opacity-40 blur-lg animate-pulse"></div>
           <div className="absolute top-16 sm:bottom-1/3 left-[15%] w-20 h-20 sm:w-32 sm:h-32 md:w-48 md:h-48 bg-gradient-to-br from-blue-300/10 to-cyan-400/10 rounded-full opacity-40 blur-lg animate-pulse"></div>
@@ -143,9 +137,7 @@ export default function HomePage() {
         <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-16 sm:pt-0">
           <div
             className={`max-w-3xl mx-auto sm:mx-0 transition-all duration-1000 ease-out ${
-              isLoaded
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-10"
+              isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
             }`}
           >
             <p className="text-blue-300 font-medium mb-2 sm:mb-3 tracking-wider uppercase text-sm sm:text-base mt-5">
@@ -158,9 +150,9 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="text-sm sm:text-base md:text-lg text-gray-200 mb-6 sm:mb-8 max-w-2xl">
-              Explora nuestra vasta colección de artículos, periódicos y
-              documentos históricos digitalizados que abarcan más de cinco
-              décadas de historia.
+              Explora nuestra vasta colección de artículos, periódicos y documentos
+              históricos digitalizados que abarcan más de cinco décadas de
+              historia.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button
@@ -236,8 +228,8 @@ export default function HomePage() {
               Cómo Funciona Nuestra Hemeroteca
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Descubre el proceso que seguimos para preservar y hacer accesible
-              la historia a través de nuestros documentos.
+              Descubre el proceso que seguimos para preservar y hacer accesible la
+              historia a través de nuestros documentos.
             </p>
           </div>
 
@@ -360,8 +352,8 @@ export default function HomePage() {
             Comienza a Explorar la Historia Hoy
           </h2>
           <p className="text-xl mb-8 text-gray-200">
-            Únete a miles de investigadores, historiadores y mentes curiosas
-            para descubrir el pasado a través de nuestro archivo.
+            Únete a miles de investigadores, historiadores y mentes curiosas para
+            descubrir el pasado a través de nuestro archivo.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Button
