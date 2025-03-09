@@ -2,7 +2,7 @@
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { User} from "@/src/interface/user";
+import { CustomUser as User} from "@/src/interface/user";
 
 
 export default function DeleteUserPage() {

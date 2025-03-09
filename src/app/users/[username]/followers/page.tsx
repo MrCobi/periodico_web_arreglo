@@ -1,6 +1,5 @@
-// src/app/users/[username]/followers/page.tsx
 import { UserCard } from "@/src/app/components/UserCard";
-import { FollowButton } from "@/src/app/components/FollowButton"; // Añade esto
+import { FollowButton } from "@/src/app/components/FollowButton";
 
 type Follower = {
   id: string;
@@ -8,20 +7,22 @@ type Follower = {
   username: string;
   image: string;
   bio?: string;
-  followingSince?: Date; // Añadir si es necesario
+  followingSince?: Date;
 };
 
 export default async function FollowersPage({
   params,
 }: {
-  params: { username: string };
+  params: Promise<{ username: string }>; // Update params to be a Promise
 }) {
-  // Obtener usuario por username
-  const userRes = await fetch(`/api/users/by-username/${params.username}`);
+  const { username } = await params; // Await the params
+
+  // Fetch user by username
+  const userRes = await fetch(`/api/users/by-username/${username}`);
   if (!userRes.ok) return <div>Usuario no encontrado</div>;
   const user = await userRes.json();
 
-  // Obtener seguidores desde la API
+  // Fetch followers
   const followersRes = await fetch(`/api/users/${user.id}/followers`);
   if (!followersRes.ok) return <div>Error cargando seguidores</div>;
   const { data: followers } = await followersRes.json();

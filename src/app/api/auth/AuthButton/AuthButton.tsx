@@ -26,6 +26,7 @@ const AuthButton = () => {
   };
 
   if (session) {
+    const isAdmin = session.user?.role === "admin";
     return (
       <div style={{ position: "relative" }}>
         <button
@@ -84,11 +85,7 @@ const AuthButton = () => {
         >
           <StyledWrapper>
             <div className="input">
-              <Link
-                href="/api/auth/dashboard"
-                passHref
-                legacyBehavior
-              >
+              <Link href="/api/auth/dashboard" passHref legacyBehavior>
                 <button className="value" onClick={handleClose}>
                   <svg
                     viewBox="0 0 16 16"
@@ -103,6 +100,22 @@ const AuthButton = () => {
                   Perfil Público
                 </button>
               </Link>
+              {isAdmin && (
+                <Link href="/admin/users" passHref legacyBehavior>
+                  <button className="value" onClick={handleClose}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="#7D8590"
+                    >
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM8 17.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM9.5 8c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5S9.5 9.38 9.5 8zm6.5 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                    </svg>
+                    Administración
+                  </button>
+                </Link>
+              )}
 
               <button className="value" onClick={handleSignOut}>
                 <svg
@@ -141,10 +154,10 @@ const AuthButton = () => {
   return (
     <div className="contenedor-botones">
       <StyledWrapper>
-        <Link href="/api/auth/signin"  passHref legacyBehavior>
+        <Link href="/api/auth/signin" passHref legacyBehavior>
           <button className="boton-elegante">Iniciar Sesión</button>
         </Link>
-        <Link href="/api/auth/signup"  passHref legacyBehavior>
+        <Link href="/api/auth/signup" passHref legacyBehavior>
           <button className="boton-elegante">Registrarse</button>
         </Link>
       </StyledWrapper>

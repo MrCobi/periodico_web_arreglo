@@ -4,14 +4,13 @@ import prisma from "@/lib/db";
 
 export async function GET(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
   try {
-    const params = await context.params;
-
     
     // Validar formato del ID
-    if (!params.id || !/^[a-z0-9-]+$/i.test(params.id)) {
+    if (!id || !/^[a-z0-9-]+$/i.test(id)) {
       return NextResponse.json(
         { error: "ID de usuario inválido" },
         { status: 400 }
@@ -20,7 +19,7 @@ export async function GET(
 
     // Verificar existencia del usuario
     const userExists = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       select: { id: true }
     });
 
@@ -39,7 +38,7 @@ export async function GET(
     // Obtener seguidores con datos básicos
     const [followers, total] = await Promise.all([
       prisma.follow.findMany({
-        where: { followingId: params.id },
+        where: { followingId: id },
         include: {
           follower: {
             select: {
@@ -56,7 +55,7 @@ export async function GET(
         orderBy: { createdAt: "desc" }
       }),
       prisma.follow.count({
-        where: { followingId: params.id }
+        where: { followingId: id }
       })
     ]);
 

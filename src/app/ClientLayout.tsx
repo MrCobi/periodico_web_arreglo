@@ -88,9 +88,6 @@ function Navbar() {
                   { href: "/", label: "Home" },
                   { href: "/Articulos", label: "Artículos" },
                   { href: "/sources", label: "Fuentes" },
-                  ...(isAdmin
-                    ? [{ href: "/admin/users", label: "Users" }]
-                    : []),
                 ].map((link) => (
                   <Link
                     key={link.href}

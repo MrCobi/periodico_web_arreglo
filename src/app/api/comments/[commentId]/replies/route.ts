@@ -4,9 +4,9 @@ import prisma from "@/lib/db";
 
 export async function POST(
   request: Request,
-  { params }: { params: { commentId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { commentId } = await params;
+  const { id } = await params;
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -31,7 +31,7 @@ export async function POST(
     const result = await prisma.$transaction(async (tx) => {
       // 1. Verificar comentario padre y fuente
       const parentComment = await tx.comment.findUnique({
-        where: { id: commentId },
+        where: { id: id },
         include: { 
           source: true,
           user: { select: { id: true, name: true, image: true } } // Incluir el usuario
@@ -48,9 +48,9 @@ export async function POST(
           content: trimmedContent,
           userId: session.user.id,
           sourceId,
-          parentId: commentId,
+          parentId: id,
           depth: parentComment.depth + 1,
-          path: `${parentComment.path}/${commentId}`,
+          path: `${parentComment.path}/${id}`,
         },
         include: {
           user: { select: { id: true, name: true, image: true } }

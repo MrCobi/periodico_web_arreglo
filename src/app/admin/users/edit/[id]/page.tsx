@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import { User } from "@/src/interface/user";
+import { CustomUser as User} from "@/src/interface/user";
 
 export default function EditUserPage() {
   const { id } = useParams();

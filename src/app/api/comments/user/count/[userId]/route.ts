@@ -4,9 +4,9 @@ import prisma from "@/lib/db";
 
 export async function GET(
   _: Request,
-  context: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
-  const { userId } = await context.params;
+  const { userId } = await params;
 
   try {
     const count = await prisma.comment.count({

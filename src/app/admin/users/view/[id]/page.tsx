@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
 import styled from "styled-components";
-import { User } from "@/src/interface/user";
+import { CustomUser as User} from "@/src/interface/user";
 
 export default function DashboardPage() {
   const { id } = useParams();
