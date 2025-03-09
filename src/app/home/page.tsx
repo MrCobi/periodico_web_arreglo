@@ -108,6 +108,32 @@ export default function HomePage() {
     collections: false,
     recent: false,
   });
+  const [userStats, setUserStats] = useState({
+    favoriteCount: 0,
+    activityCount: 0,
+    totalInteractions: 0,
+    activeDays: 0,
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch("/api/users/stats");
+          const data = await response.json();
+          setUserStats({
+            favoriteCount: data.favoriteCount,
+            activityCount: data.activityCount,
+            totalInteractions: data.totalInteractions,
+            activeDays: data.activeDays,
+          });
+        } catch (error) {
+          console.error("Error loading stats:", error);
+        }
+      }
+    };
+    loadStats();
+  }, [session]);
 
   // Efecto para manejar el montaje y el scroll
   useEffect(() => {
@@ -253,23 +279,23 @@ export default function HomePage() {
             {[
               {
                 icon: <BookOpen className="h-6 w-6 text-blue-600" />,
-                label: "Artículos Leídos",
-                value: 124,
+                label: "Interacciones",
+                value: userStats.totalInteractions, // Suma de favoritos + comentarios + ratings
               },
               {
                 icon: <Star className="h-6 w-6 text-yellow-500" />,
                 label: "Favoritos",
-                value: 36,
+                value: userStats.favoriteCount,
               },
               {
                 icon: <History className="h-6 w-6 text-green-600" />,
-                label: "Búsquedas Recientes",
-                value: 58,
+                label: "Actividad Reciente",
+                value: userStats.activityCount,
               },
               {
                 icon: <Calendar className="h-6 w-6 text-purple-600" />,
                 label: "Días Activo",
-                value: 42,
+                value: userStats.activeDays,
               },
             ].map((stat, i) => (
               <StatItem
