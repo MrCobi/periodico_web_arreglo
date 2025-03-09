@@ -228,3 +228,12 @@ nav a:hover {
 .stat-item {
   @apply flex flex-col items-center p-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl text-center;
 }
+
+.stat-item {
+  @apply flex flex-col items-center p-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl text-center;
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  @apply bg-blue-100/70 dark:bg-blue-900/30 shadow-md;
+}

@@ -39,7 +39,6 @@ export default function ClientLayout({
 
 function Navbar() {
   const { data: session } = useSession();
-  const isAdmin = session?.user?.role === "admin";
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
