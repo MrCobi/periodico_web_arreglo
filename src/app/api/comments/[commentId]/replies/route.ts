@@ -1,12 +1,13 @@
+// src/app/api/comments/[commentId]/replies/route.ts
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ commentId: string }> }
 ) {
-  const { id } = await params;
+  const { commentId } = await params; // Corregido: Extraer `commentId` directamente de los parámetros
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -31,7 +32,7 @@ export async function POST(
     const result = await prisma.$transaction(async (tx) => {
       // 1. Verificar comentario padre y fuente
       const parentComment = await tx.comment.findUnique({
-        where: { id: id },
+        where: { id: commentId }, // Corregido: Usar `commentId` en lugar de `id`
         include: { 
           source: true,
           user: { select: { id: true, name: true, image: true } } // Incluir el usuario
@@ -48,9 +49,9 @@ export async function POST(
           content: trimmedContent,
           userId: session.user.id,
           sourceId,
-          parentId: id,
+          parentId: commentId, // Corregido: Usar `commentId` en lugar de `id`
           depth: parentComment.depth + 1,
-          path: `${parentComment.path}/${id}`,
+          path: `${parentComment.path}/${commentId}`, // Corregido: Usar `commentId` en lugar de `id`
         },
         include: {
           user: { select: { id: true, name: true, image: true } }
