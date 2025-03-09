@@ -38,16 +38,16 @@ export function SearchBar() {
                 <X className="h-4 w-4" />
               </Button>
             )}
-            <Button 
-              size="icon" 
-              variant="ghost" 
+            <Button
+              size="icon"
+              variant="ghost"
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
             >
               <Filter className="h-4 w-4" />
             </Button>
-            <Button 
-              size="icon" 
-              variant="ghost" 
+            <Button
+              size="icon"
+              variant="ghost"
               className="h-8 w-8 text-primary hover:text-primary/80"
             >
               <Search className="h-4 w-4" />
@@ -65,7 +65,11 @@ export function SearchBar() {
             >
               <Card className="p-4 shadow-lg backdrop-blur-lg bg-card/90 border-border">
                 <p className="text-sm text-muted-foreground">
-                  Resultados para "<span className="font-medium text-foreground">{searchQuery}</span>"...
+                  Resultados para &quot;
+                  <span className="font-medium text-foreground">
+                    {searchQuery}
+                  </span>
+                  &quot;...
                 </p>
               </Card>
             </motion.div>

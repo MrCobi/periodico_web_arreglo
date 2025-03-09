@@ -88,6 +88,7 @@ function Navbar() {
                   { href: "/", label: "Home" },
                   { href: "/Articulos", label: "Artículos" },
                   { href: "/sources", label: "Fuentes" },
+                  { href: "/explore", label: "Descubrir Usuarios" },
                 ].map((link) => (
                   <Link
                     key={link.href}

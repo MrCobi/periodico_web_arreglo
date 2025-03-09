@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/app/components/ui/tabs";
 import { Card } from "@/src/app/components/ui/card";
 
-export function DashboardTabs({ userId }: { userId: string }) {
+export function DashboardTabs({ _userId }: { _userId: string }) {
   return (
     <Tabs defaultValue="sources" className="w-full">
       <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">

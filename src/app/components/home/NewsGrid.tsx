@@ -6,6 +6,7 @@ import { Badge } from "@/src/app/components/ui/badge";
 import { Avatar } from "@/src/app/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Bookmark, MessageSquare, Share2 } from "lucide-react";
+import Image from "next/image";
 
 const newsItems = [
   {
@@ -51,7 +52,7 @@ export function NewsGrid() {
         >
           <Card className="overflow-hidden border-border hover:border-primary/20 transition-all duration-300">
             <div className="relative">
-              <img
+              <Image
                 src={item.image}
                 alt={item.title}
                 className="w-full h-40 sm:h-48 object-cover"
@@ -70,7 +71,7 @@ export function NewsGrid() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8 border-2 border-background">
-                    <img src={item.author.avatar} alt={item.author.name} />
+                    <Image src={item.author.avatar} alt={item.author.name} />
                   </Avatar>
                   <span className="text-sm font-medium text-foreground">{item.author.name}</span>
                 </div>

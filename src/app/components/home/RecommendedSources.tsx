@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/src/app/components/u
 import { Avatar } from "@/src/app/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import Image from "next/image";
 
 const recommendedSources = [
   {
@@ -44,7 +45,7 @@ export function RecommendedSources() {
           >
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border-2 border-background">
-                <img src={source.image} alt={source.name} />
+                <Image src={source.image} alt={source.name} />
               </Avatar>
               <div>
                 <h3 className="font-medium text-foreground group-hover:text-primary transition-colors duration-200">{source.name}</h3>

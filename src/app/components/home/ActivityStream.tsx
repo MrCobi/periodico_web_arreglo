@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/src/app/components/u
 import { Avatar } from "@/src/app/components/ui/avatar";
 import { Badge } from "@/src/app/components/ui/badge";
 import { Activity } from "lucide-react";
+import Image from "next/image";
 
 const activities = [
   {
@@ -58,7 +59,7 @@ export function ActivityStream() {
             className="flex items-start gap-3 group"
           >
             <Avatar className="h-8 w-8 border-2 border-background">
-              <img src={activity.user.avatar} alt={activity.user.name} />
+              <Image src={activity.user.avatar} alt={activity.user.name} />
             </Avatar>
             <div className="flex-1">
               <p className="text-sm">

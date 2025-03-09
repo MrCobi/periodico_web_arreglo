@@ -25,7 +25,6 @@ interface FavoriteSource {
 
 export function FavoriteSources({ 
   sources,
-  userId 
 }: { 
   sources: FavoriteSource[];
   userId: string;

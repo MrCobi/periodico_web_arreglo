@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/src/app/components/ui/card";
 import { Avatar } from "@/src/app/components/ui/avatar";
 import { Newspaper, Users, UserCircle2, Star } from "lucide-react";
+import Image from "next/image";
+import { User } from "@/src/interface/user";
 
 interface UserStatsProps {
-  user: any;
+  user: User;
 }
 
 export function UserStats({ user }: UserStatsProps) {
@@ -35,7 +37,7 @@ export function UserStats({ user }: UserStatsProps) {
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <Avatar className="h-16 w-16 border-4 border-background">
-              <img 
+              <Image 
                 src={user?.image || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=96&h=96&fit=crop"} 
                 alt={user?.name || "Usuario"} 
               />

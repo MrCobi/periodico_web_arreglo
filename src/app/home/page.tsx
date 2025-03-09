@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
 import {
   Loader2,
   Search,
@@ -17,7 +16,6 @@ import {
   Star,
   Filter,
   ArrowRight,
-  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,13 +26,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/app/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/src/app/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/src/app/components/ui/tabs";
 import { Avatar } from "@/src/app/components/ui/avatar";
+import Image from "next/image";
 
 const decorativeElements = [
   { left: "10%", top: "20%", width: "8px", height: "8px", duration: "2s" },
@@ -107,7 +101,6 @@ export default function HomePage() {
   // Hooks en el nivel superior y en el mismo orden
   const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
-  const { theme } = useTheme();
   const router = useRouter();
   const [isVisible, setIsVisible] = useState({
     stats: false,
@@ -373,7 +366,7 @@ export default function HomePage() {
               >
                 <Card className="overflow-hidden border-blue-100 dark:border-blue-900/30 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 hover:shadow-lg">
                   <div className="relative h-48 overflow-hidden">
-                    <img
+                    <Image
                       src={article.image}
                       alt={article.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -495,7 +488,7 @@ export default function HomePage() {
                 }
               >
                 <div className="relative h-48 rounded-xl overflow-hidden">
-                  <img
+                  <Image
                     src={collection.image}
                     alt={collection.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -588,7 +581,7 @@ export default function HomePage() {
                         className="flex gap-4 p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                       >
                         <Avatar className="h-10 w-10">
-                          <img
+                          <Image
                             src={activity.user.avatar}
                             alt={activity.user.name}
                           />
@@ -607,7 +600,7 @@ export default function HomePage() {
                           </p>
                           {activity.comment && (
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md">
-                              "{activity.comment}"
+                              &quot;{activity.comment}&quot;
                             </p>
                           )}
                           <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
