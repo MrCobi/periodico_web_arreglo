@@ -337,7 +337,7 @@ export default function HomePage() {
                 excerpt:
                   "Testimonios y reportajes periodísticos sobre los acontecimientos más relevantes del conflicto.",
                 image:
-                  "https://images.unsplash.com/photo-1580130601254-05fa235abeac?w=800&h=500&fit=crop",
+                  "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&h=500&fit=crop",
                 date: "3 Mar 1937",
                 source: "ABC",
                 category: "Política",
@@ -347,7 +347,7 @@ export default function HomePage() {
                 excerpt:
                   "Cobertura periodística sobre uno de los avances médicos más importantes del siglo XX.",
                 image:
-                  "https://images.unsplash.com/photo-1582560475093-ba66accbc7f9?w=800&h=500&fit=crop",
+                  "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&h=500&fit=crop",
                 date: "24 Sep 1945",
                 source: "La Vanguardia",
                 category: "Ciencia",
@@ -447,21 +447,21 @@ export default function HomePage() {
                 title: "Guerra Civil Española",
                 count: 1243,
                 image:
-                  "https://images.unsplash.com/photo-1580130601254-05fa235abeac?w=400&h=300&fit=crop",
+                  "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&h=500&fit=crop",
                 color: "from-red-500 to-orange-500",
               },
               {
                 title: "Transición Democrática",
                 count: 856,
                 image:
-                  "https://images.unsplash.com/photo-1569525484251-b4b1e8f3a9fe?w=400&h=300&fit=crop",
+                  "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&h=500&fit=crop",
                 color: "from-blue-500 to-indigo-500",
               },
               {
                 title: "Movimientos Culturales",
                 count: 723,
                 image:
-                  "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=400&h=300&fit=crop",
+                  "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&h=500&fit=crop",
                 color: "from-purple-500 to-pink-500",
               },
               {
