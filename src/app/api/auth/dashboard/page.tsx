@@ -66,6 +66,7 @@ export default function DashboardPage() {
     user_name?: string;
     created_at: string; // Usar created_at
   };
+  
   useEffect(() => {
     const loadFavorites = async () => {
       if (session?.user?.id) {
