@@ -369,6 +369,8 @@ export default function HomePage() {
                     <Image
                       src={article.image}
                       alt={article.title}
+                      width={800} // Agregar
+                      height={500} // Agregar
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -491,6 +493,8 @@ export default function HomePage() {
                   <Image
                     src={collection.image}
                     alt={collection.title}
+                    width={400} // Agregar
+                    height={300} // Agregar
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div
@@ -584,6 +588,9 @@ export default function HomePage() {
                           <Image
                             src={activity.user.avatar}
                             alt={activity.user.name}
+                            width={64} // Agregar
+                            height={64} // Agregar
+                            className="h-10 w-10" // Asegurar que la clase esté presente
                           />
                         </Avatar>
                         <div className="flex-1">

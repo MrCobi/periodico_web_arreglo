@@ -6,7 +6,9 @@ import { UserCard } from "@/src/app/components/UserCard";
 import { FollowButton } from "@/src/app/components/FollowButton";
 import { Skeleton } from "@/src/app/components/ui/skeleton";
 import { useToast } from "@/src/app/components/ui/use-toast";
-import { Input } from "@/components/ui/input"; // Asegúrate de importar el componente Input
+import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
+import { Search, Users } from "lucide-react";
 
 type User = {
   id: string;
@@ -35,16 +37,16 @@ export default function ExplorePage() {
         }
       });
 
-      if (!response.ok) throw new Error("Error al cargar sugerencias");
+      if (!response.ok) throw new Error("Error loading suggestions");
       
       const { data } = await response.json();
       setUsers(data);
     } catch (err) {
       console.error("Error fetching suggestions:", err);
-      setError("Error al cargar usuarios sugeridos");
+      setError("Error loading suggested users");
       toast({
         title: "Error",
-        description: "No se pudieron cargar las sugerencias",
+        description: "Could not load suggestions",
         variant: "destructive"
       });
     } finally {
@@ -59,69 +61,114 @@ export default function ExplorePage() {
   const handleFollowUpdate = (userId: string) => {
     setUsers(prev => prev.filter(user => user.id !== userId));
     toast({
-      title: "¡Listo!",
-      description: "Relación actualizada correctamente"
+      title: "Success!",
+      description: "Relationship updated successfully"
     });
   };
 
-  // Función para manejar la búsqueda en tiempo real
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
   if (error) {
     return (
-      <div className="container mx-auto p-4 text-center text-red-500">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="container mx-auto p-4 text-center text-destructive"
+      >
         {error}
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Descubrir Usuarios</h1>
-      
-      {/* Barra de búsqueda */}
-      <div className="mb-8">
-        <Input
-          type="text"
-          placeholder="Buscar usuarios por nombre, username o bio..."
-          value={searchQuery}
-          onChange={handleSearch}
-          className="w-full max-w-md"
-        />
+    <div className="min-h-screen bg-gradient-to-br from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 right-[10%] w-64 h-64 bg-blue-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/3 left-[15%] w-72 h-72 bg-indigo-500/5 rounded-full blur-3xl"></div>
       </div>
+      
+      <div className="container relative z-10 mx-auto px-4 py-8 max-w-7xl">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-8"
+        >
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-lg">
+                <Users className="h-6 w-6" />
+              </div>
+              <h1 className="text-3xl font-bold text-foreground">Descubir Usuarios</h1>
+            </div>
+            
+            <div className="w-full md:w-96 relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">
+                <Search className="h-4 w-4" />
+              </div>
+              <Input
+                type="text"
+                placeholder="Buscar por nombre, nombre de usuario o bio..."
+                value={searchQuery}
+                onChange={handleSearch}
+                className="pl-10 bg-background/80 backdrop-blur-sm border-border focus-visible:border-blue-300 dark:focus-visible:border-blue-700 transition-all"
+              />
+            </div>
+          </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-[200px] w-full rounded-xl" />
-          ))}
-        </div>
-      ) : users.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500">
-            {searchQuery ? 
-              "No se encontraron resultados para tu búsqueda" : 
-              "No hay usuarios sugeridos disponibles"}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {users.map((user) => (
-            <UserCard
-              key={user.id}
-              user={user}
-              action={
-                <FollowButton 
-                  targetUserId={user.id}
-                  onSuccess={() => handleFollowUpdate(user.id)}
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Skeleton 
+                  key={i} 
+                  className="h-[220px] w-full rounded-xl bg-muted/50" 
                 />
-              }
-            />
-          ))}
-        </div>
-      )}
+              ))}
+            </div>
+          ) : users.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-16 text-center"
+            >
+              <div className="p-6 rounded-full bg-blue-100/50 dark:bg-blue-900/30 mb-4">
+                <Users className="h-12 w-12 text-blue-600 dark:text-blue-400" />
+              </div>
+              <p className="text-lg text-muted-foreground">
+                {searchQuery ? 
+                  "No results found for your search" : 
+                  "No suggested users available"}
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {users.map((user, index) => (
+                <motion.div
+                  key={user.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <UserCard
+                    user={user}
+                    action={
+                      <FollowButton 
+                        targetUserId={user.id}
+                        onSuccess={() => handleFollowUpdate(user.id)}
+                      />
+                    }
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
     </div>
   );
 }
