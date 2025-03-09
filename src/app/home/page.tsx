@@ -313,7 +313,7 @@ export default function HomePage() {
             <Button
               variant="outline"
               className="mt-4 md:mt-0 border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-900/30"
-              onClick={() => router.push("/articulos")}
+              onClick={() => router.push("/Articulos")}
             >
               Ver todos <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
