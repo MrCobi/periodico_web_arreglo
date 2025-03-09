@@ -28,6 +28,7 @@ import {
   UserPlus,
   UserCheck,
 } from "lucide-react";
+import LoadingSpinner from "@/src/app/components/ui/LoadingSpinner";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -49,6 +50,7 @@ export default function DashboardPage() {
 
   const remainingCount =
     favoriteSources.length > 6 ? favoriteSources.length - 5 : 0;
+    
 
   type Activity = {
     id: string;
@@ -222,23 +224,16 @@ export default function DashboardPage() {
   };
 
   if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-blue-900/30 dark:to-blue-800/20">
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent dark:border-blue-400"></div>
-          <p className="mt-4 text-blue-800 dark:text-blue-300 font-medium">
-            Cargando perfil...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
-  if (!session) {
+  if (status === "unauthenticated") {
+    router.push("/login");
     return null;
   }
 
-  const { user } = session;
+  // Eliminar verificaciones redundantes de session
+  const { user } = session!;
 
   const menuItems = [
     {
