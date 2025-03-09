@@ -142,7 +142,7 @@ export default function SignupForm() {
           } else {
             await update(); // Actualiza la sesión
             router.refresh(); // Fuerza recarga de datos del lado del cliente
-            router.push("/");
+            router.push("/home");
           }
         } catch (err) {
           setError(err instanceof Error ? err.message : "Error en el registro");

@@ -50,7 +50,7 @@ export default function SigninForm({ isVerified }: SigninFormProps) {
         // Obtén la sesión actualizada
         const session = await getSession();
         console.log("Sesión actualizada:", session); // Depuración
-        router.push("/"); // Redirige a la página principal
+        router.push("/home"); // Redirige a la página principal
       }
     });
   }

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
 // Pre-calculated positions for decorative elements
 const decorativeElements = [
@@ -73,6 +74,15 @@ export default function HomePage() {
     features: false,
     timeline: false,
   });
+
+  const { data: session } = useSession();
+
+  // Si el usuario está autenticado, redirigir a /home
+  useEffect(() => {
+    if (session) {
+      router.push("/home");
+    }
+  }, [session, router]);
 
   useEffect(() => {
     setIsLoaded(true);

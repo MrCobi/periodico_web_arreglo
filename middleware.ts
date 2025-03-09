@@ -30,6 +30,10 @@ export default middleware(async (req) => {
 
   // 1. Verificar rutas públicas
   if (publicRoutes.has(pathname)) {
+    // Si el usuario está autenticado y accede a la página de presentación (/), redirigir a /home
+    if (isLoggedIn && pathname === "/") {
+      return NextResponse.redirect(new URL("/home", nextUrl));
+    }
     return NextResponse.next();
   }
 
@@ -50,7 +54,7 @@ export default middleware(async (req) => {
 
   // 4. Redirigir usuarios autenticados que visiten rutas de auth
   if (authRoutes.has(pathname)) {
-    return NextResponse.redirect(new URL("/", nextUrl));
+    return NextResponse.redirect(new URL("/home", nextUrl)); // Redirigir a /home en lugar de /
   }
 
   // Permitir acceso a otras rutas protegidas
