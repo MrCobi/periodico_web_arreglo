@@ -224,3 +224,7 @@ nav a:hover {
   animation: fadeInDescription 0.7s ease-in-out forwards;
   animation-delay: 0.2s;
 }
+
+.stat-item {
+  @apply flex flex-col items-center p-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl text-center;
+}

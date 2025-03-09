@@ -2,6 +2,7 @@
 import { Article } from "@/src/interface/article";
 import { Source } from "@prisma/client";
 import prisma from "./db";
+import { getSession } from "next-auth/react";
 
 export async function fetchArticlesBySource(
   sourceId: string,
@@ -51,4 +52,23 @@ export async function fetchSourceById(id: string): Promise<Source | null> {
     console.error("Error fetching source:", error);
     return null;
   }
+}
+
+export async function updatePrivacySettings(settings: {
+  showFavorites?: boolean;
+  showActivity?: boolean;
+}) {
+  const session = await getSession();
+  
+  if (!session?.user?.id) {
+    throw new Error("No autenticado");
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      showFavorites: settings.showFavorites,
+      showActivity: settings.showActivity
+    }
+  });
 }
