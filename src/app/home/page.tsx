@@ -17,6 +17,10 @@ import {
   Filter,
   ArrowRight,
   Heart,
+  MessageSquare,
+  Minus,
+  Plus,
+  User2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +34,29 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/src/app/components/ui/tabs";
 import { Avatar } from "@/src/app/components/ui/avatar";
 import Image from "next/image";
+
+interface Activity {
+  id: string;
+  type:
+    | "favorite_added"
+    | "favorite_removed"
+    | "comment"
+    | "rating_added"
+    | "rating_removed"
+    | "follow"
+    | "unfollow"
+    | "comment_reply"
+    | "comment_deleted";
+  sourceName: string | null;
+  userName: string | null;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    username: string | null;
+    image: string | null;
+  };
+}
 
 const decorativeElements = [
   { left: "10%", top: "20%", width: "8px", height: "8px", duration: "2s" },
@@ -115,6 +142,12 @@ export default function HomePage() {
     totalInteractions: 0,
     activeDays: 0,
   });
+  const [followingActivity, setFollowingActivity] = useState<Activity[]>([]);
+  const [isLoadingFollowingActivity, setIsLoadingFollowingActivity] =
+    useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalActivities, setTotalActivities] = useState<number>(0);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     const loadStats = async () => {
@@ -135,6 +168,31 @@ export default function HomePage() {
     };
     loadStats();
   }, [session]);
+
+  useEffect(() => {
+    const loadFollowingActivity = async () => {
+      if (session?.user?.id) {
+        setIsLoadingFollowingActivity(true);
+        try {
+          const response = await fetch(
+            `/api/activity/following?page=${currentPage}&limit=${itemsPerPage}`
+          );
+          if (response.ok) {
+            const { data, total } = await response.json();
+            if (Array.isArray(data)) {
+              setFollowingActivity(data);
+              setTotalActivities(total);
+            }
+          }
+        } catch (error) {
+          console.error("Error loading following activity:", error);
+        } finally {
+          setIsLoadingFollowingActivity(false);
+        }
+      }
+    };
+    loadFollowingActivity();
+  }, [session, currentPage]);
 
   // Efecto para manejar el montaje y el scroll
   useEffect(() => {
@@ -176,6 +234,31 @@ export default function HomePage() {
     }
   }, [status]);
 
+  const PaginationControls = () => {
+    const totalPages = Math.ceil(totalActivities / itemsPerPage) || 1;
+
+    return (
+      <div className="flex justify-center gap-2 mt-4">
+        <Button
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+        >
+          Anterior
+        </Button>
+
+        <span className="flex items-center px-4 text-sm">
+          Página {currentPage} de {totalPages}
+        </span>
+
+        <Button
+          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          disabled={currentPage === totalPages}
+        >
+          Siguiente
+        </Button>
+      </div>
+    );
+  };
   // Mostrar carga si no está montado o está cargando
   if (!mounted || status === "loading") {
     return (
@@ -568,82 +651,128 @@ export default function HomePage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
                     <Clock className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
-                    Actividad Reciente
+                    Actividad Reciente de Usuarios Seguidos
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      {
-                        user: {
-                          name: "María García",
-                          avatar:
-                            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop",
-                        },
-                        action: "comentó en",
-                        target: "La Revolución Industrial en España",
-                        time: "hace 5 minutos",
-                        comment:
-                          "Excelente artículo que detalla perfectamente el contexto económico de la época.",
-                      },
-                      {
-                        user: {
-                          name: "Carlos Rodríguez",
-                          avatar:
-                            "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=64&h=64&fit=crop",
-                        },
-                        action: "guardó en favoritos",
-                        target: "Crónicas de la Guerra Civil",
-                        time: "hace 2 horas",
-                      },
-                      {
-                        user: {
-                          name: "Laura Martínez",
-                          avatar:
-                            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop",
-                        },
-                        action: "compartió",
-                        target: "El Descubrimiento de la Penicilina",
-                        time: "hace 1 día",
-                      },
-                    ].map((activity, i) => (
-                      <div
-                        key={i}
-                        className="flex gap-4 p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                      >
-                        <Avatar className="h-10 w-10">
-                          <Image
-                            src={activity.user.avatar}
-                            alt={activity.user.name}
-                            width={64} // Agregar
-                            height={64} // Agregar
-                            className="h-10 w-10" // Asegurar que la clase esté presente
-                          />
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-800 dark:text-gray-200">
-                            <span className="font-medium">
-                              {activity.user.name}
-                            </span>{" "}
-                            <span className="text-gray-600 dark:text-gray-400">
-                              {activity.action}
-                            </span>{" "}
-                            <span className="font-medium text-blue-600 dark:text-blue-400">
-                              {activity.target}
-                            </span>
-                          </p>
-                          {activity.comment && (
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md">
-                              &quot;{activity.comment}&quot;
-                            </p>
-                          )}
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
-                            {activity.time}
-                          </p>
+                  {isLoadingFollowingActivity ? (
+                    <div className="text-center py-4">
+                      <Loader2 className="h-6 w-6 animate-spin text-blue-600 mx-auto" />
+                      <p className="text-gray-600 mt-2">
+                        Cargando actividades...
+                      </p>
+                    </div>
+                  ) : followingActivity.length === 0 ? (
+                    <p className="text-gray-600 dark:text-gray-400 text-center py-4">
+                      No hay actividad reciente de los usuarios que sigues.
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {followingActivity.map((activity) => (
+                        <div
+                          key={activity.id}
+                          className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="flex-shrink-0">
+                              <Avatar className="h-10 w-10">
+                                <Image
+                                  src={
+                                    activity.user.image || "/default-avatar.png"
+                                  }
+                                  alt={activity.user.name}
+                                  width={40}
+                                  height={40}
+                                  className="h-10 w-10 rounded-full"
+                                />
+                              </Avatar>
+                            </div>
+                            <div className="flex-shrink-0">
+                              {activity.type === "favorite_added" && (
+                                <Heart className="h-5 w-5 text-red-500 fill-red-500" />
+                              )}
+                              {activity.type === "favorite_removed" && (
+                                <Heart className="h-5 w-5 text-red-500" />
+                              )}
+                              {activity.type === "comment" && (
+                                <MessageSquare className="h-5 w-5 text-green-500" />
+                              )}
+                              {activity.type === "rating_added" && (
+                                <div className="relative flex items-center justify-center">
+                                  <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                                  <Plus className="h-3 w-3 absolute -top-1 -right-1 text-yellow-500" />
+                                </div>
+                              )}
+                              {activity.type === "rating_removed" && (
+                                <div className="relative flex items-center justify-center">
+                                  <Star className="h-5 w-5 text-purple-500" />
+                                  <Minus className="h-3 w-3 absolute -top-1 -right-1 text-purple-500" />
+                                </div>
+                              )}
+                              {activity.type === "follow" && (
+                                <User2 className="h-5 w-5 text-blue-500" />
+                              )}
+                              {activity.type === "unfollow" && (
+                                <User2 className="h-5 w-5 text-red-500" />
+                              )}
+                              {activity.type === "comment_reply" && (
+                                <MessageSquare className="h-5 w-5 text-green-500" />
+                              )}
+                              {activity.type === "comment_deleted" && (
+                                <MessageSquare className="h-5 w-5 text-red-500" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-800 dark:text-gray-200">
+                                <span className="font-medium">
+                                  {activity.user.username}
+                                </span>{" "}
+                                <span className="text-gray-600 dark:text-gray-400">
+                                  {activity.type === "favorite_added" &&
+                                    "agregó un favorito"}
+                                  {activity.type === "favorite_removed" &&
+                                    "eliminó un favorito"}
+                                  {activity.type === "comment" && "comentó en"}
+                                  {activity.type === "rating_added" &&
+                                    "calificó"}
+                                  {activity.type === "rating_removed" &&
+                                    "eliminó la valoración de"}
+                                  {activity.type === "follow" &&
+                                    "comenzó a seguir a"}
+                                  {activity.type === "unfollow" &&
+                                    "dejó de seguir a"}
+                                  {activity.type === "comment_reply" &&
+                                    "respondió a un comentario en"}
+                                  {activity.type === "comment_deleted" &&
+                                    "eliminó un comentario en"}
+                                </span>{" "}
+                                <span className="font-medium text-blue-600 dark:text-blue-400">
+                                  {activity.sourceName || activity.userName}
+                                </span>
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {new Date(activity.createdAt).toLocaleString(
+                                  "es-ES",
+                                  {
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                      {!isLoadingFollowingActivity &&
+                        followingActivity.length > 0 &&
+                        totalActivities > itemsPerPage && (
+                          <PaginationControls />
+                        )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
@@ -677,10 +806,7 @@ export default function HomePage() {
                         className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
                         onClick={() => router.push(`/buscar?q=${trend.term}`)}
                       >
-                        <div
-                          className="
-                          flex items-center gap-2"
-                        >
+                        <div className="flex items-center gap-2">
                           <span className="text-sm text-gray-800 dark:text-gray-200">
                             {trend.term}
                           </span>
