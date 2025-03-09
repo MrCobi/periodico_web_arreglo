@@ -7,11 +7,22 @@ import Image from "next/image";
 import { User } from "@prisma/client";
 import { Card, CardHeader, CardContent } from "@/src/app/components/ui/card";
 import { Badge } from "@/src/app/components/ui/badge";
-import { User2, Users, Activity, Heart, MessageSquare, Star, Minus, Plus, ExternalLink } from "lucide-react";
+import {
+  User2,
+  Users,
+  Activity,
+  Heart,
+  MessageSquare,
+  Star,
+  Minus,
+  Plus,
+  ExternalLink,
+} from "lucide-react";
 import LoadingSpinner from "@/src/app/components/ui/LoadingSpinner";
 import { Source } from "@/src/interface/source";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { FollowButton } from "@/src/app/components/FollowButton";
 
 type Activity = {
   id: string;
@@ -32,7 +43,7 @@ export default function UserProfilePage() {
   const [activity, setActivity] = useState<Activity[]>([]);
   const [privacy, setPrivacy] = useState({
     showFavorites: true,
-    showActivity: true
+    showActivity: true,
   });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -42,21 +53,23 @@ export default function UserProfilePage() {
       try {
         const response = await fetch(`/api/users/by-username/${username}`);
         const data = await response.json();
-        
+
         if (!response.ok) throw new Error(data.error || "User not found");
-        
+
         setUserData({
           user: {
             ...data,
-            stats: data.stats
-          }
+            stats: data.stats,
+          },
         });
         setFavorites(data.favorites || []);
         setActivity(data.activity || []);
-        setPrivacy(data.privacySettings || {
-          showFavorites: true,
-          showActivity: true
-        });
+        setPrivacy(
+          data.privacySettings || {
+            showFavorites: true,
+            showActivity: true,
+          }
+        );
       } catch (error) {
         console.error("Error loading profile:", error);
       } finally {
@@ -66,7 +79,11 @@ export default function UserProfilePage() {
     loadProfile();
   }, [username]);
 
-  function renderActivityMessage(type: string, sourceName?: string, userName?: string) {
+  function renderActivityMessage(
+    type: string,
+    sourceName?: string,
+    userName?: string
+  ) {
     const messages = {
       favorite_added: `Agregó ${sourceName || "un periódico"} a favoritos`,
       comment: `Comentó en ${sourceName || "un periódico"}`,
@@ -74,9 +91,11 @@ export default function UserProfilePage() {
       unfollow: `Dejó de seguir a ${userName || "un usuario"}`,
       rating_added: `Calificó ${sourceName || "un periódico"}`,
       rating_removed: `Eliminó calificación de ${sourceName || "un periódico"}`,
-      comment_reply: `Respondió un comentario en ${sourceName || "un periódico"}`,
+      comment_reply: `Respondió un comentario en ${
+        sourceName || "un periódico"
+      }`,
     };
-    
+
     return messages[type as keyof typeof messages] || "Realizó una acción";
   }
 
@@ -91,11 +110,15 @@ export default function UserProfilePage() {
   }
 
   const { user } = userData;
-  const displayedFavorites = favorites.length > 5 ? favorites.slice(0, 5) : favorites;
+  const displayedFavorites =
+    favorites.length > 5 ? favorites.slice(0, 5) : favorites;
   const remainingCount = favorites.length > 5 ? favorites.length - 5 : 0;
 
   // Paginación para la actividad
-  const paginatedActivity = activity.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedActivity = activity.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   const totalPages = Math.ceil(activity.length / itemsPerPage);
 
   const PaginationControls = () => {
@@ -126,14 +149,13 @@ export default function UserProfilePage() {
     );
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-blue-900/30 dark:to-blue-800/20">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-blue-300/20 dark:bg-blue-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-200/20 dark:bg-blue-600/10 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
       </div>
-  
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative">
         {/* Profile Card */}
         <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg shadow-xl border-0 overflow-hidden">
@@ -154,7 +176,7 @@ export default function UserProfilePage() {
                   />
                 </div>
               </div>
-  
+
               <div className="flex-1 text-center sm:text-left mt-6 sm:mt-0">
                 <div className="space-y-6">
                   <div>
@@ -170,7 +192,31 @@ export default function UserProfilePage() {
                       </p>
                     )}
                   </div>
-  
+
+                  {/* Botón de Seguir */}
+                  {session?.user?.id !== user.id && (
+                    <div className="flex justify-center sm:justify-start">
+                      <FollowButton
+                        targetUserId={user.id}
+                        onSuccess={() => {
+                          setUserData((prev) => {
+                            if (!prev) return prev; // Si prev es null, retorna null
+                            return {
+                              ...prev,
+                              user: {
+                                ...prev.user,
+                                stats: {
+                                  ...prev.user.stats,
+                                  followers: prev.user.stats.followers + 1,
+                                },
+                              },
+                            };
+                          });
+                        }}
+                      />
+                    </div>
+                  )}
+
                   {/* Stats Grid */}
                   <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto sm:mx-0">
                     <div className="relative group bg-gradient-to-br from-white/90 to-white/60 dark:from-gray-800/90 dark:to-gray-800/60 rounded-xl p-5 text-center backdrop-blur-sm border border-white/20 dark:border-gray-700/20 hover:border-white/40 dark:hover:border-gray-700/40 transition-all shadow-md hover:shadow-lg">
@@ -187,7 +233,7 @@ export default function UserProfilePage() {
                         </p>
                       </div>
                     </div>
-  
+
                     <div className="relative group bg-gradient-to-br from-white/90 to-white/60 dark:from-gray-800/90 dark:to-gray-800/60 rounded-xl p-5 text-center backdrop-blur-sm border border-white/20 dark:border-gray-700/20 hover:border-white/40 dark:hover:border-gray-700/40 transition-all shadow-md hover:shadow-lg">
                       <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-blue-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <div className="relative">
@@ -208,7 +254,7 @@ export default function UserProfilePage() {
             </div>
           </div>
         </Card>
-  
+
         {/* Favorites Section */}
         <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg shadow-xl border-0 mt-6">
           <div className="p-6">
@@ -226,7 +272,7 @@ export default function UserProfilePage() {
                 </Link>
               )}
             </div>
-  
+
             {privacy.showFavorites ? (
               favorites.length === 0 ? (
                 <div className="text-center py-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
@@ -257,7 +303,10 @@ export default function UserProfilePage() {
                     </Link>
                   ))}
                   {remainingCount > 0 && (
-                    <Link href={`/users/${user.username}/favorites`} className="group">
+                    <Link
+                      href={`/users/${user.username}/favorites`}
+                      className="group"
+                    >
                       <div className="p-5 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-lg h-full flex flex-col items-center justify-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30">
                         <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
                           +{remainingCount}
@@ -278,7 +327,7 @@ export default function UserProfilePage() {
             )}
           </div>
         </Card>
-  
+
         {/* Recent Activity */}
         <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg shadow-xl border-0 mt-6">
           <div className="p-6">
@@ -286,7 +335,7 @@ export default function UserProfilePage() {
               <Activity className="h-6 w-6 mr-2 text-blue-500" />
               Actividad reciente
             </h2>
-  
+
             {privacy.showActivity ? (
               activity.length === 0 ? (
                 <div className="text-center py-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
@@ -299,7 +348,10 @@ export default function UserProfilePage() {
                 <>
                   <div className="space-y-4">
                     {activity
-                      .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                      .slice(
+                        (currentPage - 1) * itemsPerPage,
+                        currentPage * itemsPerPage
+                      )
                       .map((act) => (
                         <div
                           key={act.id}
@@ -347,14 +399,21 @@ export default function UserProfilePage() {
                             </div>
                             <div>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {renderActivityMessage(act.type, act.sourceName, act.userName)}
+                                {renderActivityMessage(
+                                  act.type,
+                                  act.sourceName,
+                                  act.userName
+                                )}
                               </p>
                               <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(act.createdAt).toLocaleDateString("es-ES", {
-                                  day: "numeric",
-                                  month: "long",
-                                  year: "numeric"
-                                })}
+                                {new Date(act.createdAt).toLocaleDateString(
+                                  "es-ES",
+                                  {
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                  }
+                                )}
                               </p>
                             </div>
                           </div>
