@@ -1,8 +1,9 @@
+// src/app/admin/users/page.tsx
 'use server';
 import prisma from "@/lib/db"
 import Link from 'next/link';
 import { auth } from "@/auth"
-import { User } from "@/src/interface/user";
+import { CustomUser } from "@/src/interface/user";
 
 export default async function UsersPage() {
   const session = await auth();
@@ -41,7 +42,7 @@ export default async function UsersPage() {
               </tr>
             </thead>
             <tbody className="bg-card divide-y divide-border">
-              {users.map((user: User) => (
+              {users.map((user: CustomUser) => (
                 <tr key={user.id} className="hover:bg-muted/50 transition-colors duration-200">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-card-foreground">{user.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-card-foreground">{user.name}</td>

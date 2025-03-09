@@ -4,9 +4,12 @@ import prisma from "@/lib/db";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const params = await context.params;
+
+
     // Validar formato del ID
     if (!/^[a-z0-9]+$/i.test(params.id)) {
       return NextResponse.json(
@@ -61,7 +64,7 @@ export async function GET(
       page,
       totalPages: Math.ceil(total / limit)
     });
-    
+
   } catch (error) {
     console.error("Error fetching following:", error);
     return NextResponse.json(

@@ -31,6 +31,8 @@ import {
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [isOpen, setIsOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
@@ -165,6 +167,32 @@ export default function DashboardPage() {
     loadRecentActivity();
   }, [session?.user?.id, currentPage]);
 
+  useEffect(() => {
+    if (session?.user?.id) {
+      // Obtener el número de seguidores
+      fetch(`/api/users/${session.user.id}/followers?limit=1`)
+        .then((response) => response.json())
+        .then((data) => {
+          // En tu endpoint de followers, el count se devuelve en data.meta.total
+          setFollowersCount(data.meta?.total || 0);
+        })
+        .catch((error) =>
+          console.error("Error al cargar el conteo de seguidores:", error)
+        );
+
+      // Obtener el número de seguidos
+      fetch(`/api/users/${session.user.id}/following?limit=1`)
+        .then((response) => response.json())
+        .then((data) => {
+          // En el endpoint de following, el count se devuelve en data.total
+          setFollowingCount(data.total || 0);
+        })
+        .catch((error) =>
+          console.error("Error al cargar el conteo de seguidos:", error)
+        );
+    }
+  }, [session]);
+
   const PaginationControls = () => {
     const totalPages = Math.ceil(Math.min(totalActivities, 20) / itemsPerPage);
 
@@ -234,15 +262,15 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      icon: UserPlus, // Icono para nuevos seguidores
+      icon: UserPlus,
       label: "Seguidores",
-      value: 0,
+      value: followersCount,
       color: "text-blue-500",
     },
     {
-      icon: UserCheck, // Icono para seguidos
+      icon: UserCheck,
       label: "Seguidos",
-      value: 0,
+      value: followingCount,
       color: "text-green-500",
     },
     {

@@ -4,6 +4,7 @@ import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { loginSchema } from "./lib/zod";
 import prisma from "./lib/db";
+import { Role } from "@prisma/client";
 
 export const authOptions: NextAuthConfig = {
   providers: [
@@ -36,7 +37,7 @@ export const authOptions: NextAuthConfig = {
           // if (!user.emailVerified) throw new Error("Email no verificado");
 
           const isValid = await bcryptjs.compare(
-            parsed.data.password, 
+            parsed.data.password,
             user.password
           );
 
@@ -68,10 +69,13 @@ export const authOptions: NextAuthConfig = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        // Solo incluir datos esenciales
         token.id = user.id;
         token.role = user.role;
-        token.username = user.username;
-        token.image = user.image || "/images/AvatarPredeterminado.webp";
+        token.basePermissions = {
+          isAdmin: user.role === "admin",
+          isVerified: !!user.emailVerified
+        };
       }
       return token;
     },
@@ -81,8 +85,8 @@ export const authOptions: NextAuthConfig = {
         user: {
           ...session.user,
           id: token.id as string,
-          role: token.role as string,
-          username: token.username as string
+          role: token.role as Role,
+          permissions: token.basePermissions
         }
       };
     }
