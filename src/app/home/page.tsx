@@ -140,7 +140,7 @@ const TrendsSection = () => {
     } else if (type === "api") {
       window.open(trend.url, "_blank");
     } else if (type === "comment") {
-      router.push(`/articulos/${trend.sourceId}`);
+      router.push(`/sources/${trend.sourceId}`);
     }
   };
 
