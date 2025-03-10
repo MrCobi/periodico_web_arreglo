@@ -2,6 +2,30 @@
 import prisma from "@/lib/db";
 import { NextResponse } from "next/server";
 
+async function fetchWithRetry(url: string, retries = 3, delay = 1000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url);
+      console.log(`Intento ${i + 1}: Status ${response.status}`); // ← Nuevo log
+      
+      if (response.ok) return response;
+      
+      // Capturar errores de la API
+      const errorData = await response.json();
+      console.error("Error de NewsAPI:", errorData);
+      return NextResponse.json(
+        { error: errorData.message || "NewsAPI Error" },
+        { status: response.status }
+      );
+      
+    } catch (error) {
+      console.error(`Error de red: ${error}`);
+    }
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+  throw new Error(`Failed after ${retries} retries`);
+}
+
 export async function GET() {
   try {
     // 1. Fuentes más favoritadas
@@ -21,12 +45,12 @@ export async function GET() {
     });
 
     // 3. Artículos trending desde NewsAPI
-    const newsApiResponse = await fetch(
-      `https://newsapi.org/v2/top-headlines?country=es&apiKey=${process.env.NEWS_API_KEY}`
+    const newsApiResponse = await fetchWithRetry(
+      `https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=${process.env.NEXT_PUBLIC_NEWS_API_KEY}`
     );
-    
-    if (!newsApiResponse.ok) {
-      throw new Error('Error fetching NewsAPI data');
+
+    if (!(newsApiResponse instanceof Response)) {
+      return newsApiResponse; // Devuelve el error ya manejado
     }
 
     const newsApiData = await newsApiResponse.json();
@@ -51,9 +75,9 @@ export async function GET() {
     });
     
   } catch (error) {
-    console.error("Error in trends endpoint:", error);
+    console.error("Error completo:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Error interno - Ver logs del servidor" },
       { status: 500 }
     );
   }
