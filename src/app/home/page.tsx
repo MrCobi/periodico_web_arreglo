@@ -125,167 +125,166 @@ const useCounter = (end: number, duration: number = 2000) => {
 };
 
 const TrendsSection = () => {
-    const router = useRouter();
-    const [trends, setTrends] = useState<{
-      api: any[];
-      favorites: any[];
-      comments: any[];
-    }>({ api: [], favorites: [], comments: [] });
-    const [isLoading, setIsLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState("api");
-  
-    const handleTrendClick = (trend: any, type: string) => {
-      if (type === "favorite") {
-        router.push(`/sources/${trend.sourceId}`);
-      } else if (type === "api") {
-        window.open(trend.url, "_blank");
-      } else if (type === "comment") {
-        router.push(`/articulos/${trend.sourceId}`);
+  const router = useRouter();
+  const [trends, setTrends] = useState<{
+    api: any[];
+    favorites: any[];
+    comments: any[];
+  }>({ api: [], favorites: [], comments: [] });
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("api");
+
+  const handleTrendClick = (trend: any, type: string) => {
+    if (type === "favorite") {
+      router.push(`/sources/${trend.sourceId}`);
+    } else if (type === "api") {
+      window.open(trend.url, "_blank");
+    } else if (type === "comment") {
+      router.push(`/articulos/${trend.sourceId}`);
+    }
+  };
+
+  useEffect(() => {
+    const fetchTrends = async () => {
+      try {
+        const response = await fetch("/api/trends");
+        const { topFavorites, topCommented, newsApiTrends } = await response.json();
+
+        setTrends({
+          api: newsApiTrends.slice(0, 8),
+          favorites: topFavorites
+            .map((item: any) => ({
+              ...item,
+              count: item._count.sourceId,
+            }))
+            .slice(0, 8),
+          comments: topCommented
+            .map((item: any) => ({
+              ...item,
+              count: item._count.sourceId,
+            }))
+            .slice(0, 8),
+        });
+      } catch (error) {
+        console.error("Error fetching trends:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-  
-    useEffect(() => {
-      const fetchTrends = async () => {
-        try {
-          const response = await fetch("/api/trends");
-          const { topFavorites, topCommented, newsApiTrends } =
-            await response.json();
-  
-          setTrends({
-            api: newsApiTrends.slice(0, 8),
-            favorites: topFavorites
-              .map((item: any) => ({
-                ...item,
-                count: item._count.sourceId,
-              }))
-              .slice(0, 8),
-            comments: topCommented
-              .map((item: any) => ({
-                ...item,
-                count: item._count.sourceId,
-              }))
-              .slice(0, 8),
-          });
-        } catch (error) {
-          console.error("Error fetching trends:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchTrends();
-    }, []);
-  
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-full">
-          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-        </div>
-      );
-    }
-  
+    fetchTrends();
+  }, []);
+
+  if (isLoading) {
     return (
-      <Card className="border-blue-100 dark:border-blue-900/30 h-full">
-        <CardHeader className="pb-2">
-          <div className="flex flex-col space-y-1.5">
-            <CardTitle className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
-              Tendencias
-            </CardTitle>
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full mt-2"
-            >
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="api">Noticias</TabsTrigger>
-                <TabsTrigger value="favorites">Favoritos</TabsTrigger>
-                <TabsTrigger value="comments">Comentarios</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {activeTab === "api" && (
-            <>
-              {trends.api.map((trend, i) => (
-                <div
-                  key={i}
-                  className="p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
-                  onClick={() => handleTrendClick(trend, "api")}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="bg-blue-100 dark:bg-blue-900/30 p-1 rounded">
-                        <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      </span>
-                      <span className="text-sm font-medium line-clamp-1">
-                        {trend.title}
-                      </span>
-                    </div>
-                    <Badge variant="outline">Nuevo</Badge>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
-  
-          {activeTab === "favorites" && (
-            <>
-              {trends.favorites.map((trend, i) => (
-                <div
-                  key={i}
-                  className="p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
-                  onClick={() => handleTrendClick(trend, "favorite")}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Heart className="h-5 w-5 text-red-500" />
-                      <span className="text-sm font-medium">
-                        {trend.sourceName}
-                      </span>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="bg-blue-100 dark:bg-blue-900/30"
-                    >
-                      {trend.count} ♥
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
-  
-          {activeTab === "comments" && (
-            <>
-              {trends.comments.map((trend, i) => (
-                <div
-                  key={i}
-                  className="p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
-                  onClick={() => handleTrendClick(trend, "comment")}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <MessageSquare className="h-5 w-5 text-green-500" />
-                      <span className="text-sm font-medium">
-                        {trend.sourceName}
-                      </span>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="bg-blue-100 dark:bg-blue-900/30"
-                    >
-                      {trend.count} 💬
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+      </div>
     );
-  };
+  }
+
+  return (
+    <Card className="border border-gray-200 dark:border-gray-700 shadow-sm">
+      <CardHeader className="pb-2">
+        <div className="flex flex-col space-y-1.5">
+          <CardTitle className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+            <TrendingUp className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+            Tendencias
+          </CardTitle>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full mt-2"
+          >
+            <TabsList className="grid w-full grid-cols-3 bg-gray-100 dark:bg-gray-800 rounded-md">
+              <TabsTrigger value="api" className="text-gray-700 dark:text-gray-300">Noticias</TabsTrigger>
+              <TabsTrigger value="favorites" className="text-gray-700 dark:text-gray-300">Favoritos</TabsTrigger>
+              <TabsTrigger value="comments" className="text-gray-700 dark:text-gray-300">Comentarios</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {activeTab === "api" && (
+          <>
+            {trends.api.map((trend, i) => (
+              <div
+                key={i}
+                className="p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
+                onClick={() => handleTrendClick(trend, "api")}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="bg-blue-100 dark:bg-blue-900/30 p-1 rounded">
+                      <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </span>
+                    <span className="text-sm font-medium line-clamp-1 text-gray-800 dark:text-gray-200">
+                      {trend.title}
+                    </span>
+                  </div>
+                  <Badge variant="outline" className="text-blue-600 dark:text-blue-400">Nuevo</Badge>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
+        {activeTab === "favorites" && (
+          <>
+            {trends.favorites.map((trend, i) => (
+              <div
+                key={i}
+                className="p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
+                onClick={() => handleTrendClick(trend, "favorite")}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Heart className="h-5 w-5 text-red-500" />
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                      {trend.sourceName}
+                    </span>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-100 dark:bg-blue-900/30 text-red-500"
+                  >
+                    {trend.count} ♥
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
+        {activeTab === "comments" && (
+          <>
+            {trends.comments.map((trend, i) => (
+              <div
+                key={i}
+                className="p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
+                onClick={() => handleTrendClick(trend, "comment")}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <MessageSquare className="h-5 w-5 text-green-500" />
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                      {trend.sourceName}
+                    </span>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-100 dark:bg-blue-900/30 text-green-500"
+                  >
+                    {trend.count} 💬
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -944,7 +943,7 @@ export default function HomePage() {
               }}
               transition={{ duration: 0.5 }}
             >
-               <TrendsSection />
+              <TrendsSection />
             </motion.div>
           </div>
         </div>
