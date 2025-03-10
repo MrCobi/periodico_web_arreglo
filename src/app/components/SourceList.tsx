@@ -20,7 +20,6 @@ import {
 import {
   Search,
   Globe2,
-  Star,
   Info,
   ChevronLeft,
   ChevronRight,

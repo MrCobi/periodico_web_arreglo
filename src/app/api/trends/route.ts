@@ -1,6 +1,7 @@
 // src/app/api/trends/route.ts
 import prisma from "@/lib/db";
 import { NextResponse } from "next/server";
+import { Article } from "@/src/interface/article";
 
 async function fetchWithRetry(url: string, retries = 3, delay = 1000) {
   for (let i = 0; i < retries; i++) {
@@ -77,7 +78,7 @@ export async function GET() {
 
     // Mapear datos para incluir información de fuente local
     const newsWithSources = await Promise.all(
-      newsApiData.articles.map(async (article: any) => {
+      newsApiData.articles.map(async (article: Article) => {
         const source = await prisma.source.findFirst({
           where: { url: article.url },
         });

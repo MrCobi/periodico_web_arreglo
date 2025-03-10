@@ -5,8 +5,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { User } from "@prisma/client";
-import { Card, CardHeader, CardContent } from "@/src/app/components/ui/card";
-import { Badge } from "@/src/app/components/ui/badge";
+import { Card } from "@/src/app/components/ui/card";
 import {
   User2,
   Users,
