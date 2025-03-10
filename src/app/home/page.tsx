@@ -71,7 +71,6 @@ const decorativeElements = [
   { left: "15%", top: "35%", width: "6px", height: "6px", duration: "2.9s" },
 ];
 
-// Agrega esto antes del componente HomePage
 const StatItem = ({
   icon,
   label,
@@ -83,7 +82,7 @@ const StatItem = ({
   value: number;
   isVisible: boolean;
 }) => {
-  const count = useCounter(value, 2000); // Hook llamado incondicionalmente
+  const count = useCounter(value, 2000);
 
   return (
     <Card className="overflow-hidden border-blue-100 dark:border-blue-900/30 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 hover:shadow-md">
@@ -125,8 +124,121 @@ const useCounter = (end: number, duration: number = 2000) => {
   return count;
 };
 
+const TrendsSection = () => {
+  const router = useRouter();
+  const [trends, setTrends] = useState<
+    Array<{
+      type: string;
+      data: any;
+      count?: number;
+    }>
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleTrendClick = (trend: any) => {
+    if (trend.type === "favorite") {
+      router.push(`/sources/${trend.data.sourceId}`);
+    } else if (trend.type === "news_api") {
+      if (trend.data.localSourceId) {
+        router.push(`/articulos/${trend.data.localSourceId}`);
+      } else {
+        window.open(trend.data.url, "_blank");
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchTrends = async () => {
+      try {
+        const response = await fetch("/api/trends");
+        const { topFavorites, topCommented, newsApiTrends } =
+          await response.json();
+
+        const mergedTrends = [
+          ...topFavorites.map((item: any) => ({
+            type: "favorite",
+            data: item,
+            count: item._count.sourceId,
+          })),
+          ...newsApiTrends.map((article: any) => ({
+            type: "news_api",
+            data: article,
+          })),
+        ];
+
+        setTrends(mergedTrends);
+      } catch (error) {
+        console.error("Error fetching trends:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTrends();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  return (
+    <Card className="border-blue-100 dark:border-blue-900/30 h-full">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+          <TrendingUp className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+          Tendencias
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {trends.map((trend, i) => (
+            <div
+              key={i}
+              className="p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
+              onClick={() => handleTrendClick(trend)}
+            >
+              {trend.type === "favorite" && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Heart className="h-5 w-5 text-red-500" />
+                    <span className="text-sm font-medium">
+                      {trend.data.sourceId.substring(0, 15)}...
+                    </span>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-100 dark:bg-blue-900/30"
+                  >
+                    {trend.count} favoritos
+                  </Badge>
+                </div>
+              )}
+
+              {trend.type === "news_api" && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="bg-blue-100 dark:bg-blue-900/30 p-1 rounded">
+                      <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </span>
+                    <span className="text-sm font-medium line-clamp-1">
+                      {trend.data.title}
+                    </span>
+                  </div>
+                  <Badge variant="outline">Nuevo</Badge>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default function HomePage() {
-  // Hooks en el nivel superior y en el mismo orden
   const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -194,7 +306,6 @@ export default function HomePage() {
     loadFollowingActivity();
   }, [session, currentPage]);
 
-  // Efecto para manejar el montaje y el scroll
   useEffect(() => {
     setMounted(true);
 
@@ -227,7 +338,6 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Redirigir si no está autenticado
   useEffect(() => {
     if (status === "unauthenticated") {
       redirect("/");
@@ -259,7 +369,7 @@ export default function HomePage() {
       </div>
     );
   };
-  // Mostrar carga si no está montado o está cargando
+
   if (!mounted || status === "loading") {
     return (
       <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-900">
@@ -785,40 +895,7 @@ export default function HomePage() {
               }}
               transition={{ duration: 0.5 }}
             >
-              <Card className="border-blue-100 dark:border-blue-900/30 h-full">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
-                    <TrendingUp className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
-                    Tendencias
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { term: "Guerra Civil", count: 1243, trend: "+28%" },
-                      { term: "Transición", count: 856, trend: "+15%" },
-                      { term: "Movida Madrileña", count: 723, trend: "+12%" },
-                      { term: "Expo 92", count: 512, trend: "+8%" },
-                      { term: "Peseta", count: 498, trend: "+5%" },
-                    ].map((trend, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
-                        onClick={() => router.push(`/buscar?q=${trend.term}`)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-800 dark:text-gray-200">
-                            {trend.term}
-                          </span>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {trend.trend}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+               <TrendsSection />
             </motion.div>
           </div>
         </div>

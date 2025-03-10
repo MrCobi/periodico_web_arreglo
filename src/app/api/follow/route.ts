@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     // Obtener información del usuario que se está siguiendo
     const followingUser = await prisma.user.findUnique({
       where: { id: followingId },
-      select: { name: true }
+      select: { username: true }
     });
 
     if (!followingUser) {
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         userId: session.user.id,
         type: "follow",
         sourceName: null,
-        userName: followingUser.name,
+        userName: followingUser.username,
         createdAt: new Date()
       }
     });
@@ -134,7 +134,7 @@ export async function DELETE(req: Request) {
         userId: session.user.id,
         type: "unfollow",
         sourceName: null,
-        userName: userExists.name,
+        userName: userExists.username,
         createdAt: new Date()
       }
     });

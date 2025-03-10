@@ -73,7 +73,7 @@ model Source {
   id          String @id @default(cuid())
   name        String
   description String
-  url         String  @db.VarChar(512)
+  url         String  @db.VarChar(512)  // Añade @unique aquí
   imageUrl    String? @db.VarChar(512) @map("image_url")
   category    String
   language    String
