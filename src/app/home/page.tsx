@@ -148,7 +148,8 @@ const TrendsSection = () => {
     const fetchTrends = async () => {
       try {
         const response = await fetch("/api/trends");
-        const { topFavorites, topCommented, newsApiTrends } = await response.json();
+        const { topFavorites, topCommented, newsApiTrends } =
+          await response.json();
 
         setTrends({
           api: newsApiTrends.slice(0, 8),
@@ -196,9 +197,24 @@ const TrendsSection = () => {
             className="w-full mt-2"
           >
             <TabsList className="grid w-full grid-cols-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-              <TabsTrigger value="api" className="text-gray-700 dark:text-gray-300">Noticias</TabsTrigger>
-              <TabsTrigger value="favorites" className="text-gray-700 dark:text-gray-300">Favoritos</TabsTrigger>
-              <TabsTrigger value="comments" className="text-gray-700 dark:text-gray-300">Comentarios</TabsTrigger>
+              <TabsTrigger
+                value="api"
+                className="text-gray-700 dark:text-gray-300"
+              >
+                Noticias
+              </TabsTrigger>
+              <TabsTrigger
+                value="favorites"
+                className="text-gray-700 dark:text-gray-300"
+              >
+                Favoritos
+              </TabsTrigger>
+              <TabsTrigger
+                value="comments"
+                className="text-gray-700 dark:text-gray-300"
+              >
+                Comentarios
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -221,7 +237,12 @@ const TrendsSection = () => {
                       {trend.title}
                     </span>
                   </div>
-                  <Badge variant="outline" className="text-blue-600 dark:text-blue-400">Nuevo</Badge>
+                  <Badge
+                    variant="outline"
+                    className="text-blue-600 dark:text-blue-400"
+                  >
+                    Nuevo
+                  </Badge>
                 </div>
               </div>
             ))}
@@ -685,20 +706,12 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-2">
-                Colecciones Temáticas
+                Categorías de Fuentes
               </h2>
               <p className="text-gray-600 dark:text-gray-300">
-                Explora nuestros documentos organizados por temas
+                Explora fuentes organizadas por categorías
               </p>
             </div>
-            <Tabs defaultValue="all" className="mt-4 md:mt-0">
-              <TabsList className="bg-blue-100/50 dark:bg-blue-900/30">
-                <TabsTrigger value="all">Todos</TabsTrigger>
-                <TabsTrigger value="politics">Política</TabsTrigger>
-                <TabsTrigger value="culture">Cultura</TabsTrigger>
-                <TabsTrigger value="science">Ciencia</TabsTrigger>
-              </TabsList>
-            </Tabs>
           </div>
 
           <motion.div
@@ -712,34 +725,26 @@ export default function HomePage() {
           >
             {[
               {
-                title: "Guerra Civil Española",
+                title: "Política",
                 count: 1243,
-                image:
-                  "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&h=500&fit=crop",
                 color: "from-red-500 to-orange-500",
               },
               {
-                title: "Transición Democrática",
+                title: "Ciencia",
                 count: 856,
-                image:
-                  "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&h=500&fit=crop",
                 color: "from-blue-500 to-indigo-500",
               },
               {
-                title: "Movimientos Culturales",
+                title: "Cultura",
                 count: 723,
-                image:
-                  "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&h=500&fit=crop",
                 color: "from-purple-500 to-pink-500",
               },
               {
-                title: "Avances Científicos",
+                title: "Economía",
                 count: 512,
-                image:
-                  "https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=400&h=300&fit=crop",
                 color: "from-green-500 to-teal-500",
               },
-            ].map((collection, i) => (
+            ].map((category, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
@@ -750,37 +755,26 @@ export default function HomePage() {
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 className="group cursor-pointer"
                 onClick={() =>
-                  router.push(
-                    `/colecciones/${collection.title
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`
-                  )
+                  router.push(`/categorias/${category.title.toLowerCase()}`)
                 }
               >
                 <div className="relative h-48 rounded-xl overflow-hidden">
-                  <Image
-                    src={collection.image}
-                    alt={collection.title}
-                    width={400} // Agregar
-                    height={300} // Agregar
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
                   <div
-                    className={`absolute inset-0 bg-gradient-to-t ${collection.color} opacity-70 group-hover:opacity-80 transition-opacity`}
+                    className={`absolute inset-0 bg-gradient-to-t ${category.color} opacity-70 group-hover:opacity-80 transition-opacity`}
                   ></div>
                   <div className="absolute inset-0 flex flex-col justify-end p-4">
                     <h3 className="text-xl font-bold text-white mb-1">
-                      {collection.title}
+                      {category.title}
                     </h3>
                     <p className="text-sm text-white/90">
-                      {collection.count} documentos
+                      {category.count} fuentes
                     </p>
                     <Button
                       variant="outline"
                       size="sm"
                       className="mt-3 bg-white/20 border-white/40 text-white hover:bg-white/30 w-full sm:w-auto"
                     >
-                      Explorar colección
+                      Explorar categoría
                     </Button>
                   </div>
                 </div>
@@ -789,7 +783,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
-
       <section
         id="recent-section"
         className="py-12 sm:py-16 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 dark:from-blue-900/30 dark:to-indigo-900/30"
